@@ -1,0 +1,9 @@
+<div>
+    <h5>Select a Local File</h5>
+    <ngx-dropzone 
+        class="h-80px"
+        [multiple]="false" 
+        [accept]="'audio/webm,audio/ogg,audio/flac,audio/x-aac,audio/aac,audio/mpeg,audio/mp3,audio/wav'"
+        (filesAdded)="onFilesAdded($event)">
+    </ngx-dropzone>
+</div>
