@@ -1,39 +1,32 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import AudioFile from '../constantq/AudioFile';
-
+import { Component, output, signal } from '@angular/core';
+import { AudioFile, UrlSource } from '../../model/audiofile';
 
 @Component({
   selector: 'url-selector',
   templateUrl: './urlselector.component.html',
-  styleUrls: ['./urlselector.component.scss']
 })
-export class UrlSelectorComponent implements OnInit {
+export class UrlSelectorComponent {
+  readonly url = signal('');
 
-    constructor() { }
+  // the subject where the selected file is notified
+  readonly selectedFile = output<AudioFile>();
 
-    ngOnInit() {
+  onKey(event: any) {
+    // without type info
+    if (event?.target && 'value' in event.target && typeof event.target.value === 'string') {
+      this.url.set(event.target.value);
     }
+  }
 
-    url: string = '';
-
-    onKey(event: any) { // without type info
-      this.url = event.target.value;
-    }
-
-    // the subject where the selected file is notified
-    @Input()
-    public selectedFile: BehaviorSubject<AudioFile>;
-
-    /**
-     * handles when a user selects a url
-     */
-    load() {
-      let file = {
-        url: this.url,
-        filename: decodeURIComponent(this.url.substring(this.url.lastIndexOf('/')+1))
-     };
-     console.log(file);
-      this.selectedFile.next(file);
-    }
+  /**
+   * handles when a user selects a url
+   */
+  load() {
+    const file: UrlSource = {
+      url: this.url(),
+      filename: decodeURIComponent(this.url().substring(this.url().lastIndexOf('/') + 1)),
+    };
+    console.log(file);
+    this.selectedFile.emit(file);
+  }
 }

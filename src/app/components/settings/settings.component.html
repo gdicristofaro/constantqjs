@@ -1,28 +1,37 @@
 <mat-card>
-    <mat-card-title class="mb-3">Settings</mat-card-title>
-    <mat-card-content>
-      <mat-form-field class="pl-2 pr-2">
-        <mat-label>Min Pitch</mat-label>
-        <mat-select [(value)]="minpitch">
-          <mat-option *ngFor="let pitch of minpitches" [value]="getId(pitch)">
-            {{getName(pitch)}}
+  <mat-card-title class="mb-3">Settings</mat-card-title>
+  <mat-card-content>
+    <mat-form-field class="pl-2 pr-2">
+      <mat-label>Min Pitch</mat-label>
+      <mat-select [(value)]="minPitch">
+        @for (pitch of minPitches(); track pitch.frequency) {
+          <mat-option [value]="pitch">
+            {{ getName(pitch) }}
           </mat-option>
-        </mat-select>
-      </mat-form-field>
+        }
+      </mat-select>
+    </mat-form-field>
 
+    <mat-form-field class="pl-2 pr-2">
+      <mat-label>Max Pitch</mat-label>
+      <mat-select [(value)]="maxPitch"> </mat-select>
+      @for (pitch of maxPitches(); track pitch.frequency) {
+        <mat-option [value]="pitch">
+          {{ getName(pitch) }}
+        </mat-option>
+      }
+    </mat-form-field>
 
-      <mat-form-field class="pl-2 pr-2">
-        <mat-label>Max Pitch</mat-label>
-        <mat-select [(value)]="maxpitch">
-          <mat-option *ngFor="let pitch of maxpitches" [value]="getId(pitch)">
-            {{getName(pitch)}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field class="pl-2 pr-2">
-        <input matInput placeholder="Samples Per Second (1 - 32)" value="" class="w-100 pl-2"
-          [value]="fps" (keyup)="onFpsKey($event)" type="number" />
-      </mat-form-field>
-    </mat-card-content>
-  </mat-card>
+    <mat-form-field class="pl-2 pr-2">
+      <input
+        matInput
+        placeholder="Samples Per Second (1 - 32)"
+        value=""
+        class="w-100 pl-2"
+        [value]="fps()"
+        (keyup)="onFpsKey($event)"
+        type="number"
+      />
+    </mat-form-field>
+  </mat-card-content>
+</mat-card>

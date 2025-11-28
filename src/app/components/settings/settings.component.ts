@@ -1,72 +1,38 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import {Note, Pitch, PitchData, noteToString, stringToNote} from '../constantq/Pitch';
-import ConstantQ from '../constantq/ConstantQ';
+import { Component, computed, model } from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { DEFAULT_FPS, DEFAULT_MAX_FREQ, DEFAULT_MIN_FREQ } from '../../model/defaults';
+import { getName, Note, Pitch, PitchData } from '../../model/pitch';
 
 @Component({
   selector: 'settings',
   templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.scss']
+  imports: [MatCardModule, MatFormFieldModule, MatSelectModule],
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent {
+  readonly minPitch = model<Pitch>(DEFAULT_MIN_FREQ);
+  readonly maxPitch = model<Pitch>(DEFAULT_MAX_FREQ);
+  readonly fps = model<number>(DEFAULT_FPS);
 
-  constructor() { }
+  readonly minPitches = computed(() => {
+    return PitchData.filter(p => p.note === Note.C && p.frequency < this.maxPitch().frequency);
+  });
 
-  
-  @Output() onMinPitch = new EventEmitter<Pitch>();
-  @Output() onMaxPitch = new EventEmitter<Pitch>();
-  @Output() onFps = new EventEmitter<number>();
-  
-  _minpitch: Pitch = ConstantQ.DEFAULT_MIN_FREQ;
-  _maxpitch: Pitch = ConstantQ.DEFAULT_MAX_FREQ;
-
-  get minpitch() {
-    return this.getId(this._minpitch);
-  }
-
-  set minpitch(id) {
-    this._minpitch = this.pitchFromId(id);
-    this.onMinPitch.emit(this._minpitch);
-  }
-
-  get maxpitch() {
-    return this.getId(this._maxpitch);
-  }
-
-  set maxpitch(id) {
-    this._maxpitch = this.pitchFromId(id);
-    this.onMaxPitch.emit(this._maxpitch);
-  }
-
-  get minpitches() {
-    return PitchData.filter((p) => p.note === Note.C && p.frequency < this._maxpitch.frequency);
-  }
-
-  get maxpitches() {
-    return PitchData.filter((p) => p.note === Note.C && p.frequency > this._minpitch.frequency);
-  }
-
-  pitchFromId(id: string) {
-    return PitchData.find(p => this.getId(p) == id);
-  }
-
-  getId(pitch: Pitch) {
-    return noteToString(pitch.note) + pitch.octave.toString();
-  }
+  readonly maxPitches = computed(() => {
+    return PitchData.filter(p => p.note === Note.C && p.frequency > this.minPitch().frequency);
+  });
 
   getName(pitch: Pitch) {
-    return this.getId(pitch);
+    return getName(pitch);
   }
 
-
-  fps: number = ConstantQ.DEFAULT_FPS;
-
-
-  onFpsKey(event) {
-    let val = (event && event.target && event.target.value) ? event.target.value : 1; 
-    this.fps = Math.min(32, Math.max(1, Math.floor(val)));
-    console.log(this.fps);
-    this.onFps.emit(this.fps);
+  onFpsKey(event: Event) {
+    const val: number =
+      event?.target && 'value' in event.target && typeof event.target.value === 'number'
+        ? event.target.value
+        : 1;
+    const boundedVal = Math.min(32, Math.max(1, Math.floor(val)));
+    this.fps.set(boundedVal);
   }
-
-  ngOnInit() {}
 }

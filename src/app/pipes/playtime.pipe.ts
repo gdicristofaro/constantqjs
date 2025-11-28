@@ -1,11 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import numeral from 'numeral';
 
 /**
  * appropriately formats seconds to a playtime string
  */
 @Pipe({
-  name: 'playTime'
+  name: 'playTime',
 })
 export class PlayTimePipe implements PipeTransform {
   // performs transformation converting input string to a delimited string
@@ -20,5 +19,9 @@ export class PlayTimePipe implements PipeTransform {
  * @returns time formatted in MM:SS.00
  */
 export const playTimeFunct = (value: number) => {
-  return `${Math.floor(value/ 60)}:${numeral(value % 60).format('00.00')}`;
-}
+  return `${Math.floor(value / 60)}:${(value % 60).toLocaleString(
+    undefined, // leave undefined to use the visitor's browser
+    // locale or a string like 'en-US' to override it.
+    { minimumFractionDigits: 2 },
+  )}`;
+};

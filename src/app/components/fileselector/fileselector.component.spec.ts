@@ -1,20 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FileselectorComponent } from './fileselector.component';
+import { FileSelectorComponent } from './fileselector.component';
 
-describe('FileselectorComponent', () => {
-  let component: FileselectorComponent;
-  let fixture: ComponentFixture<FileselectorComponent>;
+describe('FileSelectorComponent', () => {
+  let component: FileSelectorComponent;
+  let fixture: ComponentFixture<FileSelectorComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ FileselectorComponent ]
-    })
-    .compileComponents();
-  }));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FileSelectorComponent],
+    }).compileComponents();
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(FileselectorComponent);
+    fixture = TestBed.createComponent(FileSelectorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

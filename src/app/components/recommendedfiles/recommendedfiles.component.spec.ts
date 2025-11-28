@@ -1,20 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RecommendedfilesComponent } from './recommendedfiles.component';
+import { RecommendedFilesComponent } from './recommendedfiles.component';
 
-describe('RecommendedfilesComponent', () => {
-  let component: RecommendedfilesComponent;
-  let fixture: ComponentFixture<RecommendedfilesComponent>;
+describe('RecommendedFilesComponent', () => {
+  let component: RecommendedFilesComponent;
+  let fixture: ComponentFixture<RecommendedFilesComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ RecommendedfilesComponent ]
-    })
-    .compileComponents();
-  }));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [RecommendedFilesComponent],
+    }).compileComponents();
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(RecommendedfilesComponent);
+    fixture = TestBed.createComponent(RecommendedFilesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

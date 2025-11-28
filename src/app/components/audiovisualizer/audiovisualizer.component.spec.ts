@@ -1,20 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AudiovisualizerComponent } from './audiovisualizer.component';
+import { AudioVisualizerComponent } from './audiovisualizer.component';
 
-describe('AudiovisualizerComponent', () => {
-  let component: AudiovisualizerComponent;
-  let fixture: ComponentFixture<AudiovisualizerComponent>;
+describe('AudioVisualizerComponent', () => {
+  let component: AudioVisualizerComponent;
+  let fixture: ComponentFixture<AudioVisualizerComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ AudiovisualizerComponent ]
-    })
-    .compileComponents();
-  }));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AudioVisualizerComponent],
+    }).compileComponents();
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(AudiovisualizerComponent);
+    fixture = TestBed.createComponent(AudioVisualizerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

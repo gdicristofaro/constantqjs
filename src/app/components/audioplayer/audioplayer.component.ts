@@ -1,7 +1,6 @@
-import { Component, OnInit, Input, inject } from '@angular/core';
-import { AudioPlaybackService } from '../../services/audio-playback.service';
-('../../services/audio-playback.service');
+import { Component, inject } from '@angular/core';
 import { MatSliderModule } from '@angular/material/slider';
+import { AudioPlaybackService } from '../../services/audio-playback.service';
 
 /**
  * This component is responsible for rendering playback controls as well

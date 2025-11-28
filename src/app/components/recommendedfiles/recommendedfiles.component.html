@@ -1,14 +1,10 @@
 <div>
-    <h5>Select from Recommended Files</h5>
-    <mat-chip-list>
-        <mat-chip 
-            class="link-chip"
-            color="primary" 
-            selected
-            *ngFor="let item of items;" 
-            (click)="onClick(item)"
-        >
-            {{ format(item) }}
-        </mat-chip>
-    </mat-chip-list>
+  <h5>Select from Recommended Files</h5>
+  <div class="flex">
+    @for (item of items; track item.filename) {
+      <mat-chip class="link-chip" color="primary" selected (click)="onClick(item)">
+        {{ item.filename }}{{ item.size ? (item.size | megabytes) : '' }}
+      </mat-chip>
+    }
+  </div>
 </div>

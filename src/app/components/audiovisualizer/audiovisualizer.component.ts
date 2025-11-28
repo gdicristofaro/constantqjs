@@ -1,7 +1,7 @@
-import { Component, effect, input, Input, OnInit, signal, ViewChild } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Component, effect, input, Input, OnInit, ViewChild } from '@angular/core';
+import { ChartDataSets, ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartType, ChartDataSets, ChartOptions } from 'chart.js';
+import { BehaviorSubject } from 'rxjs';
 
 /**
  * responsible for visualizing spectral audio data
@@ -14,11 +14,11 @@ import { ChartType, ChartDataSets, ChartOptions } from 'chart.js';
 export class AudioVisualizerComponent implements OnInit {
   @ViewChild('baseChart') chart: BaseChartDirective | undefined;
 
-  title = input.required<string>();
+  readonly title = input.required<string>();
   // pitches chart labels
-  pitches = input.required<string[]>();
+  readonly pitches = input.required<string[]>();
   // the maximum value to display on the axis
-  max = input.required<number>();
+  readonly max = input.required<number>();
 
   constructor() {
     effect(() => {

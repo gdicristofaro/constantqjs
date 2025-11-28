@@ -35,7 +35,8 @@
 
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "always",
   },
   "eslint.workingDirectories": [
     { "mode": "auto" }
