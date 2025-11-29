@@ -1,12 +1,12 @@
 <!-- the actual bootstrap modal -->
 <ng-template #modal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Loading...</h4>
-  </div>
-  <div class="modal-body">
-    <div>{{loadingMessage}}</div>
-    <h4 *ngIf="loadingPercentage">{{loadingPercentage | percent}}</h4>
-  </div>
+  <h4 mat-dialog-title>Loading...</h4>
+  <mat-dialog-content>
+    <div>{{ loadingMessage() }}</div>
+    @if (loadingPercentage()) {
+      <h4>{{ loadingPercentage() | percent }}</h4>
+    }
+  </mat-dialog-content>
 </ng-template>
 
 <div class="container-fluid">
@@ -23,36 +23,46 @@
       <div class="col-lg-9 col-md-8 pr-3">
         <div class="row">
           <div class="col-md-12 mb-4">
-            <recommended-files [selectedFile]="selectedFile"></recommended-files>
+            <recommended-files (selectedFile)="onFileChange($event)"></recommended-files>
           </div>
           <div class="col-md-12 mb-4">
-            <url-selector [selectedFile]="selectedFile"></url-selector>
+            <url-selector (selectedFile)="onFileChange($event)"></url-selector>
           </div>
           <div class="col-md-12 mb-4">
-            <file-selector [selectedFile]="selectedFile"></file-selector>
+            <file-selector (selectedFile)="onFileChange($event)"></file-selector>
           </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-4 pl-3">
-        <settings (onMinPitch)="onMinPitch($event)" (onMaxPitch)="onMaxPitch($event)" (onFps)="onFps($event)" ></settings>
+        <settings
+          (minPitchChange)="minPitch.set($event)"
+          (maxPitchChange)="maxPitch.set($event)"
+          (fpsChange)="fps.set($event)"
+        ></settings>
       </div>
     </div>
   </mat-expansion-panel>
 
-
-
   <div class="row text-center">
     <!-- if controls should be shown (i.e. an audio file has been selected), 
         visualizes the music -->
-    <div *ngIf="showControls" class="col-md-12 pl-5 pr-5">
-      <audio-visualizer [title]="title" [pitches]="noteLetters" [pitchData]="curPitches" [max]="graphMax">
-      </audio-visualizer>
-    </div>
-    <!-- if controls should be shown (i.e. an audio file has been selected), 
+    @if (showControls()) {
+      <div class="col-md-12 pl-5 pr-5">
+        <audio-visualizer
+          [title]="title()"
+          [pitches]="noteLetters()"
+          [pitchData]="curPitches() ?? []"
+          [max]="graphMax()"
+        >
+        </audio-visualizer>
+      </div>
+
+      <!-- if controls should be shown (i.e. an audio file has been selected), 
         provides playback for the audio file -->
-    <div *ngIf="showControls" class="col-md-12 pl-5 pr-5">
-      <audio-player [playback]="playback"></audio-player>
-    </div>
+      <div class="col-md-12 pl-5 pr-5">
+        <audio-player />
+      </div>
+    }
   </div>
-  <div style="margin-bottom: 50px;"></div>
+  <div style="margin-bottom: 50px"></div>
 </div>

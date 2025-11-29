@@ -1,6 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { computed, Injectable, signal } from '@angular/core';
 import { FFT_MS_REFRESH } from '../model/defaults';
 
 /**
@@ -10,8 +8,6 @@ import { FFT_MS_REFRESH } from '../model/defaults';
   providedIn: 'root',
 })
 export class AudioPlaybackService {
-  private readonly http = inject(HttpClient);
-
   private readonly source = signal<AudioBuffer | undefined>(undefined);
 
   // whether or not an actual audio buffer has been set for playback
@@ -65,58 +61,26 @@ export class AudioPlaybackService {
     this._curPosition.set(secs);
   }
 
-  private async getFileBufferNode(file: File): Promise<AudioBuffer> {
-    const arrayBuffer = await this.readFile(file);
-    return this.arrayToDecodeData(arrayBuffer);
-  }
-
-  // taken from https://stackoverflow.com/questions/34495796/javascript-promises-with-filereader
-  private readFile(blob: Blob): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      var fr = new FileReader();
-      fr.onload = () => {
-        resolve(fr.result as ArrayBuffer);
-      };
-      fr.onerror = reject;
-      fr.readAsArrayBuffer(blob);
-    });
-  }
-
-  /**
-   * obtains an observable returning an audio buffer based on the url of the audio file
-   * @param http  the http client to obtain the file
-   * @param url   the url of the file to obtain
-   */
-  async getHttpBufferNode(http: HttpClient, url: string): Promise<AudioBuffer> {
-    const arrBuffer = await firstValueFrom(
-      http.get(url, {
-        responseType: 'arraybuffer',
-      }),
-    );
-
-    return this.arrayToDecodeData(arrBuffer);
-  }
-
-  private arrayToDecodeData(arrBuffer: ArrayBuffer) {
-    return this._audioContext.decodeAudioData(arrBuffer);
-  }
-
   initializeAudio(
     source: AudioBuffer,
     // ms for refresh of playback position and fft
-    fftSize: number,
     msRefresh: number = FFT_MS_REFRESH,
+    fftSize?: number,
   ) {
-    this.msRefresh = msRefresh;
-    this._analyzer = this._audioContext.createAnalyser();
-    // so we get the right size for the bin count
-    this._analyzer.fftSize = fftSize * 2;
-    this.source.set(source);
+    if (fftSize) {
+      this.msRefresh = msRefresh;
+      this._analyzer = this._audioContext.createAnalyser();
+      // so we get the right size for the bin count
+      this._analyzer.fftSize = fftSize * 2;
+      this.source.set(source);
 
-    const bufferLength = this._analyzer.frequencyBinCount;
-    this.fftListener.set(new Uint8Array(bufferLength));
+      const bufferLength = this._analyzer.frequencyBinCount;
+      this.fftListener.set(new Uint8Array(bufferLength));
 
-    this._analyzer.connect(this._audioContext.destination);
+      this._analyzer.connect(this._audioContext.destination);
+    } else {
+      this.fftListener.set(undefined);
+    }
   }
 
   /**
@@ -182,6 +146,11 @@ export class AudioPlaybackService {
    * pauses audio playback at current location
    */
   pause() {
+    // can't pause with no source
+    if (!this.source()) {
+      return false;
+    }
+
     // clear out interval for updates
     if (this._interval) {
       window.clearInterval(this._interval);

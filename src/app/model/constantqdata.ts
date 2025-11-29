@@ -17,6 +17,8 @@ export default interface ConstantQData {
  * @returns             the constant q data
  *                      (array where each bin is amplitude for that bin's frequency)
  */
-export function getData(constantQData: ConstantQData, secPos: number) {
-  return constantQData.constQData[Math.max(0, Math.floor(secPos / constantQData.secResolution))];
+export function getData(constantQData?: ConstantQData, secPos?: number) {
+  return constantQData?.constQData[
+    Math.max(0, Math.floor((secPos ?? 0) / constantQData.secResolution))
+  ];
 }

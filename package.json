@@ -8,7 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "format": "prettier --write \"src/**/*.{ts,html,scss}\""
+    "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
+    "full-build": "npm run buildwasm && ng build",
+    "gh-pages-build": "npm run buildwasm && ng build --prod --output-path out --base-href /constantqjs/",
+    "buildwasm": "npx tsx ./src/buildwasm.ts"
   },
   "private": true,
   "dependencies": {
@@ -24,7 +27,6 @@
     "@ngx-dropzone/cdk": "^21.0.0",
     "@ngx-dropzone/material": "^21.0.0",
     "chart.js": "^4.5.1",
-    "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

@@ -1,13 +1,6 @@
-<script src="node_modules/chart.js/src/chart.js"></script>
-<h4 *ngIf="title">{{title}}</h4>
-<div style="display: block;">
-  <canvas baseChart #baseChart="base-chart" width="400" height="100"
-      [datasets]="chartData"
-      [labels]="pitches"
-      [options]="lineChartOptions"
-      [colors]="lineChartColors"
-      [legend]="lineChartLegend"
-      [chartType]="lineChartType"
-  >
-  </canvas>
+@if (title()) {
+  <h4>{{ title() }}</h4>
+}
+<div style="display: block">
+  <canvas #chart width="400" height="100"> </canvas>
 </div>

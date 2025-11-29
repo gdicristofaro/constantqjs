@@ -1,46 +1,98 @@
+import { PercentPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal, ViewChild } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { AudioFile, FileSource, UrlSource } from './model/audiofile';
-import ConstantQData from './model/constantqdata';
-import { DEFAULT_FPS, DEFAULT_MAX_FREQ, DEFAULT_MIN_FREQ } from './model/defaults';
+import {
+  Component,
+  computed,
+  inject,
+  OnDestroy,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import { MatDialog, MatDialogContent, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+  MatExpansionPanelTitle,
+} from '@angular/material/expansion';
+import { from, map, mergeMap, Subscription } from 'rxjs';
+import { AudioPlayerComponent } from './components/audioplayer/audioplayer.component';
+import { AudioVisualizerComponent } from './components/audiovisualizer/audiovisualizer.component';
+import { FileSelectorComponent } from './components/fileselector/fileselector.component';
+import { RecommendedFilesComponent } from './components/recommendedfiles/recommendedfiles.component';
+import { SettingsComponent } from './components/settings/settings.component';
+import { UrlSelectorComponent } from './components/urlselector/urlselector.component';
+import { AudioFile } from './model/audiofile';
+import ConstantQData, { getData } from './model/constantqdata';
+import {
+  DEFAULT_BINS,
+  DEFAULT_FPS,
+  DEFAULT_MAX_FREQ,
+  DEFAULT_MIN_FREQ,
+  DEFAULT_THRESH,
+  FFT_MS_REFRESH,
+} from './model/defaults';
+import { getFreqRange, noteToString, Pitch } from './model/pitch';
+import { AudioLoadService } from './services/audio-load.service';
 import { AudioPlaybackService } from './services/audio-playback.service';
 import ConstantQDataUtil, { ConstantQMessage } from './services/constantq/ConstantQDataUtil';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  imports: [
+    MatDialogContent,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    MatExpansionPanelTitle,
+    AudioPlayerComponent,
+    AudioVisualizerComponent,
+    FileSelectorComponent,
+    RecommendedFilesComponent,
+    SettingsComponent,
+    UrlSelectorComponent,
+    PercentPipe,
+  ],
 })
-export class AppComponent {
-  playback = inject(AudioPlaybackService);
+export class AppComponent implements OnDestroy {
+  audioLoadSvc = inject(AudioLoadService);
+  audioPlaybackSvc = inject(AudioPlaybackService);
   http = inject(HttpClient);
 
-  modalService = inject(NgbModal);
+  modalService = inject(MatDialog);
 
   /**
    * the actual modal dom element
    */
-  @ViewChild('modal') private modal;
+  @ViewChild('modal') private modal: TemplateRef<any> | undefined;
 
-  loadingModal: NgbModalRef = undefined;
-  @ViewChild('expansionPanel') expansionPanel: MatExpansionPanel;
+  loadingModal: MatDialogRef<any> | undefined = undefined;
+
+  @ViewChild('expansionPanel') expansionPanel: MatExpansionPanel | undefined;
+
+  private readonly pitchData = signal<ConstantQData | undefined>(undefined);
+
+  private audioLoadSub: Subscription | undefined = undefined;
 
   /**
    * the pitches to be visualized by the audio visualizer
    */
-  curPitches = signal<number[] | undefined>(undefined);
+  readonly curPitches = computed(() => {
+    const pitchData = this.pitchData();
+    const position = this.audioPlaybackSvc.curPosition();
+    return getData(pitchData, position);
+  });
 
   // whether or not audio is loading
-  loadingMessage = signal<string | undefined>(undefined);
-  loadingPercentage = signal<number | undefined>(undefined);
+  loadingMessage = signal<string>('');
+  loadingPercentage = signal<number>(0);
 
   graphMax = signal(0);
   title = signal('');
 
-  minPitch = signal(DEFAULT_MIN_FREQ);
-  maxPitch = signal(DEFAULT_MAX_FREQ);
+  minPitch = signal<Pitch>(DEFAULT_MIN_FREQ);
+  maxPitch = signal<Pitch>(DEFAULT_MAX_FREQ);
   fps = signal(DEFAULT_FPS);
   selectedFile = signal<AudioFile | undefined>(undefined);
 
@@ -50,8 +102,12 @@ export class AppComponent {
    * whether or not to show controls
    */
   showControls = computed(() => {
-    return this.playback && this.playback.hasSource();
+    return this.audioPlaybackSvc.hasSource();
   });
+
+  ngOnDestroy(): void {
+    this.audioLoadSub?.unsubscribe();
+  }
 
   /**
    * when an audio file along with pertinent pitch data is loaded, this method handles result
@@ -59,20 +115,20 @@ export class AppComponent {
    * @param pitchData the pitch data if exists
    */
   private onFinishedLoading(buff: AudioBuffer, pitchData: ConstantQData) {
-    this.playback = new AudioPlayback(buff, AppComponent.MS_REFRESH);
-    this.expansionPanel.close();
+    this.audioPlaybackSvc.initializeAudio(buff, FFT_MS_REFRESH);
+    this.expansionPanel?.close();
 
     if (pitchData && pitchData.lowPitch && pitchData.highPitch) {
-      let noteLetters = getFreqRange(
+      const noteLetters = getFreqRange(
         pitchData.lowPitch.note,
         pitchData.lowPitch.octave,
         pitchData.highPitch.note,
         pitchData.highPitch.octave,
       )
         .map(n => `${noteToString(n.note)}${n.octave}`)
-        .reduce((prev, cur) => [...prev, cur, ''], []);
+        .flatMap(note => [note, '']);
 
-      this.noteLetters = noteLetters.slice(0, noteLetters.length - 2);
+      this.noteLetters.set(noteLetters.slice(0, noteLetters.length - 2));
     }
 
     if (pitchData) {
@@ -91,19 +147,14 @@ export class AppComponent {
         log10 += 1;
         alteredMax *= 10;
       }
-      this.graphMax = Math.ceil(alteredMax) / Math.pow(10, log10);
+      this.graphMax.set(Math.ceil(alteredMax) / Math.pow(10, log10));
 
-      if (this.positionSub) this.positionSub.unsubscribe();
-
-      this.positionSub = this.playback.positionListener.subscribe(pos => {
-        this.curPitches.next(pitchData.getData(pos));
-      });
+      this.pitchData.set(pitchData);
     }
 
-    if (this.loadingModal) this.loadingModal.close('dismiss');
-
-    this.audioLoadSub.unsubscribe();
-    this.audioLoadSub = undefined;
+    if (this.loadingModal) {
+      this.loadingModal.close('dismiss');
+    }
   }
 
   /**
@@ -113,8 +164,8 @@ export class AppComponent {
    */
   private onConstantQMsg(data: ConstantQMessage, buff: AudioBuffer) {
     if (data.status === 'Loading') {
-      this.loadingMessage = data.message;
-      this.loadingPercentage = data.completion;
+      this.loadingMessage.set(data.message);
+      this.loadingPercentage.set(data.completion ?? 0);
     } else if (data.status === 'Complete') {
       const constQData: ConstantQData = data.data;
       this.onFinishedLoading(buff, constQData);
@@ -130,52 +181,57 @@ export class AppComponent {
    * when the selected file changes, this function is called
    * @param file  the new selected file
    */
-  onFileChange(file: AudioFile) {
-    // if an actual file, load it and set as playback
-    if (file && ((<UrlSource>file).url || (<FileSource>file).file) && !this.audioLoadSub) {
-      // pause playback if exists (to avoid playback issues)
-      if (this.playback) this.playback.pause();
-
-      this.title = file.filename;
-      // set up loading modal and variables
-      this.loadingMessage = 'Loading Audio File';
-      this.loadingPercentage = undefined;
-      this.loadingModal = this.modalService.open(this.modal, {
-        backdrop: 'static',
-        keyboard: false,
-      });
-
-      const audioBuffer = (<FileSource>file).file
-        ? AudioPlayback.getFileBufferNode((<FileSource>file).file)
-        : AudioPlayback.getHttpBufferNode(this.http, (<UrlSource>file).url);
-
-      this.audioLoadSub = audioBuffer
-        .pipe(
-          mergeMap(buffer =>
-            ConstantQDataUtil.messageProcessing(
-              buffer,
-              this.minPitch,
-              this.maxPitch,
-              ConstantQ.DEFAULT_BINS,
-              ConstantQ.DEFAULT_THRESH,
-              this.fps,
-            ).pipe(
-              map(message => {
-                return { buffer, message };
-              }),
-            ),
-          ),
-        )
-        .subscribe(
-          data => this.onConstantQMsg(data.message, data.buffer),
-          err => {
-            console.error(err);
-            this.loadingMessage = undefined;
-            this.loadingPercentage = undefined;
-
-            if (this.loadingModal) this.loadingModal.close('dismiss');
-          },
-        );
+  onFileChange(file?: AudioFile) {
+    if (!file) {
+      return;
     }
+
+    this.audioLoadSub?.unsubscribe();
+
+    // pause playback if exists (to avoid playback issues)
+    this.audioPlaybackSvc.pause();
+
+    this.title.set(file.filename ?? '');
+    // set up loading modal and variables
+    this.loadingMessage.set('Loading Audio File');
+    this.loadingPercentage.set(0);
+    if (this.modal && this.modalService) {
+      this.loadingModal = this.modalService.open(this.modal);
+    }
+
+    const audioBuffer =
+      'file' in file
+        ? this.audioLoadSvc.getFileBufferNode(file.file)
+        : this.audioLoadSvc.getHttpBufferNode(file.url);
+
+    this.audioLoadSub = from(audioBuffer)
+      .pipe(
+        mergeMap(buffer =>
+          ConstantQDataUtil.messageProcessing(
+            buffer,
+            this.minPitch(),
+            this.maxPitch(),
+            DEFAULT_BINS,
+            DEFAULT_THRESH,
+            this.fps(),
+          ).pipe(
+            map(message => {
+              return { buffer, message };
+            }),
+          ),
+        ),
+      )
+      .subscribe({
+        next: data => this.onConstantQMsg(data.message, data.buffer),
+        error: err => {
+          console.error(err);
+          this.loadingMessage.set('');
+          this.loadingPercentage.set(0);
+
+          if (this.loadingModal) {
+            this.loadingModal.close('dismiss');
+          }
+        },
+      });
   }
 }
