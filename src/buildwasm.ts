@@ -5,7 +5,7 @@ import * as path from 'path';
 const emcc = 'emcc';
 const cppDir = '/cppwasm/';
 
-const wasmOutdir = '/src/assets/wasm';
+const wasmOutdir = '/public/wasm';
 const workerOutFile = 'worker.js';
 const orchestratorOutFile = 'constantq.js';
 
@@ -64,10 +64,15 @@ const workerSourceFiles = fs
   .filter(file => file.endsWith('.cpp') && workerExcludeCppFiles.indexOf(file) < 0)
   .map(f => path.join(__dirname, cppDir, f));
 
-emccBuild(emcc, workerSourceFiles, path.join(__dirname, wasmOutdir, workerOutFile), workerParams);
+emccBuild(
+  emcc,
+  workerSourceFiles,
+  path.join(__dirname, '..', wasmOutdir, workerOutFile),
+  workerParams,
+);
 emccBuild(
   emcc,
   [path.join(__dirname, cppDir, orchestratorCppFile)],
-  path.join(__dirname, wasmOutdir, orchestratorOutFile),
+  path.join(__dirname, '..', wasmOutdir, orchestratorOutFile),
   orchestratorParams,
 );

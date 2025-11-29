@@ -1,37 +1,42 @@
 <mat-card>
   <mat-card-title class="mb-3">Settings</mat-card-title>
   <mat-card-content>
-    <mat-form-field class="pl-2 pr-2">
-      <mat-label>Min Pitch</mat-label>
-      <mat-select [(value)]="minPitch">
-        @for (pitch of minPitches(); track pitch.frequency) {
-          <mat-option [value]="pitch">
-            {{ getName(pitch) }}
-          </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <form [formGroup]="settingsForm">
+      <mat-form-field class="pl-2 pr-2">
+        <mat-label>Min Pitch</mat-label>
+        <mat-select name="settingsMinPitch" formControlName="settingsMinPitch">
+          @for (pitch of minPitches(); track pitch.frequency) {
+            <mat-option [value]="pitch">
+              {{ getName(pitch) }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field class="pl-2 pr-2">
-      <mat-label>Max Pitch</mat-label>
-      <mat-select [(value)]="maxPitch"> </mat-select>
-      @for (pitch of maxPitches(); track pitch.frequency) {
-        <mat-option [value]="pitch">
-          {{ getName(pitch) }}
-        </mat-option>
-      }
-    </mat-form-field>
+      <mat-form-field class="pl-2 pr-2">
+        <mat-label>Max Pitch</mat-label>
+        <mat-select name="settingsMaxPitch" formControlName="settingsMaxPitch">
+          @for (pitch of maxPitches(); track pitch.frequency) {
+            <mat-option [value]="pitch">
+              {{ getName(pitch) }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field class="pl-2 pr-2">
-      <input
-        matInput
-        placeholder="Samples Per Second (1 - 32)"
-        value=""
-        class="w-100 pl-2"
-        [value]="fps()"
-        (keyup)="onFpsKey($event)"
-        type="number"
-      />
-    </mat-form-field>
+      <mat-form-field class="pl-2 pr-2">
+        <input
+          name="settingsFps"
+          formControlName="settingsFps"
+          matInput
+          placeholder="Samples Per Second (1 - 32)"
+          value=""
+          class="w-100 pl-2"
+          min="1"
+          max="32"
+          type="number"
+        />
+      </mat-form-field>
+    </form>
   </mat-card-content>
 </mat-card>

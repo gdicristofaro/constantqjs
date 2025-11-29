@@ -72,7 +72,6 @@ export class AudioPlaybackService {
       this._analyzer = this._audioContext.createAnalyser();
       // so we get the right size for the bin count
       this._analyzer.fftSize = fftSize * 2;
-      this.source.set(source);
 
       const bufferLength = this._analyzer.frequencyBinCount;
       this.fftListener.set(new Uint8Array(bufferLength));
@@ -81,6 +80,8 @@ export class AudioPlaybackService {
     } else {
       this.fftListener.set(undefined);
     }
+
+    this.source.set(source);
   }
 
   /**

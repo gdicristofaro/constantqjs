@@ -1,4 +1,5 @@
 import { Component, output } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormField } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
@@ -12,11 +13,21 @@ import { AudioFile } from '../../model/audiofile';
 @Component({
   templateUrl: 'fileselector.component.html',
   selector: 'file-selector',
-  imports: [MatFormField, MatIcon, MatDropzone, FileInputDirective],
+  imports: [
+    MatFormField,
+    MatIcon,
+    MatDropzone,
+    FileInputDirective,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
 })
 export class FileSelectorComponent {
   // the subject where the selected file is notified
   readonly selectedFile = output<AudioFile | undefined>();
+  readonly fileForm = new FormGroup({
+    fileSelectorFileInput: new FormControl(null),
+  });
 
   /**
    * handles when a user selects file

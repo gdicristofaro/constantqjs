@@ -34,11 +34,7 @@
         </div>
       </div>
       <div class="col-lg-3 col-md-4 pl-3">
-        <settings
-          (minPitchChange)="minPitch.set($event)"
-          (maxPitchChange)="maxPitch.set($event)"
-          (fpsChange)="fps.set($event)"
-        ></settings>
+        <settings (settingsDataUpdate)="settings.set($event)"></settings>
       </div>
     </div>
   </mat-expansion-panel>

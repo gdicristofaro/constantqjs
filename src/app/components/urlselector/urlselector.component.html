@@ -2,15 +2,24 @@
   <div class="col-12">
     <h5>Choose a URL</h5>
   </div>
-  <div class="col-12 d-flex">
-    <div class="flex-grow-1">
-      <mat-form-field class="w-100 pr-2">
-        <input matInput placeholder="URL" value="" class="w-100 pl-2"
-          [value]="url" (keyup)="onKey($event)" type="text"/>
-      </mat-form-field>
+
+  <form [formGroup]="urlForm" (ngSubmit)="load()">
+    <div class="col-12 d-flex">
+      <div class="flex-grow-1">
+        <mat-form-field class="w-100 pr-2">
+          <input
+            name="urlSelectorFileInput"
+            formControlName="urlSelectorFileInput"
+            matInput
+            placeholder="URL"
+            class="w-100 pl-2"
+            type="text"
+          />
+        </mat-form-field>
+      </div>
+      <div>
+        <button type="submit" mat-raised-button color="primary">Load</button>
+      </div>
     </div>
-    <div>
-      <button mat-raised-button color="primary" (click)="load()">Load</button>
-    </div>
-  </div>
+  </form>
 </div>

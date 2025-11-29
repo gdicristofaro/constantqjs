@@ -36,7 +36,7 @@ export default class ConstantQDataUtil {
    * @param seconds       the total length of the song in seconds
    * @return              the padded array
    */
-  private static padAudioArray(retArr: number[], frameRate: number, seconds: number) {
+  private static padAudioArray(retArr: number[][], frameRate: number, seconds: number) {
     if (!retArr || !retArr.length) return retArr;
 
     let totalExpectedFrames = Math.ceil(seconds / frameRate);
@@ -87,19 +87,23 @@ export default class ConstantQDataUtil {
         }
       }
 
-      let retArr: number[] = [];
+      let retArr: number[][] = [];
       let count = 0;
       let totCount = 0;
 
-      let dataUpdate = (i, b, val) => {
-        while (retArr.length <= i) retArr[i] = [];
+      let dataUpdate = (i: number, b: number, val: number) => {
+        while (retArr.length <= i) {
+          retArr[i] = [];
+        }
 
-        while (retArr[i].length < b) retArr.push(undefined);
+        while (retArr[i].length < b) {
+          retArr[i].push(0);
+        }
 
         retArr[i][b] = val;
       };
 
-      let statusUpdate = (status, num) => {
+      let statusUpdate = (status: number, num: number) => {
         switch (status) {
           case 0:
             subject.next({ status: 'Loading', message: 'Calculating Sparse Kernel' });
@@ -115,7 +119,12 @@ export default class ConstantQDataUtil {
               (<any>window).removeFunction(dataUpdate);
               let paddedArr = ConstantQDataUtil.padAudioArray(retArr, 1 / fps, buffer.duration);
 
-              let constantqdata = new ConstantQData(paddedArr, 1 / fps, minPitch, maxPitch);
+              let constantqdata: ConstantQData = {
+                constQData: paddedArr,
+                secResolution: 1 / fps,
+                highPitch: maxPitch,
+                lowPitch: minPitch,
+              };
               subject.next({ status: 'Complete', data: constantqdata });
             } else {
               subject.next({
@@ -145,7 +154,7 @@ export default class ConstantQDataUtil {
         dataUpdateFunc.toString(),
       );
     } catch (e) {
-      subject.next({ status: 'Error', message: e.toString() });
+      subject.next({ status: 'Error', message: e?.toString() ?? '' });
     }
 
     return subject;
@@ -170,7 +179,7 @@ export default class ConstantQDataUtil {
     bins: number = DEFAULT_BINS,
     thresh: number = DEFAULT_THRESH,
     sampleInterval: number | undefined = undefined,
-  ) {
+  ): ConstantQData {
     // create the sparse kernel
     const sparseKernel = ConstantQ.sparseKernel(
       buffer.sampleRate,
@@ -215,6 +224,11 @@ export default class ConstantQDataUtil {
     }
 
     // return the pertinent constant q data
-    return new ConstantQData(constantQData, sampleInterval / buffer.sampleRate, minPitch, maxPitch);
+    return {
+      constQData: constantQData,
+      secResolution: sampleInterval / buffer.sampleRate,
+      highPitch: maxPitch,
+      lowPitch: minPitch,
+    };
   }
 }

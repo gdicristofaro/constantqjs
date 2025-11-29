@@ -1,19 +1,22 @@
 <div>
   <h5>Select a Local File</h5>
-
-  <mat-form-field appearance="fill">
-    <!-- <mat-label>Select a Local File</mat-label> -->
-    <ngx-mat-dropzone class="h-80px">
-      <input
-        type="file"
-        fileInput
-        [multiple]="false"
-        [accept]="
-          'audio/webm,audio/ogg,audio/flac,audio/x-aac,audio/aac,audio/mpeg,audio/mp3,audio/wav'
-        "
-        (filesAdded)="onFilesAdded($event)"
-      />
-    </ngx-mat-dropzone>
-    <mat-icon matSuffix color="primary">cloud_upload</mat-icon>
-  </mat-form-field>
+  <form [formGroup]="fileForm">
+    <mat-form-field appearance="fill">
+      <!-- <mat-label>Select a Local File</mat-label> -->
+      <ngx-mat-dropzone class="h-80px">
+        <input
+          name="fileSelectorFileInput"
+          formControlName="fileSelectorFileInput"
+          type="file"
+          fileInput
+          [multiple]="false"
+          [accept]="
+            'audio/webm,audio/ogg,audio/flac,audio/x-aac,audio/aac,audio/mpeg,audio/mp3,audio/wav'
+          "
+          (filesAdded)="onFilesAdded($event)"
+        />
+      </ngx-mat-dropzone>
+      <mat-icon matSuffix color="primary">cloud_upload</mat-icon>
+    </mat-form-field>
+  </form>
 </div>

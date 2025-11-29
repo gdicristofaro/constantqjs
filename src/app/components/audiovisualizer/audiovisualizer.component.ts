@@ -9,7 +9,7 @@ import { Chart } from 'chart.js';
   templateUrl: 'audiovisualizer.component.html',
 })
 export class AudioVisualizerComponent {
-  @ViewChild('chart') chartEl: ElementRef | undefined;
+  @ViewChild('chartElement') chartElement: ElementRef | undefined;
 
   readonly title = input.required<string>();
   // pitches chart labels
@@ -23,6 +23,8 @@ export class AudioVisualizerComponent {
   private chart: Chart<'line', number[], string> | undefined = undefined;
 
   constructor() {
+    this.reloadChart();
+
     effect(() => {
       this.pitches();
       this.max();
@@ -40,7 +42,7 @@ export class AudioVisualizerComponent {
   }
 
   reloadChart() {
-    const ctx = this.chartEl?.nativeElement?.getContext('2d');
+    const ctx = this.chartElement?.nativeElement?.getContext('2d');
 
     if (!ctx) {
       return;

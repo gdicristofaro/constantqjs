@@ -20,7 +20,7 @@ import { AudioPlayerComponent } from './components/audioplayer/audioplayer.compo
 import { AudioVisualizerComponent } from './components/audiovisualizer/audiovisualizer.component';
 import { FileSelectorComponent } from './components/fileselector/fileselector.component';
 import { RecommendedFilesComponent } from './components/recommendedfiles/recommendedfiles.component';
-import { SettingsComponent } from './components/settings/settings.component';
+import { Settings, SettingsComponent } from './components/settings/settings.component';
 import { UrlSelectorComponent } from './components/urlselector/urlselector.component';
 import { AudioFile } from './model/audiofile';
 import ConstantQData, { getData } from './model/constantqdata';
@@ -32,7 +32,7 @@ import {
   DEFAULT_THRESH,
   FFT_MS_REFRESH,
 } from './model/defaults';
-import { getFreqRange, noteToString, Pitch } from './model/pitch';
+import { getFreqRange, noteToString } from './model/pitch';
 import { AudioLoadService } from './services/audio-load.service';
 import { AudioPlaybackService } from './services/audio-playback.service';
 import ConstantQDataUtil, { ConstantQMessage } from './services/constantq/ConstantQDataUtil';
@@ -91,9 +91,11 @@ export class AppComponent implements OnDestroy {
   graphMax = signal(0);
   title = signal('');
 
-  minPitch = signal<Pitch>(DEFAULT_MIN_FREQ);
-  maxPitch = signal<Pitch>(DEFAULT_MAX_FREQ);
-  fps = signal(DEFAULT_FPS);
+  settings = signal<Settings>({
+    fps: DEFAULT_FPS,
+    minPitch: DEFAULT_MIN_FREQ,
+    maxPitch: DEFAULT_MAX_FREQ,
+  });
   selectedFile = signal<AudioFile | undefined>(undefined);
 
   noteLetters = signal<string[]>([]);
@@ -209,11 +211,11 @@ export class AppComponent implements OnDestroy {
         mergeMap(buffer =>
           ConstantQDataUtil.messageProcessing(
             buffer,
-            this.minPitch(),
-            this.maxPitch(),
+            this.settings().minPitch,
+            this.settings().maxPitch,
             DEFAULT_BINS,
             DEFAULT_THRESH,
-            this.fps(),
+            this.settings().fps,
           ).pipe(
             map(message => {
               return { buffer, message };
