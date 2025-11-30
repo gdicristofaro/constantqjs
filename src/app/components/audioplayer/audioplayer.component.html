@@ -1,11 +1,11 @@
 <div>
   <div>
-    <mat-slider min="0" [max]="duration()" step="0.1" class="w-100">
+    <mat-slider min="0" [max]="duration()" step="0.1" class="w-full">
       <input matSliderThumb [value]="curPosition" (valueChange)="setCurPosition($event)" />
     </mat-slider>
   </div>
   <button mat-raised-button color="primary" (click)="togglePlay()">
     {{ isPlaying() ? 'Pause' : 'Play' }}
   </button>
-  <div>{{ curPosition() }} / {{ duration() }}</div>
+  <div>{{ curPosition() | playtime }} / {{ duration() ?? 0 | playtime }}</div>
 </div>

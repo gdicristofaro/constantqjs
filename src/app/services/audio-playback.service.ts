@@ -106,7 +106,8 @@ export class AudioPlaybackService {
    */
   play(pos: number = 0) {
     // can't play with no source
-    if (!this.source()) {
+    const source = this.source();
+    if (!source) {
       return false;
     }
 
@@ -123,10 +124,11 @@ export class AudioPlaybackService {
 
     // set up playback node
     this.playbackNode = this._audioContext.createBufferSource();
-    this.playbackNode.buffer = this.source() ?? null;
+    this.playbackNode.buffer = source;
     if (this._analyzer) {
       this.playbackNode.connect(this._analyzer);
     }
+    this.playbackNode.connect(this._audioContext.destination);
 
     // establish context items for listeners
     this.contextStart = this._audioContext.currentTime;

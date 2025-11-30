@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
  * appropriately formats seconds to a playtime string
  */
 @Pipe({
-  name: 'playTime',
+  name: 'playtime',
 })
 export class PlayTimePipe implements PipeTransform {
   // performs transformation converting input string to a delimited string

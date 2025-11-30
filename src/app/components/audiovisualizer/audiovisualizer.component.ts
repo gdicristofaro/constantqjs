@@ -1,5 +1,5 @@
-import { Component, effect, ElementRef, input, ViewChild } from '@angular/core';
-import { Chart } from 'chart.js';
+import { AfterViewInit, Component, effect, ElementRef, input, ViewChild } from '@angular/core';
+import { Chart } from 'chart.js/auto';
 
 /**
  * responsible for visualizing spectral audio data
@@ -8,7 +8,7 @@ import { Chart } from 'chart.js';
   selector: 'audio-visualizer',
   templateUrl: 'audiovisualizer.component.html',
 })
-export class AudioVisualizerComponent {
+export class AudioVisualizerComponent implements AfterViewInit {
   @ViewChild('chartElement') chartElement: ElementRef | undefined;
 
   readonly title = input.required<string>();
@@ -23,8 +23,6 @@ export class AudioVisualizerComponent {
   private chart: Chart<'line', number[], string> | undefined = undefined;
 
   constructor() {
-    this.reloadChart();
-
     effect(() => {
       this.pitches();
       this.max();
@@ -35,20 +33,28 @@ export class AudioVisualizerComponent {
       const pitchData = this.pitchData();
       if (this.chart) {
         this.chart.data.datasets[0] = { data: pitchData };
+        this.chart.update();
       } else {
         this.reloadChart();
       }
     });
   }
 
+  ngAfterViewInit(): void {
+    this.reloadChart();
+  }
+
   reloadChart() {
-    const ctx = this.chartElement?.nativeElement?.getContext('2d');
+    const ctx = this.chartElement?.nativeElement;
 
     if (!ctx) {
       return;
     }
 
     this.chart?.destroy();
+
+    const pitches = this.pitches();
+    const pitchData = this.pitchData();
 
     this.chart = new Chart(ctx, {
       type: 'line',
@@ -59,10 +65,16 @@ export class AudioVisualizerComponent {
             display: false,
           },
         },
+        scales: {
+          y: {
+            min: 0,
+            max: this.max() ?? 1,
+          },
+        },
       },
       data: {
-        labels: this.pitches(),
-        datasets: [{ data: this.pitchData() }],
+        labels: pitches,
+        datasets: [{ data: pitchData }],
       },
     });
 

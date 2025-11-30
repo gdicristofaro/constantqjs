@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { MatSliderModule } from '@angular/material/slider';
+import { PlayTimePipe } from '../../pipes/playtime.pipe';
 import { AudioPlaybackService } from '../../services/audio-playback.service';
 
 /**
@@ -8,7 +9,7 @@ import { AudioPlaybackService } from '../../services/audio-playback.service';
  */
 @Component({
   templateUrl: 'audioplayer.component.html',
-  imports: [MatSliderModule],
+  imports: [MatSliderModule, PlayTimePipe],
   selector: 'audio-player',
 })
 export class AudioPlayerComponent {
