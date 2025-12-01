@@ -24,7 +24,7 @@ export class RecommendedFilesComponent {
         },
         {
             filename: 'Bach Invention',
-            url: 'https://ia902904.us.archive.org/7/items/BachTwoPartInventionInCMinor/Bach%20-%20Two-part%20Invention%20in%20C%20minor.mp3',
+            url: 'https://archive.org/download/BachTwoPartInventionInCMinor/Bach%20-%20Two-part%20Invention%20in%20C%20minor.mp3',
             size: 2 * 1024 * 1024
         }
     ];
