@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { map } from 'rxjs';
 import { DEFAULT_FPS, DEFAULT_MAX_FREQ, DEFAULT_MIN_FREQ } from '../../model/defaults';
 import { getName, Note, Pitch, PitchData } from '../../model/pitch';
+import { Settings } from '../../model/settings';
 
 @Component({
   selector: 'settings',
@@ -69,10 +70,4 @@ export class SettingsComponent {
   getName(pitch: Pitch) {
     return getName(pitch);
   }
-}
-
-export interface Settings {
-  minPitch: Pitch;
-  maxPitch: Pitch;
-  fps: number;
 }

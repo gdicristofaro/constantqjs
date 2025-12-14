@@ -24,7 +24,7 @@ import { AudioFile } from '../../model/audiofile';
 })
 export class FileSelectorComponent {
   // the subject where the selected file is notified
-  readonly selectedFile = output<AudioFile | undefined>();
+  readonly selectedFile = output<AudioFile>();
   readonly fileForm = new FormGroup({
     fileSelectorFileInput: new FormControl(null),
   });

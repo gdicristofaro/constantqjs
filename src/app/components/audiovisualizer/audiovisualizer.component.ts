@@ -1,5 +1,17 @@
-import { AfterViewInit, Component, effect, ElementRef, input, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  ViewChild,
+} from '@angular/core';
 import { Chart } from 'chart.js/auto';
+import AudioFileData from '../../model/audiofiledata';
+import { ConstantQData } from '../../model/constantqdata';
+import { AudioPlaybackService } from '../../services/audio-playback.service';
 
 /**
  * responsible for visualizing spectral audio data
@@ -11,14 +23,24 @@ import { Chart } from 'chart.js/auto';
 export class AudioVisualizerComponent implements AfterViewInit {
   @ViewChild('chartElement') chartElement: ElementRef | undefined;
 
-  readonly title = input.required<string>();
-  // pitches chart labels
-  readonly pitches = input.required<string[]>();
-  // the maximum value to display on the axis
-  readonly max = input.required<number>();
+  private readonly audioSvc = inject(AudioPlaybackService);
+
+  readonly audioFileData = input.required<AudioFileData>();
+  readonly constantQData = input.required<ConstantQData>();
+
+  readonly title = computed(() => this.audioFileData().title);
+  readonly pitches = computed(() => this.audioFileData().noteLetters);
+  readonly max = computed(() => this.constantQData().graphMax);
 
   // the data to display on the chart
-  readonly pitchData = input.required<number[]>();
+  readonly pitchData = computed(() => {
+    const { fps } = this.audioFileData();
+    const { constantQData } = this.constantQData();
+    const pos = this.audioSvc.curPosition();
+    const idx = Math.floor((pos ?? 1) * (fps ?? 1));
+    const frame = (constantQData?.length ?? 0) > idx ? constantQData[idx] : [];
+    return frame;
+  });
 
   private chart: Chart<'line', number[], string> | undefined = undefined;
 
@@ -32,7 +54,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
     effect(() => {
       const pitchData = this.pitchData();
       if (this.chart) {
-        this.chart.data.datasets[0] = { data: pitchData };
+        this.chart.data.datasets[0].data = pitchData;
         this.chart.update();
       } else {
         this.reloadChart();

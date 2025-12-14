@@ -68,7 +68,6 @@ export class AudioPlaybackService {
     fftSize?: number,
   ) {
     if (fftSize) {
-      this.msRefresh = msRefresh;
       this._analyzer = this._audioContext.createAnalyser();
       // so we get the right size for the bin count
       this._analyzer.fftSize = fftSize * 2;
@@ -81,6 +80,7 @@ export class AudioPlaybackService {
       this.fftListener.set(undefined);
     }
 
+    this.msRefresh = msRefresh;
     this.source.set(source);
   }
 

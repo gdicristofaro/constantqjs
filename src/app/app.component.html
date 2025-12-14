@@ -43,15 +43,11 @@
     <!-- if controls should be shown (i.e. an audio file has been selected), 
         visualizes the music -->
     @if (showControls()) {
-      <div class="col-md-12 pl-5 pr-5">
-        <audio-visualizer
-          [title]="title()"
-          [pitches]="noteLetters()"
-          [pitchData]="curPitches() ?? []"
-          [max]="graphMax()"
-        >
-        </audio-visualizer>
-      </div>
+      @if (audioVisualData()) {
+        <div class="col-md-12 pl-5 pr-5">
+          <audio-visualizer [audioVisualData]="audioVisualData()!" />
+        </div>
+      }
 
       <!-- if controls should be shown (i.e. an audio file has been selected), 
         provides playback for the audio file -->
