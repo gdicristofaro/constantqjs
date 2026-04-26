@@ -1,6 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import Complex from '../../model/complex';
-import ConstantQData from '../../model/constantqdata';
+import { ConstantQData } from '../../model/constantqdata';
 import {
   DEFAULT_BINS,
   DEFAULT_FPS,
@@ -16,7 +16,7 @@ import ConstantQ from './ConstantQ';
  */
 export type ConstantQMessage =
   // completion is [0,1] and displays as a percentage
-  | { status: 'Loading'; message: string; completion?: number }
+  | { status: 'Loading'; message: string; completion?: number; data: ConstantQData }
   | { status: 'Complete'; data: ConstantQData }
   | { status: 'Error'; message: string };
 
@@ -90,6 +90,7 @@ export default class ConstantQDataUtil {
       let retArr: number[][] = [];
       let count = 0;
       let totCount = 0;
+      let graphMax = 0;
 
       let dataUpdate = (i: number, b: number, val: number) => {
         while (retArr.length <= i) {
@@ -101,16 +102,32 @@ export default class ConstantQDataUtil {
         }
 
         retArr[i][b] = val;
+        graphMax = Math.max(graphMax, val);
       };
 
       let statusUpdate = (status: number, num: number) => {
         switch (status) {
           case 0:
-            subject.next({ status: 'Loading', message: 'Calculating Sparse Kernel' });
+            subject.next({
+              status: 'Loading',
+              message: 'Calculating Sparse Kernel',
+              data: {
+                constantQData: retArr,
+                graphMax,
+              },
+            });
             break;
           case 1:
             totCount = num;
-            subject.next({ status: 'Loading', message: 'Parsing Constant Q Data', completion: 0 });
+            subject.next({
+              status: 'Loading',
+              message: 'Parsing Constant Q Data',
+              completion: 0,
+              data: {
+                constantQData: retArr,
+                graphMax,
+              },
+            });
             break;
           case 2:
             count += num;
@@ -120,10 +137,8 @@ export default class ConstantQDataUtil {
               let paddedArr = ConstantQDataUtil.padAudioArray(retArr, 1 / fps, buffer.duration);
 
               let constantqdata: ConstantQData = {
-                constQData: paddedArr,
-                secResolution: 1 / fps,
-                highPitch: maxPitch,
-                lowPitch: minPitch,
+                constantQData: paddedArr,
+                graphMax,
               };
               subject.next({ status: 'Complete', data: constantqdata });
             } else {
@@ -131,6 +146,10 @@ export default class ConstantQDataUtil {
                 status: 'Loading',
                 message: 'Parsing Constant Q Data',
                 completion: count / totCount,
+                data: {
+                  constantQData: retArr,
+                  graphMax,
+                },
               });
             }
 
@@ -202,7 +221,8 @@ export default class ConstantQDataUtil {
     const constantQData = new Array<Array<number>>();
 
     // the current start position within
-    var bufferStartPos = 0;
+    let bufferStartPos = 0;
+    let graphMax = 0;
 
     // iterate through audio buffer and determine constant q data
     while (bufferStartPos + sparseKernel.size <= bufferLength) {
@@ -218,17 +238,22 @@ export default class ConstantQDataUtil {
         }
       }
 
-      constantQData.push(ConstantQ.constantQ(complexBuff, sparseKernel).map(c => c.abs()));
+      const complexArr = ConstantQ.constantQ(complexBuff, sparseKernel);
+      let arr = [];
+      for (let i = 0; i < complexArr.length; i++) {
+        let num = complexArr[i].abs();
+        graphMax = Math.max(graphMax, num);
+        arr.push(num);
+      }
+      constantQData.push(arr);
 
       bufferStartPos += sampleInterval;
     }
 
     // return the pertinent constant q data
     return {
-      constQData: constantQData,
-      secResolution: sampleInterval / buffer.sampleRate,
-      highPitch: maxPitch,
-      lowPitch: minPitch,
+      graphMax,
+      constantQData,
     };
   }
 }

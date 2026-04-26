@@ -8,14 +8,17 @@ import {
   MatExpansionPanelTitle,
 } from '@angular/material/expansion';
 import { AudioPlayerComponent } from './components/audioplayer/audioplayer.component';
+import { AudioVisualizerComponent } from './components/audiovisualizer/audiovisualizer.component';
 import { FileSelectorComponent } from './components/fileselector/fileselector.component';
 import { RecommendedFilesComponent } from './components/recommendedfiles/recommendedfiles.component';
-import { Settings, SettingsComponent } from './components/settings/settings.component';
+import { SettingsComponent } from './components/settings/settings.component';
 import { UrlSelectorComponent } from './components/urlselector/urlselector.component';
 import { AudioFile } from './model/audiofile';
 import { DEFAULT_FPS, DEFAULT_MAX_FREQ, DEFAULT_MIN_FREQ } from './model/defaults';
+import { Settings } from './model/settings';
 import { AudioLoadService } from './services/audio-load.service';
 import { AudioPlaybackService } from './services/audio-playback.service';
+import { ConstantqService } from './services/constantq.service';
 
 @Component({
   selector: 'app-root',
@@ -32,11 +35,14 @@ import { AudioPlaybackService } from './services/audio-playback.service';
     SettingsComponent,
     UrlSelectorComponent,
     PercentPipe,
+    AudioVisualizerComponent,
   ],
 })
 export class AppComponent {
-  private readonly audioLoadSvc = inject(AudioLoadService);
+  protected readonly audioLoadSvc = inject(AudioLoadService);
   private readonly audioPlaybackSvc = inject(AudioPlaybackService);
+  protected readonly constantQSvc = inject(ConstantqService);
+
   private readonly http = inject(HttpClient);
   private readonly modalService = inject(MatDialog);
 
@@ -66,7 +72,7 @@ export class AppComponent {
     return this.audioPlaybackSvc.hasSource();
   });
 
-  onFileChange(evt: AudioFile) {
-    this.audioLoadSvc.loadAudioFile(evt, this.settings()); // TODO
+  onFileChange(audioFile: AudioFile) {
+    this.audioLoadSvc.loadAudioFile(audioFile, this.settings());
   }
 }

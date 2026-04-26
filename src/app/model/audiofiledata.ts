@@ -1,6 +1,9 @@
+import { Settings } from './settings';
+
 export default interface AudioFileData {
   audio: AudioBuffer;
-  fps: number;
+  settings: Settings;
   title: string;
+  fps: number;
   noteLetters: string[];
 }

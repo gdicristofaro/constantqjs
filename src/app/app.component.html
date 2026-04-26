@@ -43,9 +43,12 @@
     <!-- if controls should be shown (i.e. an audio file has been selected), 
         visualizes the music -->
     @if (showControls()) {
-      @if (audioVisualData()) {
+      @let audioFileData = audioLoadSvc.audioFileData();
+      @let constantQData = constantQSvc.constantQData();
+
+      @if (audioFileData && constantQData) {
         <div class="col-md-12 pl-5 pr-5">
-          <audio-visualizer [audioVisualData]="audioVisualData()!" />
+          <audio-visualizer [audioFileData]="audioFileData" [constantQData]="constantQData" />
         </div>
       }
 

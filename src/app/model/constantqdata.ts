@@ -22,3 +22,7 @@
 //     Math.max(0, Math.floor((secPos ?? 0) / constantQData.secResolution))
 //   ];
 // }
+export interface ConstantQData {
+  constantQData: number[][];
+  graphMax: number;
+}

@@ -1,5 +1,6 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { FFT_MS_REFRESH } from '../model/defaults';
+import { AudioLoadService } from './audio-load.service';
 
 /**
  * A class that defines playback and playback controls for an audio file
@@ -8,6 +9,8 @@ import { FFT_MS_REFRESH } from '../model/defaults';
   providedIn: 'root',
 })
 export class AudioPlaybackService {
+  private readonly audioSvc = inject(AudioLoadService);
+
   private readonly source = signal<AudioBuffer | undefined>(undefined);
 
   // whether or not an actual audio buffer has been set for playback
@@ -46,6 +49,20 @@ export class AudioPlaybackService {
   private playbackNode: AudioBufferSourceNode | undefined = undefined;
 
   private msRefresh: number = FFT_MS_REFRESH;
+
+  constructor() {
+    // when the audio file data changes, update the source and reset playback
+    effect(() => {
+      const audioFileData = this.audioSvc.audioFileData();
+      untracked(() => {
+        this.pause();
+        this.setCurPosition(0);
+        if (audioFileData) {
+          this.initializeAudio(audioFileData.audio);
+        }
+      });
+    });
+  }
 
   togglePlay() {
     if (this.hasSource()) {
