@@ -1,6 +1,6 @@
 import { Component, output } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatFormField } from '@angular/material/form-field';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
 import { MatDropzone } from '@ngx-dropzone/material';
@@ -20,6 +20,7 @@ import { AudioFile } from '../../model/audiofile';
     FileInputDirective,
     FormsModule,
     ReactiveFormsModule,
+    MatLabel,
   ],
 })
 export class FileSelectorComponent {

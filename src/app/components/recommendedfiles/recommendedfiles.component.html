@@ -2,7 +2,7 @@
   <h5>Select from Recommended Files</h5>
   <div class="flex">
     @for (item of items; track item.filename) {
-      <mat-chip class="link-chip" color="primary" selected (click)="onClick(item)">
+      <mat-chip class="mr-2 link-chip" color="primary" selected (click)="onClick(item)">
         {{ item.filename }}{{ item.size ? (item.size | megabytes) : '' }}
       </mat-chip>
     }
