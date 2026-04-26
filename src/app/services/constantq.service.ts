@@ -40,7 +40,9 @@ export class ConstantqService {
     if (data.status === 'Error') {
       this.setError(data.message);
     } else {
-      this.loadingPercentage.set(data.status === 'Complete' ? 1 : (data.completion ?? 0));
+      const percComplete = data.status === 'Complete' ? 1 : (data.completion ?? 0);
+      console.log('Loading: ' + percComplete * 100 + '%');
+      this.loadingPercentage.set(percComplete);
       this.constantQData.set(data.data);
     }
   }
@@ -61,7 +63,7 @@ export class ConstantqService {
     });
   }
 
-  private setError(err: any) {
+  private setError(err: string) {
     console.error(err);
     this.errorMessage.set('An error occurred while processing the audio file.');
   }

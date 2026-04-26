@@ -9,7 +9,7 @@ export class SparseKernel {
   // the 2-d array of kernel entry information
   // 1st index represents the bin
   // the nested array are the lists of kernel entries to apply to the fft
-  readonly matrix: Array<Array<KernelEntry>>;
+  readonly matrix: KernelEntry[][];
 
   // the size of the fft to use for this sparse kernel to properly apply
   readonly size: number;
@@ -23,7 +23,7 @@ export class SparseKernel {
    * @param size      the size of the fft to use for this parse kernel
    * @param bins      the number of bins
    */
-  constructor(matrix: Array<Array<KernelEntry>>, size: number, bins: number) {
+  constructor(matrix: KernelEntry[][], size: number, bins: number) {
     this.matrix = matrix;
     this.size = size;
     this.bins = bins;
@@ -34,7 +34,7 @@ export class SparseKernel {
    */
   toString() {
     let str = `Complex { size: ${this.size}, bins: ${this.bins} matrix: \n[`;
-    for (let row of this.matrix) str += `\n[${row.join(', ')}]`;
+    for (const row of this.matrix) str += `\n[${row.join(', ')}]`;
 
     str += '] }';
     return str;

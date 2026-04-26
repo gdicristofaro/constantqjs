@@ -23,18 +23,18 @@
       <div class="col-lg-9 col-md-8 pr-3">
         <div class="row">
           <div class="col-md-12 mb-4">
-            <recommended-files (selectedFile)="onFileChange($event)"></recommended-files>
+            <cq-recommended-files (selectedFile)="onFileChange($event)"></cq-recommended-files>
           </div>
           <div class="col-md-12 mb-4">
-            <url-selector (selectedFile)="onFileChange($event)"></url-selector>
+            <cq-url-selector (selectedFile)="onFileChange($event)"></cq-url-selector>
           </div>
           <div class="col-md-12 mb-4">
-            <file-selector (selectedFile)="onFileChange($event)"></file-selector>
+            <cq-file-selector (selectedFile)="onFileChange($event)"></cq-file-selector>
           </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-4 pl-3">
-        <settings (settingsDataUpdate)="settings.set($event)"></settings>
+        <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
       </div>
     </div>
   </mat-expansion-panel>
@@ -48,14 +48,14 @@
 
       @if (audioFileData && constantQData) {
         <div class="col-md-12 pl-5 pr-5">
-          <audio-visualizer [audioFileData]="audioFileData" [constantQData]="constantQData" />
+          <cq-audio-visualizer [audioFileData]="audioFileData" [constantQData]="constantQData" />
         </div>
       }
 
       <!-- if controls should be shown (i.e. an audio file has been selected), 
         provides playback for the audio file -->
       <div class="col-md-12 pl-5 pr-5">
-        <audio-player />
+        <cq-audio-player />
       </div>
     }
   </div>

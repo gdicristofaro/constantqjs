@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { AudioFile, UrlSource } from '../../model/audiofile';
 
 @Component({
-  selector: 'url-selector',
+  selector: 'cq-url-selector',
   templateUrl: './urlselector.component.html',
   imports: [MatFormField, ReactiveFormsModule, MatButtonModule, MatInputModule],
 })

@@ -17,7 +17,7 @@ import { AudioPlaybackService } from '../../services/audio-playback.service';
  * responsible for visualizing spectral audio data
  */
 @Component({
-  selector: 'audio-visualizer',
+  selector: 'cq-audio-visualizer',
   templateUrl: 'audiovisualizer.component.html',
 })
 export class AudioVisualizerComponent implements AfterViewInit {

@@ -38,7 +38,7 @@ export default class ConstantQ {
     const tempKernel = new Array<Complex>(fftLen);
     for (let i = 0; i < fftLen; i++) tempKernel[i] = Complex.ZERO;
 
-    const retMatrix = new Array<Array<KernelEntry>>(K);
+    const retMatrix = new Array<KernelEntry[]>(K);
 
     for (let k = K; k >= 1; k--) {
       const len = Math.ceil((Q * fs) / (minFreq * Math.pow(2, (k - 1) / bins)));
@@ -80,7 +80,7 @@ export default class ConstantQ {
     for (let b = 0; b < sparKernel.bins; b++) {
       let tot = Complex.ZERO;
 
-      for (let entr of sparKernel.matrix[b])
+      for (const entr of sparKernel.matrix[b])
         tot = tot.add(arr[entr.fftIndex].multComp(entr.multiplier));
 
       toRet[b] = tot;

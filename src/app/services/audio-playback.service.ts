@@ -40,10 +40,10 @@ export class AudioPlaybackService {
   private _interval: number | undefined = undefined;
 
   // the start position relative to the audio context time
-  private contextStart: number = 0;
+  private contextStart = 0;
 
   // the start position relative to the audio file
-  private audioStart: number = 0;
+  private audioStart = 0;
 
   // the actual plaback node (only operational during playback not on pause)
   private playbackNode: AudioBufferSourceNode | undefined = undefined;
@@ -121,7 +121,7 @@ export class AudioPlaybackService {
    * handles playing audio
    * @param pos   the position of playback; if none set, current position is used
    */
-  play(pos: number = 0) {
+  play(pos = 0) {
     // can't play with no source
     const source = this.source();
     if (!source) {

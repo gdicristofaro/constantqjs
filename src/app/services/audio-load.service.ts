@@ -28,7 +28,7 @@ export class AudioLoadService {
   // taken from https://stackoverflow.com/questions/34495796/javascript-promises-with-filereader
   private readFile(blob: Blob): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
-      var fr = new FileReader();
+      const fr = new FileReader();
       fr.onload = () => {
         resolve(fr.result as ArrayBuffer);
       };

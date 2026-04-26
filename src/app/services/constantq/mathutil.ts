@@ -27,7 +27,7 @@ export function fft(x: Complex[], n: number | undefined = undefined) {
   // bit reversal permutation
   const shift = 32 - n.toString(2).length + 1;
   for (let k = 0; k < n; k++) {
-    var jStr = k.toString(2);
+    let jStr = k.toString(2);
     while (jStr.length < 32 - shift) jStr = '0' + jStr;
     const j = parseInt(jStr.split('').reverse().join(''), 2);
     if (j > k) {

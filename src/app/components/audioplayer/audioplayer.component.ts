@@ -10,7 +10,7 @@ import { AudioPlaybackService } from '../../services/audio-playback.service';
 @Component({
   templateUrl: 'audioplayer.component.html',
   imports: [MatSliderModule, PlayTimePipe],
-  selector: 'audio-player',
+  selector: 'cq-audio-player',
 })
 export class AudioPlayerComponent {
   // whether or not audio is playing (based on playback isPlaying)

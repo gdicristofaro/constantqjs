@@ -1,6 +1,6 @@
 import { PercentPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal, TemplateRef, ViewChild } from '@angular/core';
+import { Component, computed, inject, signal, viewChild, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogContent, MatDialogRef } from '@angular/material/dialog';
 import {
   MatExpansionPanel,
@@ -21,7 +21,7 @@ import { AudioPlaybackService } from './services/audio-playback.service';
 import { ConstantqService } from './services/constantq.service';
 
 @Component({
-  selector: 'app-root',
+  selector: 'cq-app',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   imports: [
@@ -49,7 +49,7 @@ export class AppComponent {
   /**
    * the actual modal dom element
    */
-  @ViewChild('modal') private modal: TemplateRef<any> | undefined;
+  private readonly modal = viewChild('modal');
 
   loadingModal: MatDialogRef<any> | undefined = undefined;
 

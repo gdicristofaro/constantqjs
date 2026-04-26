@@ -39,11 +39,11 @@ export default class ConstantQDataUtil {
   private static padAudioArray(retArr: number[][], frameRate: number, seconds: number) {
     if (!retArr || !retArr.length) return retArr;
 
-    let totalExpectedFrames = Math.ceil(seconds / frameRate);
-    let totalFrames = retArr.length;
-    let lastFrame = retArr[retArr.length - 1];
-    let paddedArr = [];
-    let paddedArrayNum = totalExpectedFrames - totalFrames;
+    const totalExpectedFrames = Math.ceil(seconds / frameRate);
+    const totalFrames = retArr.length;
+    const lastFrame = retArr[retArr.length - 1];
+    const paddedArr = [];
+    const paddedArrayNum = totalExpectedFrames - totalFrames;
     for (let i = 0; i < paddedArrayNum; i++) paddedArr.push(lastFrame);
 
     return [...retArr, ...paddedArr];
@@ -78,21 +78,22 @@ export default class ConstantQDataUtil {
     const subject = new Subject<ConstantQMessage>();
 
     try {
-      let amplitudeBuffer = new (<any>window).Module.VectorDouble();
+      // eslint-disable-next-line
+      const amplitudeBuffer = new (window as any).Module.VectorDouble();
       for (let c = 0; c < buffer.numberOfChannels; c++) {
-        let floatData = buffer.getChannelData(c);
+        const floatData = buffer.getChannelData(c);
         for (let i = 0; i < buffer.length; i++) {
           if (c == 0) amplitudeBuffer.push_back(floatData[i]);
           else amplitudeBuffer[i] = amplitudeBuffer[i] + floatData[i];
         }
       }
 
-      let retArr: number[][] = [];
+      const retArr: number[][] = [];
       let count = 0;
       let totCount = 0;
       let graphMax = 0;
 
-      let dataUpdate = (i: number, b: number, val: number) => {
+      const dataUpdate = (i: number, b: number, val: number) => {
         while (retArr.length <= i) {
           retArr[i] = [];
         }
@@ -105,7 +106,7 @@ export default class ConstantQDataUtil {
         graphMax = Math.max(graphMax, val);
       };
 
-      let statusUpdate = (status: number, num: number) => {
+      const statusUpdate = (status: number, num: number) => {
         switch (status) {
           case 0:
             subject.next({
@@ -132,11 +133,13 @@ export default class ConstantQDataUtil {
           case 2:
             count += num;
             if (count >= totCount) {
-              (<any>window).removeFunction(statusUpdate);
-              (<any>window).removeFunction(dataUpdate);
-              let paddedArr = ConstantQDataUtil.padAudioArray(retArr, 1 / fps, buffer.duration);
+              // eslint-disable-next-line
+              (window as any).removeFunction(statusUpdate);
+              // eslint-disable-next-line
+              (window as any).removeFunction(dataUpdate);
+              const paddedArr = ConstantQDataUtil.padAudioArray(retArr, 1 / fps, buffer.duration);
 
-              let constantqdata: ConstantQData = {
+              const constantqdata: ConstantQData = {
                 constantQData: paddedArr,
                 graphMax,
               };
@@ -157,10 +160,13 @@ export default class ConstantQDataUtil {
         }
       };
 
-      let statUpdateFunc = (<any>window).addFunction(statusUpdate, 'vii');
-      let dataUpdateFunc = (<any>window).addFunction(dataUpdate, 'viid');
+      // eslint-disable-next-line
+      const statUpdateFunc = (window as any).addFunction(statusUpdate, 'vii');
+      // eslint-disable-next-line
+      const dataUpdateFunc = (window as any).addFunction(dataUpdate, 'viid');
 
-      (<any>window).Module.evaluate(
+      // eslint-disable-next-line
+      (window as any).Module.evaluate(
         buffer.sampleRate,
         minPitch.frequency,
         maxPitch.frequency,
@@ -218,7 +224,7 @@ export default class ConstantQDataUtil {
     const bufferLength = buffer.getChannelData(0).length;
 
     // the constant q data
-    const constantQData = new Array<Array<number>>();
+    const constantQData = new Array<number[]>();
 
     // the current start position within
     let bufferStartPos = 0;
@@ -239,11 +245,11 @@ export default class ConstantQDataUtil {
       }
 
       const complexArr = ConstantQ.constantQ(complexBuff, sparseKernel);
-      let arr = [];
-      for (let i = 0; i < complexArr.length; i++) {
-        let num = complexArr[i].abs();
-        graphMax = Math.max(graphMax, num);
-        arr.push(num);
+      const arr = [];
+      for (const num of complexArr) {
+        const absNum = num.abs();
+        graphMax = Math.max(graphMax, absNum);
+        arr.push(absNum);
       }
       constantQData.push(arr);
 

@@ -12,7 +12,7 @@ import { getName, Note, Pitch, PitchData } from '../../model/pitch';
 import { Settings } from '../../model/settings';
 
 @Component({
-  selector: 'settings',
+  selector: 'cq-settings',
   templateUrl: './settings.component.html',
   imports: [
     MatCardModule,

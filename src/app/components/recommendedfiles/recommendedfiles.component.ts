@@ -7,7 +7,7 @@ import { MegabytesPipe } from '../../pipes/megabytes.pipe';
  * displays recent files and is charge of committing to local storage
  */
 @Component({
-  selector: 'recommended-files',
+  selector: 'cq-recommended-files',
   templateUrl: './recommendedfiles.component.html',
   imports: [MatChip, MegabytesPipe],
 })

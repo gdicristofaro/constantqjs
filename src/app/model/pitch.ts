@@ -114,11 +114,11 @@ export const getFreqRange = (note1: Note, octave1: number, note2: Note, octave2:
   return PitchData.slice(index1, index2 + 1);
 };
 
-export type Pitch = {
+export interface Pitch {
   note: Note;
   octave: number;
   frequency: number;
-};
+}
 
 /**
  * array of records pertaining to pitch and frequency dates

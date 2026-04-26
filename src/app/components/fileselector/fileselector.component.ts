@@ -12,7 +12,7 @@ import { AudioFile } from '../../model/audiofile';
  */
 @Component({
   templateUrl: 'fileselector.component.html',
-  selector: 'file-selector',
+  selector: 'cq-file-selector',
   imports: [
     MatFormField,
     MatIcon,
