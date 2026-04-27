@@ -1,43 +1,58 @@
-<mat-card>
-  <mat-card-title class="mb-3">Settings</mat-card-title>
-  <mat-card-content>
-    <form [formGroup]="settingsForm">
-      <mat-form-field class="pl-2 pr-2">
-        <mat-label>Min Pitch</mat-label>
-        <mat-select name="settingsMinPitch" formControlName="settingsMinPitch">
+<div class="rounded-xl bg-gray-50 p-4 space-y-4 border border-gray-100">
+  <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">Settings</label>
+  <form [formGroup]="settingsForm">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label for="settingsMinPitch" class="block text-xs font-medium text-gray-600 mb-1"
+          >Min Pitch</label
+        >
+
+        <select
+          id="settingsMinPitch"
+          name="settingsMinPitch"
+          formControlName="settingsMinPitch"
+          class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+        >
           @for (pitch of minPitches(); track pitch.frequency) {
-            <mat-option [value]="pitch">
+            <option value="{{ pitch }}">
               {{ getName(pitch) }}
-            </mat-option>
+            </option>
           }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field class="pl-2 pr-2">
-        <mat-label>Max Pitch</mat-label>
-        <mat-select name="settingsMaxPitch" formControlName="settingsMaxPitch">
+        </select>
+      </div>
+      <div>
+        <label for="settingsMaxPitch" class="block text-xs font-medium text-gray-600 mb-1"
+          >Max Pitch</label
+        >
+        <select
+          class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+          id="settingsMaxPitch"
+          name="settingsMaxPitch"
+          formControlName="settingsMaxPitch"
+        >
           @for (pitch of maxPitches(); track pitch.frequency) {
-            <mat-option [value]="pitch">
+            <option [value]="pitch">
               {{ getName(pitch) }}
-            </mat-option>
+            </option>
           }
-        </mat-select>
-      </mat-form-field>
+        </select>
+      </div>
+    </div>
 
-      <mat-form-field class="pl-2 pr-2">
-        <mat-label>Frames Per Second (FPS)</mat-label>
-        <input
-          name="settingsFps"
-          formControlName="settingsFps"
-          matInput
-          placeholder="Samples Per Second (1 - 32)"
-          value=""
-          class="w-100 pl-2"
-          min="1"
-          max="32"
-          type="number"
-        />
-      </mat-form-field>
-    </form>
-  </mat-card-content>
-</mat-card>
+    <div>
+      <label for="settingsFps" class="block text-xs font-medium text-gray-600 mb-1"
+        >Samples per second (1-32)</label
+      >
+      <input
+        name="settingsFps"
+        formControlName="settingsFps"
+        id="settingsFps"
+        type="number"
+        min="1"
+        max="32"
+        value="16"
+        class="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+      />
+    </div>
+  </form>
+</div>
