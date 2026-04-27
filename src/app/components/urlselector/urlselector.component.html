@@ -1,25 +1,9 @@
-<div class="row">
-  <div class="col-12">
-    <h5>Choose a URL</h5>
-  </div>
-
-  <form [formGroup]="urlForm" (ngSubmit)="load()">
-    <div class="col-12 d-flex">
-      <div class="flex-grow-1">
-        <mat-form-field class="w-100 pr-2">
-          <mat-label>URL</mat-label>
-          <input
-            name="urlSelectorFileInput"
-            formControlName="urlSelectorFileInput"
-            matInput
-            class="w-100 pl-2"
-            type="text"
-          />
-        </mat-form-field>
-      </div>
-      <div>
-        <button type="submit" mat-raised-button color="primary">Load</button>
-      </div>
-    </div>
-  </form>
+<div>
+  <label for="url-input" class="mb-1 block text-sm font-medium text-gray-700">URL</label>
+  <input
+    type="text"
+    id="url-input"
+    placeholder="https://example.com/audio.mp3"
+    class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+  />
 </div>

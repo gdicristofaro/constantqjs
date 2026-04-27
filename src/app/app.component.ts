@@ -7,6 +7,7 @@ import {
   MatExpansionPanelHeader,
   MatExpansionPanelTitle,
 } from '@angular/material/expansion';
+import { AudioSelectionModalComponent } from './components/audio-selection-modal/audio-selection-modal.component';
 import { AudioPlayerComponent } from './components/audioplayer/audioplayer.component';
 import { AudioVisualizerComponent } from './components/audiovisualizer/audiovisualizer.component';
 import { FileSelectorComponent } from './components/fileselector/fileselector.component';
@@ -36,6 +37,7 @@ import { ConstantqService } from './services/constantq.service';
     UrlSelectorComponent,
     PercentPipe,
     AudioVisualizerComponent,
+    AudioSelectionModalComponent,
   ],
 })
 export class AppComponent {
@@ -45,6 +47,8 @@ export class AppComponent {
 
   private readonly http = inject(HttpClient);
   private readonly modalService = inject(MatDialog);
+
+  modalOpen = signal(true);
 
   /**
    * the actual modal dom element

@@ -9,6 +9,14 @@
   </mat-dialog-content>
 </ng-template>
 
+<cq-audio-selection-modal [open]="modalOpen()" />
+<button
+  (click)="modalOpen.set(true)"
+  class="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition"
+>
+  Open
+</button>
+
 <div class="container-fluid">
   <div class="text-center">
     <h2>Constant Q Transform</h2>

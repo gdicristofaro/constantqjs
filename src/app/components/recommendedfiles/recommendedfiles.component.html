@@ -1,10 +1,17 @@
 <div>
-  <h5>Select from Recommended Files</h5>
-  <div class="flex">
+  <label class="mb-3 block text-sm font-medium text-gray-500 uppercase tracking-wider"
+    >Recommended Files</label
+  >
+  <div class="flex flex-wrap gap-2">
     @for (item of items; track item.filename) {
-      <mat-chip class="mr-2 link-chip" color="primary" selected (click)="onClick(item)">
-        {{ item.filename }}{{ item.size ? (item.size | megabytes) : '' }}
-      </mat-chip>
+      <button
+        (click)="onClick(item)"
+        class="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+      >
+        {{ item.filename }}
+      </button>
     }
   </div>
 </div>
+
+<div></div>
