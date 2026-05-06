@@ -1,10 +1,10 @@
-import { Component, output } from '@angular/core';
+import { Component, computed, model } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
 import { MatDropzone } from '@ngx-dropzone/material';
-import { AudioFile } from '../../model/audiofile';
+import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
 
 /**
  * This component is responsible for rendering playback controls as well
@@ -25,7 +25,13 @@ import { AudioFile } from '../../model/audiofile';
 })
 export class FileSelectorComponent {
   // the subject where the selected file is notified
-  readonly selectedFile = output<AudioFile>();
+
+  readonly selectedFile = model.required<AudioSelectionResult>();
+
+  protected readonly disabled = computed(() =>
+    this.selectedFile()?.audioFile && this.selectedFile()?.type !== 'recommended' ? true : false,
+  );
+
   readonly fileForm = new FormGroup({
     fileSelectorFileInput: new FormControl(null),
   });
@@ -39,9 +45,9 @@ export class FileSelectorComponent {
       const files: FileList = event.target.files;
       if (files && files[0]) {
         const file = files[0];
-        this.selectedFile.emit({
-          file,
-          filename: file.name,
+        this.selectedFile.set({
+          audioFile: { file, filename: file.name, size: file.size },
+          type: 'file',
         });
       }
     }

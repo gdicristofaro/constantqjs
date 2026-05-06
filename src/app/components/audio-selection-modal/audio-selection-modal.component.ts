@@ -1,12 +1,11 @@
-import { Component, model, output } from '@angular/core';
+import { Component, effect, model } from '@angular/core';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
-import { Settings } from '../../model/settings';
 import { FileSelectorComponent } from '../fileselector/fileselector.component';
 import { ModalComponent } from '../modal/modal.component';
 import { OrDividerComponent } from '../or-divider/or-divider.component';
 import { RecommendedFilesComponent } from '../recommendedfiles/recommendedfiles.component';
-import { SettingsComponent } from '../settings/settings.component';
+import { SettingsComponent, SettingsResult } from '../settings/settings.component';
 import { UrlSelectorComponent } from '../urlselector/urlselector.component';
 
 @Component({
@@ -24,14 +23,29 @@ import { UrlSelectorComponent } from '../urlselector/urlselector.component';
 })
 export class AudioSelectionModalComponent {
   readonly open = model(false);
-  readonly selectedFile = output<AudioFile>();
-  settings = model<Settings>({
-    fps: 16,
-    minPitch: { note: Note.C, octave: 1, frequency: 32.7 },
-    maxPitch: { note: Note.C, octave: 8, frequency: 4186 },
+  readonly selectedFile = model<AudioSelectionResult>({
+    type: 'recommended',
+    audioFile: null,
   });
 
-  onFileSelected(file: AudioFile) {
-    this.selectedFile.emit(file);
+  settings = model<SettingsResult>({
+    valid: true,
+    data: {
+      fps: 16,
+      minPitch: { note: Note.C, octave: 1, frequency: 32.7 },
+      maxPitch: { note: Note.C, octave: 8, frequency: 4186 },
+    },
+  });
+
+  constructor() {
+    effect(() => {
+      const selectedFile = this.selectedFile();
+      console.log('Selected file:', selectedFile);
+    });
   }
+}
+
+export interface AudioSelectionResult {
+  audioFile: AudioFile | null;
+  type: 'url' | 'file' | 'recommended';
 }

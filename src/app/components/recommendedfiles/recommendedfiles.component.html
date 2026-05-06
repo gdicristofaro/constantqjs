@@ -1,10 +1,11 @@
 <div>
-  <label class="mb-1 block text-sm font-medium text-gray-700">Recommended Files</label>
+  <p class="mb-1 block text-sm font-medium text-gray-700">Recommended Files</p>
   <div class="flex flex-wrap gap-2">
     @for (item of items; track item.filename) {
       <button
         (click)="onClick(item)"
-        class="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+        [disabled]="disabled()"
+        class="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ item.filename }}
       </button>

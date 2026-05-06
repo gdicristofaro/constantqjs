@@ -1,7 +1,8 @@
-import { Component, output } from '@angular/core';
+import { Component, computed, model } from '@angular/core';
 import { MatChip } from '@angular/material/chips';
 import { AudioFile } from '../../model/audiofile';
 import { MegabytesPipe } from '../../pipes/megabytes.pipe';
+import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
 
 /**
  * displays recent files and is charge of committing to local storage
@@ -31,8 +32,12 @@ export class RecommendedFilesComponent {
     },
   ];
 
-  // the subject where the selected file is notified
-  readonly selectedFile = output<AudioFile>();
+  readonly selectedFile = model.required<AudioSelectionResult>();
+
+  protected readonly disabled = computed(
+    () => false,
+    // this.selectedFile()?.audioFile && this.selectedFile()?.type !== 'recommended' ? true : false,
+  );
 
   // a list of audio file items sorted and displayed to user
   get items() {
@@ -44,6 +49,6 @@ export class RecommendedFilesComponent {
    * @param item the selected audio file
    */
   onClick(item: AudioFile) {
-    this.selectedFile.emit(item);
+    this.selectedFile.set({ audioFile: item, type: 'recommended' });
   }
 }

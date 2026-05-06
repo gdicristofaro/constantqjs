@@ -17,7 +17,10 @@ import { Component, contentChild, input } from '@angular/core';
       "
     >
       <div
-        class="flex w-full max-w-md max-h-[90vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        [class]="
+          modalClasses() +
+          ' flex w-full max-h-[90vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl'
+        "
       >
         <div class="sticky top-0 z-10 border-b border-gray-100 bg-white px-6 py-4">
           <h3 class="text-xl font-semibold text-gray-800">
@@ -41,4 +44,5 @@ import { Component, contentChild, input } from '@angular/core';
 export class ModalComponent {
   protected readonly titleContent = contentChild('title');
   readonly open = input(false);
+  readonly modalClasses = input('max-w-5xl');
 }

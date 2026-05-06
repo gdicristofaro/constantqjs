@@ -3,7 +3,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { map } from 'rxjs';
@@ -27,35 +33,53 @@ import { Settings } from '../../model/settings';
 })
 export class SettingsComponent {
   readonly settingsForm = new FormGroup({
-    settingsMinPitch: new FormControl(DEFAULT_MIN_FREQ),
-    settingsMaxPitch: new FormControl(DEFAULT_MAX_FREQ),
-    settingsFps: new FormControl(DEFAULT_FPS),
+    settingsMinPitch: new FormControl(DEFAULT_MIN_FREQ, Validators.required),
+    settingsMaxPitch: new FormControl(DEFAULT_MAX_FREQ, Validators.required),
+    settingsFps: new FormControl(DEFAULT_FPS, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(32),
+    ]),
   });
 
-  readonly settingsData = toSignal(
+  private readonly _settingsData = toSignal(
     this.settingsForm.valueChanges.pipe(map(val => this.getSettings(val))),
     {
       initialValue: this.getSettings(this.settingsForm.value),
     },
   );
 
+  private readonly _isValid = toSignal(
+    this.settingsForm.statusChanges.pipe(map(status => status === 'VALID')),
+    {
+      initialValue: this.settingsForm.valid,
+    },
+  );
+
+  private readonly _settingsDataResult = computed(
+    () =>
+      (this._isValid()
+        ? { valid: true, data: this._settingsData() }
+        : { valid: false }) as SettingsResult,
+  );
+
   readonly minPitches = computed(() => {
-    const maxFreq = this.settingsData().maxPitch.frequency;
+    const maxFreq = this._settingsData().maxPitch.frequency;
     const pitches = PitchData.filter(p => p.note === Note.C && (!maxFreq || p.frequency < maxFreq));
     return pitches;
   });
 
   readonly maxPitches = computed(() => {
-    const minFreq = this.settingsData().minPitch.frequency;
+    const minFreq = this._settingsData().minPitch.frequency;
     const pitches = PitchData.filter(p => p.note === Note.C && (!minFreq || p.frequency > minFreq));
     return pitches;
   });
 
-  settingsDataUpdate = output<Settings>();
+  settingsDataUpdate = output<SettingsResult>();
 
   constructor() {
     effect(() => {
-      this.settingsDataUpdate.emit(this.settingsData());
+      this.settingsDataUpdate.emit(this._settingsDataResult());
     });
   }
 
@@ -71,3 +95,5 @@ export class SettingsComponent {
     return getName(pitch);
   }
 }
+
+export type SettingsResult = { valid: true; data: Settings } | { valid: false };

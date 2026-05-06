@@ -1,23 +1,28 @@
 <cq-modal [open]="open()">
   <span title>Select a Music File</span>
   <body>
-    <cq-recommended-files (selectedFile)="onFileSelected($event)" />
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="md:col-span-3">
+        <cq-recommended-files [(selectedFile)]="selectedFile" />
 
-    <cq-or-divider />
+        <cq-or-divider />
 
-    <cq-url-selector (selectedFile)="onFileSelected($event)" />
+        <cq-url-selector [(selectedFile)]="selectedFile" />
 
-    <cq-or-divider />
+        <cq-or-divider />
 
-    <cq-file-selector (selectedFile)="onFileSelected($event)" />
+        <cq-file-selector [(selectedFile)]="selectedFile" />
+      </div>
 
-    <div class="mt-4">
-      <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
+      <div class="mt-4 md:mt-0 md:col-span-2">
+        <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
+      </div>
     </div>
   </body>
   <footer>
     <button
       (click)="open.set(false)"
+      [disabled]="settings().valid === false || !selectedFile().audioFile"
       class="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition"
     >
       Ok
