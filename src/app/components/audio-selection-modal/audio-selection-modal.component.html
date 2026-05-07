@@ -1,311 +1,186 @@
-<!-- <cq-modal [open]="open()">
-  <span title>Select a Music File</span>
-  <body>
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-      <div class="md:col-span-3">
-        <cq-recommended-files [(selectedFile)]="selectedFile" />
-
-        <cq-or-divider />
-
-        <cq-url-selector [(selectedFile)]="selectedFile" />
-
-        <cq-or-divider />
-
-        <cq-file-selector [(selectedFile)]="selectedFile" />
-      </div>
-
-      <div class="mt-4 md:mt-0 md:col-span-2">
-        <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
-      </div>
-    </div>
-  </body>
-  <footer>
-    <button
-      (click)="open.set(false)"
-      [disabled]="settings().valid === false || !selectedFile().audioFile"
-      class="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition"
-    >
-      Ok
-    </button>
-  </footer>
-</cq-modal> -->
-
 <!-- Backdrop -->
-
-<!-- Backdrop -->
-<div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-  <!-- Modal -->
-  <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden">
-    <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-      <div>
-        <h2 class="text-base font-semibold text-gray-900">Upload audio</h2>
-        <p class="text-sm text-gray-500 mt-0.5">Choose a source to get started</p>
-      </div>
-      <button
-        onclick="closeModal()"
-        class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-colors"
-      >
-        <i class="ti ti-x text-xl"></i>
-      </button>
-    </div>
-
+<cq-modal [open]="open()">
+  <span title>Upload audio</span>
+  <span subtitle>Choose a source to get started</span>
+  <div body>
     <!-- Tabs -->
-    <div ngTabs>
-      <div
-        ngTabList
-        selectionMode="follow"
-        [selectedTab]="selectedTab()"
-        class="flex border-b border-gray-100"
-      >
+    <div class="flex border-b border-gray-100">
+      @for (tab of tabs; track tab.id) {
         <button
-          ngTab
-          value="recommended"
-          onclick="showTab('recommended')"
-          id="tab-recommended"
-          class="tab-btn flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors"
+          (click)="setTab(tab.id)"
+          class="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors"
+          [class.border-blue-600]="activeTab() === tab.id"
+          [class.text-blue-600]="activeTab() === tab.id"
+          [class.border-transparent]="activeTab() !== tab.id"
+          [class.text-gray-400]="activeTab() !== tab.id"
+          [class.cursor-pointer]="activeTab() !== tab.id"
+          [class.hover:text-gray-600]="activeTab() !== tab.id"
         >
-          <i class="ti ti-sparkles text-sm"></i>Recommended
+          <!-- Tab icons -->
+          @if (tab.id === 'recommended') {
+            <!-- Hero: sparkles -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
+              />
+            </svg>
+          }
+          @if (tab.id === 'url') {
+            <!-- Hero: link -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+              />
+            </svg>
+          }
+          @if (tab.id === 'local') {
+            <!-- Hero: arrow-up-tray -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+              />
+            </svg>
+          }
+          {{ tab.label }}
         </button>
-        <button
-          ngTab
-          value="url"
-          onclick="showTab('url')"
-          id="tab-url"
-          class="tab-btn flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <i class="ti ti-link text-sm"></i>URL
-        </button>
-        <button
-          ngTab
-          value="local"
-          onclick="showTab('local')"
-          id="tab-local"
-          class="tab-btn flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <i class="ti ti-file-upload text-sm"></i>Local file
-        </button>
-      </div>
+      }
+    </div>
 
-      <!-- Panel: Recommended -->
-      <div>
-        <div ngTabPanel [preserveContent]="true" value="recommended">
-          <ng-template ngTabContent>
-            <div id="panel-recommended" class="px-6 py-5">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                Suggested samples
-              </p>
-              <div class="flex flex-col gap-2">
-                <button
-                  ngTabP
-                  onclick="selectRec(1)"
-                  id="rec-1"
-                  class="rec-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-300 transition-all text-left w-full"
-                >
-                  <div
-                    class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
-                  >
-                    <i class="ti ti-music text-blue-500 text-lg"></i>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900">Sample interview.mp3</p>
-                    <p class="text-xs text-gray-400 mt-0.5">4:32 · 8.2 MB · MP3</p>
-                  </div>
-                  <i id="rec-1-icon" class="ti ti-circle text-gray-300 text-lg shrink-0"></i>
-                </button>
-
-                <button
-                  onclick="selectRec(2)"
-                  id="rec-2"
-                  class="rec-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-300 transition-all text-left w-full"
-                >
-                  <div
-                    class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0"
-                  >
-                    <i class="ti ti-microphone text-emerald-500 text-lg"></i>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900">Podcast excerpt.wav</p>
-                    <p class="text-xs text-gray-400 mt-0.5">2:15 · 23.1 MB · WAV</p>
-                  </div>
-                  <i id="rec-2-icon" class="ti ti-circle text-gray-300 text-lg shrink-0"></i>
-                </button>
-
-                <button
-                  onclick="selectRec(3)"
-                  id="rec-3"
-                  class="rec-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-300 transition-all text-left w-full"
-                >
-                  <div
-                    class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0"
-                  >
-                    <i class="ti ti-headphones text-amber-500 text-lg"></i>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900">Meeting recording.m4a</p>
-                    <p class="text-xs text-gray-400 mt-0.5">11:47 · 16.4 MB · M4A</p>
-                  </div>
-                  <i id="rec-3-icon" class="ti ti-circle text-gray-300 text-lg shrink-0"></i>
-                </button>
-              </div>
-            </div>
-            Panel 1</ng-template
-          >
-        </div>
+    <!-- Panel: Recommended -->
+    <div class="px-6 py-5">
+      @switch (activeTab()) {
+        @case ('recommended') {
+          <cq-recommended-files [(selectedFile)]="selectedFile"></cq-recommended-files>
+        }
 
         <!-- Panel: URL -->
-        <div ngTabPanel [preserveContent]="true" value="url">
-          <ng-template ngTabContent>
-            <div id="panel-url" class="px-6 py-5 hidden">
-              <label for="url-text-input" class="block text-sm font-medium text-gray-700 mb-1.5"
-                >Audio file URL</label
-              >
-              <input
-                id="url-text-input"
-                type="url"
-                placeholder="https://example.com/audio.mp3"
-                class="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition mb-3"
-              />
-              <div
-                class="flex items-start gap-2.5 p-3 bg-gray-50 rounded-xl border border-gray-100"
-              >
-                <i class="ti ti-info-circle text-gray-400 text-base mt-0.5 shrink-0"></i>
-                <p class="text-xs text-gray-500">
-                  Supported formats: MP3, WAV, M4A, OGG, FLAC. Maximum file size is 200 MB.
-                </p>
-              </div>
-            </div>
-          </ng-template>
-        </div>
+        @case ('url') {
+          <cq-url-selector [(selectedFile)]="selectedFile"></cq-url-selector>
+        }
 
         <!-- Panel: Local File -->
-        <div ngTabPanel [preserveContent]="true" value="local">
-          <ng-template ngTabContent>
-            <div id="panel-local" class="px-6 py-5 hidden">
-              <div
-                class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group"
-              >
-                <i
-                  class="ti ti-cloud-upload text-3xl text-gray-300 group-hover:text-gray-400 transition-colors block mb-2"
-                ></i>
-                <p class="text-sm font-medium text-gray-700 mb-1">Drop a file here</p>
-                <p class="text-xs text-gray-400 mb-4">or click to browse your computer</p>
-                <button
-                  class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-                >
-                  Browse files
-                </button>
-              </div>
-              <p class="text-xs text-gray-400 text-center mt-3">
-                MP3, WAV, M4A, OGG, FLAC · up to 200 MB
-              </p>
-            </div>
-          </ng-template>
-        </div>
-      </div>
+        @case ('local') {
+          <cq-file-selector [(selectedFile)]="selectedFile"></cq-file-selector>
+        }
+      }
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100 relative">
-      <!-- Settings gear + popover -->
-      <div class="relative">
-        <button
-          onclick="toggleSettings()"
-          id="settings-btn"
-          class="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
+  <!-- Footer -->
+  <div footer class="flex items-center justify-between w-full">
+    <!-- Settings button + popover -->
+    <div class="relative" data-settings-btn>
+      <button
+        (click)="toggleSettings()"
+        data-settings-btn
+        class="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
+        [class.bg-gray-50]="settingsOpen()"
+        [class.text-gray-700]="settingsOpen()"
+        aria-label="Toggle settings"
+      >
+        <!-- Hero: cog-6-tooth -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         >
-          <i class="ti ti-settings text-base"></i>
-          Settings
-        </button>
+          <path
+            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+          />
+          <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+        Settings
+      </button>
 
-        <!-- Popover -->
+      <!-- Settings popover -->
+      @if (settingsOpen()) {
         <div
-          id="settings-popover"
-          [class]="
-            (settingsOpen() ? '' : 'hidden ') +
-            'absolute bottom-full left-0 mb-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-lg z-10 overflow-hidden'
-          "
+          class="absolute bottom-full left-0 mb-2 w-90 bg-white border border-gray-200 rounded-2xl shadow-lg z-10 overflow-hidden"
+          data-settings-popover
         >
+          <!-- Popover header -->
           <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <p class="text-sm font-medium text-gray-900">Settings</p>
             <button
-              onclick="toggleSettings()"
+              (click)="closeSettings()"
               class="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close settings"
             >
-              <i class="ti ti-x text-base"></i>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
             </button>
           </div>
 
           <div class="px-4 py-4 flex flex-col gap-4">
-            <!-- Language -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Language</label>
-              <select
-                class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
-              >
-                <option>Auto-detect</option>
-                <option>English</option>
-                <option>Spanish</option>
-                <option>French</option>
-                <option>German</option>
-                <option>Japanese</option>
-              </select>
-            </div>
-
-            <!-- Output format -->
-            <div class="pt-3 border-t border-gray-100">
-              <label class="block text-xs font-medium text-gray-700 mb-2">Output format</label>
-              <div class="flex flex-col gap-1.5">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="format" value="plain" checked class="accent-blue-600" />
-                  <span class="text-sm text-gray-700">Plain text</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="format" value="timestamps" class="accent-blue-600" />
-                  <span class="text-sm text-gray-700">With timestamps</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="format" value="srt" class="accent-blue-600" />
-                  <span class="text-sm text-gray-700">SRT subtitles</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Speaker diarization -->
-            <div class="pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-              <div>
-                <p class="text-xs font-medium text-gray-700">Speaker diarization</p>
-                <p class="text-xs text-gray-400 mt-0.5">Label different speakers</p>
-              </div>
-              <button
-                onclick="toggleSwitch()"
-                id="toggle"
-                class="relative w-9 h-5 rounded-full bg-gray-200 transition-colors duration-200 focus:outline-none shrink-0"
-              >
-                <span
-                  id="thumb"
-                  class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200"
-                ></span>
-              </button>
-            </div>
+            <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
           </div>
         </div>
-      </div>
+      }
+    </div>
 
-      <!-- Actions -->
-      <div class="flex items-center gap-2">
-        <button
-          onclick="closeModal()"
-          class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-        >
-          Upload
-        </button>
-      </div>
+    <!-- Actions -->
+    <div class="flex items-center gap-2">
+      <button
+        (click)="close()"
+        class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="upload()"
+        [disabled]="!canUpload()"
+        class="px-4 py-2 text-sm font-medium rounded-xl transition-colors"
+        [class.bg-blue-600]="canUpload()"
+        [class.text-white]="canUpload()"
+        [class.hover:bg-blue-700]="canUpload()"
+        [class.bg-gray-100]="!canUpload()"
+        [class.text-gray-400]="!canUpload()"
+        [class.cursor-not-allowed]="!canUpload()"
+      >
+        Upload
+      </button>
     </div>
   </div>
-</div>
+</cq-modal>

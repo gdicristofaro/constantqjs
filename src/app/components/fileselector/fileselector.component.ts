@@ -1,9 +1,5 @@
-import { Component, computed, model } from '@angular/core';
+import { Component, model, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { FileInputDirective } from '@ngx-dropzone/cdk';
-import { MatDropzone } from '@ngx-dropzone/material';
 import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
 
 /**
@@ -13,28 +9,19 @@ import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-m
 @Component({
   templateUrl: 'fileselector.component.html',
   selector: 'cq-file-selector',
-  imports: [
-    MatFormField,
-    MatIcon,
-    MatDropzone,
-    FileInputDirective,
-    FormsModule,
-    ReactiveFormsModule,
-    MatLabel,
-  ],
+  imports: [FormsModule, ReactiveFormsModule],
 })
 export class FileSelectorComponent {
   // the subject where the selected file is notified
 
   readonly selectedFile = model.required<AudioSelectionResult>();
 
-  protected readonly disabled = computed(() =>
-    this.selectedFile()?.audioFile && this.selectedFile()?.type !== 'recommended' ? true : false,
-  );
-
   readonly fileForm = new FormGroup({
     fileSelectorFileInput: new FormControl(null),
   });
+
+  localFile = signal<File | null>(null);
+  isDragging = signal(false);
 
   /**
    * handles when a user selects file
@@ -51,5 +38,27 @@ export class FileSelectorComponent {
         });
       }
     }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(): void {
+    this.isDragging.set(false);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragging.set(false);
+    const file = event.dataTransfer?.files[0];
+    if (file) this.localFile.set(file);
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.localFile.set(file);
   }
 }

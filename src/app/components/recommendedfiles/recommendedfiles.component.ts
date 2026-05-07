@@ -1,5 +1,4 @@
 import { Component, computed, model } from '@angular/core';
-import { MatChip } from '@angular/material/chips';
 import { AudioFile } from '../../model/audiofile';
 import { MegabytesPipe } from '../../pipes/megabytes.pipe';
 import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
@@ -10,11 +9,11 @@ import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-m
 @Component({
   selector: 'cq-recommended-files',
   templateUrl: './recommendedfiles.component.html',
-  imports: [MatChip, MegabytesPipe],
+  imports: [MegabytesPipe],
 })
 export class RecommendedFilesComponent {
   // the default initial recent files if not previously populated
-  private static ITEMS: AudioFile[] = [
+  private static ITEMS: (AudioFile & { url: string; size: number })[] = [
     {
       filename: 'C maj wav',
       url: './audio/Cmaj.wav',
@@ -34,10 +33,13 @@ export class RecommendedFilesComponent {
 
   readonly selectedFile = model.required<AudioSelectionResult>();
 
-  protected readonly disabled = computed(
-    () => false,
-    // this.selectedFile()?.audioFile && this.selectedFile()?.type !== 'recommended' ? true : false,
-  );
+  protected readonly selectedRecommendedUrl = computed(() => {
+    const selected = this.selectedFile();
+    if (selected?.type === 'recommended' && selected.audioFile && 'url' in selected.audioFile) {
+      return selected.audioFile.url;
+    }
+    return null;
+  });
 
   // a list of audio file items sorted and displayed to user
   get items() {

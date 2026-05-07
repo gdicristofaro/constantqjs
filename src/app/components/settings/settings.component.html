@@ -1,75 +1,71 @@
-<div class="h-full rounded-xl bg-gray-50 p-4 space-y-4 border border-gray-100">
-  <h4 class="block text-xs font-bold text-gray-400 uppercase tracking-widest">Settings</h4>
-  <form [formGroup]="settingsForm">
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label for="settingsMinPitch" class="block text-xs font-medium text-gray-600 mb-1"
-          >Lowest Pitch</label
-        >
-        <select
-          id="settingsMinPitch"
-          name="settingsMinPitch"
-          formControlName="settingsMinPitch"
-          class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
-        >
-          @for (pitch of minPitches(); track pitch.frequency) {
-            <option value="{{ pitch }}">
-              {{ getName(pitch) }}
-            </option>
-          }
-        </select>
-        @if (
-          settingsForm.controls['settingsMinPitch'].invalid &&
-          settingsForm.controls['settingsMinPitch'].touched
-        ) {
-          <p class="mt-1.5 text-xs text-red-700">Please select the lowest pitch</p>
+<form [formGroup]="settingsForm">
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label for="settingsMinPitch" class="block text-xs font-medium text-gray-600 mb-1"
+        >Lowest Pitch</label
+      >
+      <select
+        id="settingsMinPitch"
+        name="settingsMinPitch"
+        formControlName="settingsMinPitch"
+        class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+      >
+        @for (pitch of minPitches(); track pitch.frequency) {
+          <option value="{{ pitch }}">
+            {{ getName(pitch) }}
+          </option>
         }
-      </div>
-      <div>
-        <label for="settingsMaxPitch" class="block text-xs font-medium text-gray-600 mb-1"
-          >Highest Pitch</label
-        >
-        <select
-          class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
-          id="settingsMaxPitch"
-          name="settingsMaxPitch"
-          formControlName="settingsMaxPitch"
-        >
-          @for (pitch of maxPitches(); track pitch.frequency) {
-            <option [value]="pitch">
-              {{ getName(pitch) }}
-            </option>
-          }
-        </select>
-        @if (
-          settingsForm.controls['settingsMaxPitch'].invalid &&
-          settingsForm.controls['settingsMaxPitch'].touched
-        ) {
-          <p class="mt-1.5 text-xs text-red-700">Please select the highest pitch</p>
-        }
-      </div>
-
-      <div class="col-span-2">
-        <label for="settingsFps" class="block text-xs font-medium text-gray-600 mb-1"
-          >Samples per second (1-32)</label
-        >
-        <input
-          name="settingsFps"
-          formControlName="settingsFps"
-          id="settingsFps"
-          type="number"
-          min="1"
-          max="32"
-          value="16"
-          class="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-blue-500"
-        />
-        @if (
-          settingsForm.controls['settingsFps'].invalid &&
-          settingsForm.controls['settingsFps'].touched
-        ) {
-          <p class="mt-1.5 text-xs text-red-700">Please select a number between 1 and 32</p>
-        }
-      </div>
+      </select>
+      @if (
+        settingsForm.controls['settingsMinPitch'].invalid &&
+        settingsForm.controls['settingsMinPitch'].touched
+      ) {
+        <p class="mt-1.5 text-xs text-red-700">Please select the lowest pitch</p>
+      }
     </div>
-  </form>
-</div>
+    <div>
+      <label for="settingsMaxPitch" class="block text-xs font-medium text-gray-600 mb-1"
+        >Highest Pitch</label
+      >
+      <select
+        class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+        id="settingsMaxPitch"
+        name="settingsMaxPitch"
+        formControlName="settingsMaxPitch"
+      >
+        @for (pitch of maxPitches(); track pitch.frequency) {
+          <option [value]="pitch">
+            {{ getName(pitch) }}
+          </option>
+        }
+      </select>
+      @if (
+        settingsForm.controls['settingsMaxPitch'].invalid &&
+        settingsForm.controls['settingsMaxPitch'].touched
+      ) {
+        <p class="mt-1.5 text-xs text-red-700">Please select the highest pitch</p>
+      }
+    </div>
+
+    <div class="col-span-2">
+      <label for="settingsFps" class="block text-xs font-medium text-gray-600 mb-1"
+        >Samples per second (1-32)</label
+      >
+      <input
+        name="settingsFps"
+        formControlName="settingsFps"
+        id="settingsFps"
+        type="number"
+        min="1"
+        max="32"
+        value="16"
+        class="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+      />
+      @if (
+        settingsForm.controls['settingsFps'].invalid && settingsForm.controls['settingsFps'].touched
+      ) {
+        <p class="mt-1.5 text-xs text-red-700">Please select a number between 1 and 32</p>
+      }
+    </div>
+  </div>
+</form>

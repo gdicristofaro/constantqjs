@@ -1,15 +1,12 @@
 import { Component, computed, effect, model, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormField } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
 
 @Component({
   selector: 'cq-url-selector',
   templateUrl: './urlselector.component.html',
-  imports: [MatFormField, ReactiveFormsModule, MatButtonModule, MatInputModule],
+  imports: [ReactiveFormsModule],
 })
 export class UrlSelectorComponent {
   readonly selectedFile = model.required<AudioSelectionResult>();

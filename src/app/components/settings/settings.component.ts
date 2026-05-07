@@ -1,17 +1,7 @@
 import { Component, computed, effect, output } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map } from 'rxjs';
 import { DEFAULT_FPS, DEFAULT_MAX_FREQ, DEFAULT_MIN_FREQ } from '../../model/defaults';
 import { getName, Note, Pitch, PitchData } from '../../model/pitch';
@@ -20,16 +10,7 @@ import { Settings } from '../../model/settings';
 @Component({
   selector: 'cq-settings',
   templateUrl: './settings.component.html',
-  imports: [
-    MatCardModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
-  ],
+  imports: [ReactiveFormsModule],
 })
 export class SettingsComponent {
   readonly settingsForm = new FormGroup({

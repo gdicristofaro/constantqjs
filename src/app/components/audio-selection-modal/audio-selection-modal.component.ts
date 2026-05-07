@@ -1,18 +1,48 @@
-import { Component, effect, model, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, computed, HostListener, model, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
 import { FileSelectorComponent } from '../fileselector/fileselector.component';
 import { ModalComponent } from '../modal/modal.component';
-import { OrDividerComponent } from '../or-divider/or-divider.component';
 import { RecommendedFilesComponent } from '../recommendedfiles/recommendedfiles.component';
 import { SettingsComponent, SettingsResult } from '../settings/settings.component';
 import { UrlSelectorComponent } from '../urlselector/urlselector.component';
 
+export type Tab = 'recommended' | 'url' | 'local';
+export type OutputFormat = 'plain' | 'timestamps' | 'srt';
+
+export interface RecommendedFile {
+  id: number;
+  name: string;
+  meta: string;
+  iconBg: string;
+  iconColor: string;
+}
+
+export interface AudioUploadSettings {
+  language: string;
+  outputFormat: OutputFormat;
+  speakerDiarization: boolean;
+}
+
+export interface AudioUploadResult {
+  source: 'recommended' | 'url' | 'local';
+  file?: RecommendedFile;
+  url?: string;
+  localFile?: File;
+  settings: AudioUploadSettings;
+}
+
 @Component({
   selector: 'cq-audio-selection-modal',
+  standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
     ModalComponent,
-    OrDividerComponent,
     RecommendedFilesComponent,
     UrlSelectorComponent,
     SettingsComponent,
@@ -22,9 +52,10 @@ import { UrlSelectorComponent } from '../urlselector/urlselector.component';
   styleUrl: './audio-selection-modal.component.scss',
 })
 export class AudioSelectionModalComponent {
-  readonly open = model(false);
-  protected readonly selectedTab = signal<'recommended' | 'url' | 'file'>('recommended');
-  protected readonly settingsOpen = signal(false);
+  readonly open = model(true);
+
+  closed = output();
+  uploaded = output<AudioSelectionResult>();
 
   readonly selectedFile = model<AudioSelectionResult>({
     type: 'recommended',
@@ -40,88 +71,84 @@ export class AudioSelectionModalComponent {
     },
   });
 
-  constructor() {
-    effect(() => {
-      const selectedFile = this.selectedFile();
-      console.log('Selected file:', selectedFile);
-    });
-  }
+  // --- State ---
+  activeTab = signal<Tab>('recommended');
+  settingsOpen = signal(false);
 
-  /*
-  let selectedRec = null;
-  let toggleOn = false;
-  let settingsOpen = false;
+  selectedFileId = signal<number | null>(null);
+  audioUrl = signal('');
+  localFile = signal<File | null>(null);
+  isDragging = signal(false);
 
-  function showTab(tab) {
+  // Settings
+  outputFormat = signal<OutputFormat>('plain');
+  speakerDiarization = signal(false);
 
-    tabs.forEach(t => {
-      const panel = document.getElementById('panel-' + t);
-      const btn = document.getElementById('tab-' + t);
-      if (t === tab) {
-        panel.classList.remove('hidden');
-        btn.classList.remove('border-transparent', 'text-gray-400');
-        btn.classList.add('border-blue-600', 'text-blue-600');
-      } else {
-        panel.classList.add('hidden');
-        btn.classList.add('border-transparent', 'text-gray-400');
-        btn.classList.remove('border-blue-600', 'text-blue-600');
-      }
-    });
-  }
+  // --- Data ---
+  readonly tabs: { id: Tab; label: string }[] = [
+    { id: 'recommended', label: 'Recommended' },
+    { id: 'url', label: 'URL' },
+    { id: 'local', label: 'Local file' },
+  ];
 
-  function selectRec(n) {
-    [1, 2, 3].forEach(i => {
-      const el = document.getElementById('rec-' + i);
-      const icon = document.getElementById('rec-' + i + '-icon');
-      if (i === n) {
-        el.classList.add('border-blue-500', 'bg-blue-50');
-        el.classList.remove('border-gray-100', 'bg-gray-50');
-        icon.className = 'ti ti-circle-check text-blue-600 text-lg shrink-0';
-      } else {
-        el.classList.remove('border-blue-500', 'bg-blue-50');
-        el.classList.add('border-gray-100', 'bg-gray-50');
-        icon.className = 'ti ti-circle text-gray-300 text-lg shrink-0';
-      }
-    });
-    selectedRec = n;
-  }
-
-  function toggleSettings() {
-    settingsOpen = !settingsOpen;
-    document.getElementById('settings-popover').classList.toggle('hidden', !settingsOpen);
-  }
-
-  function toggleSwitch() {
-    toggleOn = !toggleOn;
-    const toggle = document.getElementById('toggle');
-    const thumb = document.getElementById('thumb');
-    if (toggleOn) {
-      toggle.classList.remove('bg-gray-200');
-      toggle.classList.add('bg-blue-600');
-      thumb.classList.remove('left-0.5');
-      thumb.classList.add('left-4');
-    } else {
-      toggle.classList.add('bg-gray-200');
-      toggle.classList.remove('bg-blue-600');
-      thumb.classList.add('left-0.5');
-      thumb.classList.remove('left-4');
-    }
-  }
-
-  function closeModal() {
-    document.querySelector('.fixed').classList.add('hidden');
-  }
-
-  // Close popover when clicking outside
-  document.addEventListener('click', function (e) {
-    const popover = document.getElementById('settings-popover');
-    const btn = document.getElementById('settings-btn');
-    if (settingsOpen && !popover.contains(e.target) && !btn.contains(e.target)) {
-      settingsOpen = false;
-      popover.classList.add('hidden');
+  // --- Computed ---
+  canUpload = computed(() => {
+    switch (this.activeTab()) {
+      case 'recommended':
+        return this.selectedFileId() !== null;
+      case 'url':
+        return this.audioUrl().trim().length > 0;
+      case 'local':
+        return this.localFile() !== null;
     }
   });
-*/
+
+  // --- Actions ---
+  setTab(tab: Tab): void {
+    this.activeTab.set(tab);
+  }
+
+  toggleSettings(): void {
+    this.settingsOpen.update(v => !v);
+  }
+
+  closeSettings(): void {
+    this.settingsOpen.set(false);
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(): void {
+    this.isDragging.set(false);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragging.set(false);
+    const file = event.dataTransfer?.files[0];
+    if (file) this.localFile.set(file);
+  }
+
+  close(): void {
+    this.closed.emit();
+  }
+
+  upload(): void {
+    // TODO handle upload
+  }
+
+  // Close settings popover on outside click
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.settingsOpen()) return;
+    const target = event.target as HTMLElement;
+    if (!target.closest('[data-settings-popover]') && !target.closest('[data-settings-btn]')) {
+      this.settingsOpen.set(false);
+    }
+  }
 }
 
 export interface AudioSelectionResult {
