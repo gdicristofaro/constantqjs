@@ -74,22 +74,21 @@
     </div>
 
     <!-- Panel: Recommended -->
-    <div class="px-6 py-5">
-      @switch (activeTab()) {
-        @case ('recommended') {
+    <div class="px-6 py-5 h-70 max-h-95vh">
+      <div class="relative">
+        <div
+          [class]="(activeTab() === 'recommended' ? 'visible' : 'invisible') + ' absolute inset-0'"
+        >
           <cq-recommended-files [(selectedFile)]="selectedFile"></cq-recommended-files>
-        }
+        </div>
 
-        <!-- Panel: URL -->
-        @case ('url') {
+        <div [class]="(activeTab() === 'url' ? 'visible' : 'invisible') + ' absolute inset-0'">
           <cq-url-selector [(selectedFile)]="selectedFile"></cq-url-selector>
-        }
-
-        <!-- Panel: Local File -->
-        @case ('local') {
+        </div>
+        <div [class]="(activeTab() === 'local' ? 'visible' : 'invisible') + ' absolute inset-0'">
           <cq-file-selector [(selectedFile)]="selectedFile"></cq-file-selector>
-        }
-      }
+        </div>
+      </div>
     </div>
   </div>
 
@@ -171,13 +170,12 @@
       <button
         (click)="upload()"
         [disabled]="!canUpload()"
-        class="px-4 py-2 text-sm font-medium rounded-xl transition-colors"
-        [class.bg-blue-600]="canUpload()"
-        [class.text-white]="canUpload()"
-        [class.hover:bg-blue-700]="canUpload()"
-        [class.bg-gray-100]="!canUpload()"
-        [class.text-gray-400]="!canUpload()"
-        [class.cursor-not-allowed]="!canUpload()"
+        [class]="
+          (canUpload()
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed') +
+          ' px-4 py-2 text-sm font-medium rounded-xl transition-colors'
+        "
       >
         Upload
       </button>

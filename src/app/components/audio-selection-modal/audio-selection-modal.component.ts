@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
+import { Settings } from '../../model/settings';
 import { FileSelectorComponent } from '../fileselector/fileselector.component';
 import { ModalComponent } from '../modal/modal.component';
 import { RecommendedFilesComponent } from '../recommendedfiles/recommendedfiles.component';
@@ -11,7 +12,6 @@ import { SettingsComponent, SettingsResult } from '../settings/settings.componen
 import { UrlSelectorComponent } from '../urlselector/urlselector.component';
 
 export type Tab = 'recommended' | 'url' | 'local';
-export type OutputFormat = 'plain' | 'timestamps' | 'srt';
 
 export interface RecommendedFile {
   id: number;
@@ -19,20 +19,6 @@ export interface RecommendedFile {
   meta: string;
   iconBg: string;
   iconColor: string;
-}
-
-export interface AudioUploadSettings {
-  language: string;
-  outputFormat: OutputFormat;
-  speakerDiarization: boolean;
-}
-
-export interface AudioUploadResult {
-  source: 'recommended' | 'url' | 'local';
-  file?: RecommendedFile;
-  url?: string;
-  localFile?: File;
-  settings: AudioUploadSettings;
 }
 
 @Component({
@@ -54,8 +40,7 @@ export interface AudioUploadResult {
 export class AudioSelectionModalComponent {
   readonly open = model(true);
 
-  closed = output();
-  uploaded = output<AudioSelectionResult>();
+  uploadRequest = output<AudioSelectionAndSettings>();
 
   readonly selectedFile = model<AudioSelectionResult>({
     type: 'recommended',
@@ -75,15 +60,6 @@ export class AudioSelectionModalComponent {
   activeTab = signal<Tab>('recommended');
   settingsOpen = signal(false);
 
-  selectedFileId = signal<number | null>(null);
-  audioUrl = signal('');
-  localFile = signal<File | null>(null);
-  isDragging = signal(false);
-
-  // Settings
-  outputFormat = signal<OutputFormat>('plain');
-  speakerDiarization = signal(false);
-
   // --- Data ---
   readonly tabs: { id: Tab; label: string }[] = [
     { id: 'recommended', label: 'Recommended' },
@@ -93,14 +69,7 @@ export class AudioSelectionModalComponent {
 
   // --- Computed ---
   canUpload = computed(() => {
-    switch (this.activeTab()) {
-      case 'recommended':
-        return this.selectedFileId() !== null;
-      case 'url':
-        return this.audioUrl().trim().length > 0;
-      case 'local':
-        return this.localFile() !== null;
-    }
+    return Boolean(this.selectedFile().audioFile);
   });
 
   // --- Actions ---
@@ -116,28 +85,20 @@ export class AudioSelectionModalComponent {
     this.settingsOpen.set(false);
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragging.set(true);
-  }
-
-  onDragLeave(): void {
-    this.isDragging.set(false);
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragging.set(false);
-    const file = event.dataTransfer?.files[0];
-    if (file) this.localFile.set(file);
-  }
-
   close(): void {
-    this.closed.emit();
+    this.open.set(false);
   }
 
   upload(): void {
-    // TODO handle upload
+    const audioFile = this.selectedFile().audioFile;
+    const settingsResult = this.settings();
+
+    if (audioFile && settingsResult.valid && 'data' in settingsResult) {
+      this.uploadRequest.emit({
+        audioFile: audioFile,
+        settings: settingsResult.data,
+      });
+    }
   }
 
   // Close settings popover on outside click
@@ -154,4 +115,9 @@ export class AudioSelectionModalComponent {
 export interface AudioSelectionResult {
   audioFile: AudioFile | null;
   type: 'url' | 'file' | 'recommended';
+}
+
+export interface AudioSelectionAndSettings {
+  audioFile: AudioFile;
+  settings: Settings;
 }

@@ -9,7 +9,7 @@
   </mat-dialog-content>
 </ng-template>
 
-<cq-audio-selection-modal [open]="modalOpen()" />
+<cq-audio-selection-modal [(open)]="modalOpen" (uploadRequest)="handleUploadRequest($event)" />
 <button
   (click)="modalOpen.set(true)"
   class="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition"
@@ -21,31 +21,6 @@
   <div class="text-center">
     <h2>Constant Q Transform</h2>
   </div>
-  <!-- <mat-expansion-panel #expansionPanel [expanded]="true" class="mb-5">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <span class="font-italic">File Selection and Settings</span>
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-    <div class="row">
-      <div class="col-lg-9 col-md-8 pr-3">
-        <div class="row">
-          <div class="col-md-12 mb-4">
-            <cq-recommended-files (selectedFile)="onFileChange($event)"></cq-recommended-files>
-          </div>
-          <div class="col-md-12 mb-4">
-            <cq-url-selector (selectedFile)="onFileChange($event)"></cq-url-selector>
-          </div>
-          <div class="col-md-12 mb-4">
-            <cq-file-selector (selectedFile)="onFileChange($event)"></cq-file-selector>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-4 pl-3">
-        <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
-      </div>
-    </div>
-  </mat-expansion-panel> -->
 
   <div class="row text-center">
     <!-- if controls should be shown (i.e. an audio file has been selected), 

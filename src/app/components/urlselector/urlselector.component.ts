@@ -1,6 +1,7 @@
-import { Component, computed, effect, model, untracked } from '@angular/core';
+import { Component, effect, model, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { map } from 'rxjs/internal/operators/map';
 import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
 
 @Component({
@@ -11,22 +12,27 @@ import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-m
 export class UrlSelectorComponent {
   readonly selectedFile = model.required<AudioSelectionResult>();
 
-  protected readonly disabled = computed(() =>
-    this.selectedFile().audioFile && this.selectedFile().type !== 'recommended' ? true : false,
-  );
   readonly urlForm = new FormGroup({
-    urlSelectorFileInput: new FormControl(''),
+    urlSelectorFileInput: new FormControl('', Validators.pattern(URL_REGEX)),
   });
 
   private readonly _urlFormValue = toSignal(this.urlForm.valueChanges, {
     initialValue: this.urlForm.value,
   });
 
+  private readonly _urlFormValid = toSignal(
+    this.urlForm.statusChanges.pipe(map(status => status === 'VALID')),
+    {
+      initialValue: false,
+    },
+  );
+
   constructor() {
     effect(() => {
+      const urlFormValid = this._urlFormValid();
       const urlFormValue = this._urlFormValue()?.urlSelectorFileInput;
       untracked(() => {
-        if (urlFormValue?.trim()?.length) {
+        if (urlFormValid && urlFormValue?.trim()?.length) {
           this.selectedFile.set({
             audioFile: {
               url: urlFormValue,
@@ -38,17 +44,6 @@ export class UrlSelectorComponent {
           });
         } else {
           this.selectedFile.set({ audioFile: null, type: 'url' });
-        }
-      });
-    });
-
-    effect(() => {
-      const disabledForm = this.disabled();
-      untracked(() => {
-        if (disabledForm) {
-          this.urlForm.disable();
-        } else {
-          this.urlForm.enable();
         }
       });
     });
@@ -67,3 +62,5 @@ export class UrlSelectorComponent {
   //   this.selectedFile.emit(file);
   // }
 }
+
+const URL_REGEX = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/?';

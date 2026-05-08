@@ -8,15 +8,29 @@ import { Component, contentChild, input } from '@angular/core';
     .cq-hide-empty:empty {
       display: none;
     }
+
+    .cq-modal-transition {
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        opacity 0.1s ease,
+        visibility 0s linear 0.1s;
+
+      &[open] {
+        visibility: visible;
+        opacity: 1;
+        transition:
+          opacity 0.1s ease,
+          visibility 0s linear 0s;
+      }
+    }
   `,
   template: `
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
       <div
-        [class]="
-          (open() ? 'opacity-100 z-90' : 'opacity-0 z-0') +
-          ' transition-opacity duration-500 fixed inset-0 z-50 flex justify-center bg-black/50 backdrop-blur-sm p-4'
-        "
+        [attr.open]="open() ? '' : null"
+        class="cq-modal-transition flex fixed inset-0 justify-center bg-black/50 backdrop-blur-sm p-4"
       >
         <div
           [class]="
@@ -47,5 +61,5 @@ import { Component, contentChild, input } from '@angular/core';
 export class ModalComponent {
   protected readonly titleContent = contentChild('title');
   readonly open = input(false);
-  readonly modalClasses = input('max-w-lg max-h-[50vh] mt-[15vh]');
+  readonly modalClasses = input('max-w-lg max-h-[90vh] mt-auto mb-auto');
 }

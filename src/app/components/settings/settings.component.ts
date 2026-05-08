@@ -23,7 +23,7 @@ export class SettingsComponent {
     ]),
   });
 
-  private readonly _settingsData = toSignal(
+  protected readonly _settingsData = toSignal(
     this.settingsForm.valueChanges.pipe(map(val => this.getSettings(val))),
     {
       initialValue: this.getSettings(this.settingsForm.value),
@@ -44,17 +44,19 @@ export class SettingsComponent {
         : { valid: false }) as SettingsResult,
   );
 
-  readonly minPitches = computed(() => {
-    const maxFreq = this._settingsData().maxPitch.frequency;
-    const pitches = PitchData.filter(p => p.note === Note.C && (!maxFreq || p.frequency < maxFreq));
-    return pitches;
-  });
+  get pitches() {
+    return PitchData.filter(p => p.note === Note.C);
+  }
 
-  readonly maxPitches = computed(() => {
-    const minFreq = this._settingsData().minPitch.frequency;
-    const pitches = PitchData.filter(p => p.note === Note.C && (!minFreq || p.frequency > minFreq));
-    return pitches;
-  });
+  get minPitches() {
+    const rest = this.pitches.slice(1, this.pitches.length);
+    return rest;
+  }
+
+  get maxPitches() {
+    const rest = this.pitches.slice(0, -1);
+    return rest;
+  }
 
   settingsDataUpdate = output<SettingsResult>();
 
