@@ -27,35 +27,35 @@ import { Component, contentChild, input } from '@angular/core';
   `,
   template: `
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <!-- <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100"> -->
+    <div
+      [attr.open]="open() ? '' : null"
+      class="cq-modal-transition absolute flex fixed w-dvw h-dvh z-100 inset-0 justify-center bg-black/50 backdrop-blur-sm p-4"
+    >
       <div
-        [attr.open]="open() ? '' : null"
-        class="cq-modal-transition flex fixed inset-0 justify-center bg-black/50 backdrop-blur-sm p-4"
+        [class]="
+          modalClasses() + ' flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl'
+        "
       >
+        <div class="sticky top-0 z-10 border-b border-gray-100 bg-white px-6 py-4">
+          <div>
+            <h2 class="text-base font-semibold text-gray-900"><ng-content select="[title]" /></h2>
+            <p class="text-sm text-gray-500 mt-0.5"><ng-content select="[subtitle]" /></p>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-6">
+          <ng-content select="[body]" />
+        </div>
+
         <div
-          [class]="
-            modalClasses() + ' flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl'
-          "
+          class="sticky bottom-0 z-10 border-t border-gray-100 bg-gray-50 px-6 py-4 flex justify-end gap-3"
         >
-          <div class="sticky top-0 z-10 border-b border-gray-100 bg-white px-6 py-4">
-            <div>
-              <h2 class="text-base font-semibold text-gray-900"><ng-content select="[title]" /></h2>
-              <p class="text-sm text-gray-500 mt-0.5"><ng-content select="[subtitle]" /></p>
-            </div>
-          </div>
-
-          <div class="flex-1 overflow-y-auto space-y-6">
-            <ng-content select="[body]" />
-          </div>
-
-          <div
-            class="sticky bottom-0 z-10 border-t border-gray-100 bg-gray-50 px-6 py-4 flex justify-end gap-3"
-          >
-            <ng-content select="[footer]" />
-          </div>
+          <ng-content select="[footer]" />
         </div>
       </div>
     </div>
+    <!-- </div> -->
   `,
 })
 export class ModalComponent {
