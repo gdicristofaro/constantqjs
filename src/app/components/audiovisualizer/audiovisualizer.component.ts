@@ -5,13 +5,13 @@ import {
   effect,
   ElementRef,
   inject,
-  input,
   ViewChild,
 } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import AudioFileData from '../../model/audiofiledata';
-import { ConstantQData } from '../../model/constantqdata';
+import { AudioLoadService } from '../../services/audio-load.service';
 import { AudioPlaybackService } from '../../services/audio-playback.service';
+import { ConstantqService } from '../../services/constantq.service';
 
 /**
  * responsible for visualizing spectral audio data
@@ -24,18 +24,22 @@ export class AudioVisualizerComponent implements AfterViewInit {
   @ViewChild('chartElement') chartElement: ElementRef | undefined;
 
   private readonly audioSvc = inject(AudioPlaybackService);
+  private readonly audioLoadSvc = inject(AudioLoadService);
 
-  readonly audioFileData = input.required<AudioFileData>();
-  readonly constantQData = input.required<ConstantQData>();
+  readonly audioFileData = computed(
+    () => this.audioLoadSvc.audioFileData() ?? ({} as AudioFileData),
+  );
+
+  private readonly constantQSvc = inject(ConstantqService);
 
   readonly title = computed(() => this.audioFileData().title);
   readonly pitches = computed(() => this.audioFileData().noteLetters);
-  readonly max = computed(() => this.constantQData().graphMax);
+  readonly max = computed(() => this.constantQSvc.constantQData()?.graphMax ?? 0);
 
   // the data to display on the chart
   readonly pitchData = computed(() => {
     const { fps } = this.audioFileData();
-    const { constantQData } = this.constantQData();
+    const { constantQData } = this.constantQSvc.constantQData() || { constantQData: [] };
     const pos = this.audioSvc.curPosition();
     const idx = Math.floor((pos ?? 1) * (fps ?? 1));
     const frame = (constantQData?.length ?? 0) > idx ? constantQData[idx] : [];
