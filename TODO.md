@@ -1,0 +1,4 @@
+- load failure handling
+- loading percentage
+- update resolution
+- TODOs in code

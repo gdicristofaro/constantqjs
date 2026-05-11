@@ -1,5 +1,4 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { FFT_MS_REFRESH } from '../model/defaults';
 import { AudioLoadService } from './audio-load.service';
 
 /**
@@ -9,9 +8,12 @@ import { AudioLoadService } from './audio-load.service';
   providedIn: 'root',
 })
 export class AudioPlaybackService {
+  private static readonly DEFAULT_MS_REFRESH = 100;
+
   private readonly audioSvc = inject(AudioLoadService);
 
   private readonly source = signal<AudioBuffer | undefined>(undefined);
+  private readonly msRefresh = signal(AudioPlaybackService.DEFAULT_MS_REFRESH);
 
   // whether or not an actual audio buffer has been set for playback
   readonly hasSource = computed(() => this.source() !== undefined);
@@ -19,36 +21,43 @@ export class AudioPlaybackService {
   // the duration of the audio buffer or undefined
   readonly duration = computed(() => this.source()?.duration);
 
-  private readonly _isPlaying = signal(false);
-  readonly isPlaying = this._isPlaying.asReadonly();
-
   private readonly _curPosition = signal(0);
   readonly curPosition = this._curPosition.asReadonly();
 
+  // the analyzer node to provide fft data
+  private readonly _analyzer = signal<AnalyserNode | undefined>(undefined);
+
   // creates the next frame of the fft based on the playback
-  public readonly fftListener = signal<Uint8Array<ArrayBuffer> | undefined>(undefined);
+  private readonly _fftListener = signal<Uint8Array<ArrayBuffer> | undefined>(undefined);
+
+  readonly fftListener = this._fftListener.asReadonly();
 
   /**
    * defines the audio context to use for audio playback
    */
   private readonly _audioContext: AudioContext = new AudioContext();
 
-  // the analyzer node to provide fft data
-  private _analyzer: AnalyserNode | undefined = undefined;
+  private readonly playbackContext = signal<{
+    // the actual plaback node (only operational during playback not on pause)
+    playbackNode: AudioBufferSourceNode | undefined;
+    // the interval id for the interval that will periodically update fft data, is  playing, position
+    interval: number;
+    // the start position relative to the audio context time
+    contextStart: number;
+    // the start position relative to the audio file
+    audioStart: number;
+    // true if playing
+    isPlaying: boolean;
+  }>({
+    playbackNode: undefined,
+    interval: 0,
+    contextStart: 0,
+    audioStart: 0,
+    isPlaying: false,
+  });
 
-  // the interval id for the interval that will periodically update fft data, is  playing, position
-  private _interval: number | undefined = undefined;
-
-  // the start position relative to the audio context time
-  private contextStart = 0;
-
-  // the start position relative to the audio file
-  private audioStart = 0;
-
-  // the actual plaback node (only operational during playback not on pause)
-  private playbackNode: AudioBufferSourceNode | undefined = undefined;
-
-  private msRefresh: number = FFT_MS_REFRESH;
+  // TODO threadsafe
+  readonly isPlaying = computed(() => this.playbackContext().isPlaying);
 
   constructor() {
     // when the audio file data changes, update the source and reset playback
@@ -77,23 +86,24 @@ export class AudioPlaybackService {
   initializeAudio(
     source: AudioBuffer,
     // ms for refresh of playback position and fft
-    msRefresh: number = FFT_MS_REFRESH,
+    msRefresh = AudioPlaybackService.DEFAULT_MS_REFRESH,
     fftSize?: number,
   ) {
     if (fftSize) {
-      this._analyzer = this._audioContext.createAnalyser();
+      const analyzer = this._audioContext.createAnalyser();
       // so we get the right size for the bin count
-      this._analyzer.fftSize = fftSize * 2;
+      analyzer.fftSize = fftSize * 2;
 
-      const bufferLength = this._analyzer.frequencyBinCount;
-      this.fftListener.set(new Uint8Array(bufferLength));
+      const bufferLength = analyzer.frequencyBinCount;
+      this._fftListener.set(new Uint8Array(bufferLength));
 
-      this._analyzer.connect(this._audioContext.destination);
+      analyzer.connect(this._audioContext.destination);
+      this._analyzer.set(analyzer);
     } else {
-      this.fftListener.set(undefined);
+      this._fftListener.set(undefined);
     }
 
-    this.msRefresh = msRefresh;
+    this.msRefresh.set(msRefresh);
     this.source.set(source);
   }
 
@@ -102,12 +112,18 @@ export class AudioPlaybackService {
    */
   private onUpdate() {
     // update position
-    this._curPosition.set(this._audioContext.currentTime - this.contextStart + this.audioStart);
+    const { contextStart, audioStart } = this.playbackContext();
+    this._curPosition.set(
+      Math.min(
+        this.duration() ?? 0,
+        Math.max(0, this._audioContext.currentTime - contextStart + audioStart),
+      ),
+    );
 
     // if there is an fft listener, update accordingly
-    this.fftListener.update(arr => {
+    this._fftListener.update(arr => {
       if (arr) {
-        this._analyzer?.getByteFrequencyData(arr);
+        this._analyzer()?.getByteFrequencyData(arr);
       }
       return arr;
     });
@@ -124,7 +140,8 @@ export class AudioPlaybackService {
       return false;
     }
 
-    const isPlaying = this.isPlaying();
+    const { isPlaying } = this.playbackContext();
+
     // if playing, pause to properly restart
     if (isPlaying) {
       this.pause();
@@ -132,29 +149,38 @@ export class AudioPlaybackService {
 
     // establish starting position
     let startPos = pos ? pos : this.curPosition();
-    if (startPos >= (this.duration() ?? 0)) {
+    if (startPos >= (this.duration() ?? 0) || startPos < 0) {
       startPos = 0;
     }
 
     // set up playback node
-    this.playbackNode = this._audioContext.createBufferSource();
-    this.playbackNode.buffer = source;
-    if (this._analyzer) {
-      this.playbackNode.connect(this._analyzer);
+    const playbackNode = this._audioContext.createBufferSource();
+
+    playbackNode.buffer = source;
+    const analyzer = this._analyzer();
+    if (analyzer) {
+      playbackNode.connect(analyzer);
     }
-    this.playbackNode.connect(this._audioContext.destination);
+    playbackNode.connect(this._audioContext.destination);
 
     // establish context items for listeners
-    this.contextStart = this._audioContext.currentTime;
-    this.audioStart = startPos;
-    this._isPlaying.set(true);
-    this.playbackNode.start(0, startPos);
+    const contextStart = this._audioContext.currentTime;
 
-    this.playbackNode.onended = () => {
+    playbackNode.start(0, startPos);
+
+    const interval = window.setInterval(() => this.onUpdate(), this.msRefresh());
+
+    playbackNode.onended = () => {
       this.pause();
     };
 
-    this._interval = window.setInterval(() => this.onUpdate(), this.msRefresh);
+    this.playbackContext.set({
+      playbackNode,
+      interval,
+      contextStart,
+      audioStart: startPos,
+      isPlaying: true,
+    });
 
     return true;
   }
@@ -164,28 +190,35 @@ export class AudioPlaybackService {
    */
   pause() {
     // can't pause with no source
-    // const source = this.source();
-    // if (source) {
-    //   return false;
-    // }
+    const source = this.source();
+    if (!source) {
+      return false;
+    }
+
+    const { interval, isPlaying, playbackNode } = this.playbackContext();
 
     // clear out interval for updates
-    if (this._interval) {
-      window.clearInterval(this._interval);
+    if (interval) {
+      window.clearInterval(interval);
     }
 
     // if playing, trigger one last update and stop
-    if (this.isPlaying()) {
-      this._isPlaying.set(false);
-
+    if (isPlaying) {
       if (this.source()) {
         this.onUpdate();
-        this.playbackNode?.disconnect();
-        this.playbackNode?.stop(0);
+        playbackNode?.disconnect();
+        playbackNode?.stop(0);
       }
     }
 
-    this.playbackNode = undefined;
+    this.playbackContext.set({
+      playbackNode: undefined,
+      interval: 0,
+      contextStart: 0,
+      audioStart: 0,
+      isPlaying: false,
+    });
+
     return true;
   }
 

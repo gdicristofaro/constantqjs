@@ -21,7 +21,5 @@ export class PlayTimePipe implements PipeTransform {
 export const playTimeFunct = (value: number) => {
   return `${Math.floor(value / 60)}:${Math.floor(value % 60)
     .toString()
-    .padStart(2, '0')}.${Math.floor((value * 100) % 100)
-    .toString()
-    .padStart(2, '0')}`;
+    .padStart(2, '0')}.${Math.floor((value * 10) % 10).toString()}`;
 };
