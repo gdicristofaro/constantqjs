@@ -46,44 +46,20 @@
 </div> -->
 
 <cq-audio-selection-modal [(open)]="modalOpen" (uploadRequest)="handleUploadRequest($event)" />
+<cq-audio-loading-modal />
 
-<div class="h-dvh w-dvw flex flex-col bg-white font-mono text-slate-800">
-  <!-- ══════════════════════════════════════════════
-       LOADING MODAL
-  ══════════════════════════════════════════════ -->
-  <div
-    id="modal-loading"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity hidden"
-    role="dialog"
-    aria-label="Loading audio"
-  >
-    <div
-      class="flex flex-col items-center gap-5 bg-white rounded-2xl shadow-xl border border-slate-200 px-10 py-8 w-72"
-    >
-      <div class="anim-spin w-12 h-12 rounded-full border-4 border-slate-200 border-t-accent"></div>
-      <div class="text-center w-full">
-        <p class="font-display font-semibold text-xs tracking-widest uppercase text-accent">
-          Loading Audio
-        </p>
-        <p id="modal-loading-filename" class="mt-1 text-xs text-slate-400 truncate"></p>
-      </div>
-      <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-        <div
-          id="modal-loading-bar"
-          class="h-full w-0 bg-accent rounded-full transition-all duration-300"
-        ></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════
-       HEADER
-  ══════════════════════════════════════════════ -->
+<div class="h-dvh w-full m-0 p-0 flex flex-col bg-white font-mono text-slate-800">
   <header
     class="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-white border-b border-slate-200 shadow-sm"
   >
     <div class="flex items-center gap-3">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" class="flex-shrink-0">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
+        fill="none"
+        class="flex-shrink-0 hidden md:block"
+      >
         <rect width="28" height="28" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
         <path
           d="M6 20 Q10 8 14 14 Q18 20 22 8"
@@ -96,23 +72,17 @@
       </svg>
       <div>
         <h1 class="font-display font-bold text-sm tracking-widest uppercase text-slate-800">
-          ConstantQ<span class="text-accent">.js</span>
+          ConstantQ<span class="text-blue-700">.js</span>
         </h1>
       </div>
     </div>
 
     <div class="flex items-center gap-3">
-      <span
-        id="badge-label"
-        class="inline-block px-2 py-0.5 rounded text-[9px] font-bold tracking-widest uppercase bg-slate-100 border border-slate-200 text-slate-400"
-      >
-        IDLE
-      </span>
-      <span id="processed-pct" class="tabular text-[11px] text-slate-500 w-10 text-right">0%</span>
+      <cq-loading-indicator />
+
       <button
-        id="btn-load-file"
         (click)="modalOpen.set(true)"
-        class="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg border border-process bg-process-light text-process text-[11px] tracking-wider hover:bg-process/10 hover:border-process transition-colors cursor-pointer"
+        class="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg border border-blue-400 bg-blue-100 text-blue-700 text-[11px] tracking-wider hover:bg-blue-200 hover:border-blue-500 transition-colors cursor-pointer"
       >
         <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
           <path
@@ -128,57 +98,10 @@
     </div>
   </header>
 
-  <!-- ══════════════════════════════════════════════
-       FILE INFO BAR (hidden until file loaded)
-  ══════════════════════════════════════════════ -->
-  <div
-    id="file-info-bar"
-    class="hidden flex-shrink-0 flex items-center gap-3 px-5 py-1.5 bg-accent-light border-b border-accent-mid text-[10px]"
-  >
-    <span class="text-slate-400 tracking-wider">FILE</span>
-    <span id="file-info-name" class="text-accent font-semibold truncate max-w-xs">—</span>
-    <span class="text-slate-300">|</span>
-    <span id="file-info-dur" class="text-slate-500">—</span>
-    <span class="text-slate-300">|</span>
-    <span id="file-info-sr" class="text-slate-500">—</span>
-  </div>
+  <cq-file-info-bar />
 
-  <!-- ══════════════════════════════════════════════
-       CHART AREA
-  ══════════════════════════════════════════════ -->
   <main class="flex-1 relative min-h-0 overflow-hidden bg-white">
-    <!-- Empty state -->
-    <div
-      id="chart-empty"
-      class="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none text-slate-300"
-    >
-      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" class="opacity-60">
-        <rect
-          x="8"
-          y="8"
-          width="48"
-          height="48"
-          rx="8"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-dasharray="4 3"
-        />
-        <path
-          d="M16 44 Q22 28 28 36 Q34 44 40 24 Q44 14 48 20"
-          stroke="currentColor"
-          stroke-width="1.5"
-          fill="none"
-          stroke-linecap="round"
-        />
-        <circle cx="32" cy="32" r="3" stroke="currentColor" stroke-width="1.2" />
-      </svg>
-      <p class="text-[11px] tracking-widest">Load an audio file to begin analysis</p>
-    </div>
-
-    <!-- Plotly chart — populated by your CQ pipeline -->
-    <div id="cq-chart" class="absolute inset-0 w-full h-full">
-      <cq-audio-visualizer />
-    </div>
+    <cq-audio-visualizer />
   </main>
 
   <!-- Gradient separator -->
@@ -186,9 +109,6 @@
     class="flex-shrink-0 h-px bg-gradient-to-r from-transparent via-accent-mid to-transparent"
   ></div>
 
-  <!-- ══════════════════════════════════════════════
-       TRANSPORT / PLAYBACK CONTROLS
-  ══════════════════════════════════════════════ -->
   <footer class="flex-shrink-0 flex flex-col gap-3 px-5 py-4 bg-white border-t border-slate-200">
     <!-- @if (showControls()) { -->
     <cq-audio-player />

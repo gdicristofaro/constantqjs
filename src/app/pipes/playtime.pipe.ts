@@ -19,9 +19,9 @@ export class PlayTimePipe implements PipeTransform {
  * @returns time formatted in MM:SS.00
  */
 export const playTimeFunct = (value: number) => {
-  return `${Math.floor(value / 60)}:${(value % 60).toLocaleString(
-    undefined, // leave undefined to use the visitor's browser
-    // locale or a string like 'en-US' to override it.
-    { minimumFractionDigits: 2 },
-  )}`;
+  return `${Math.floor(value / 60)}:${Math.floor(value % 60)
+    .toString()
+    .padStart(2, '0')}.${Math.floor((value * 100) % 100)
+    .toString()
+    .padStart(2, '0')}`;
 };

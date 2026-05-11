@@ -56,7 +56,7 @@ export class AudioPlaybackService {
       const audioFileData = this.audioSvc.audioFileData();
       untracked(() => {
         this.pause();
-        this.setCurPosition(0);
+        this._curPosition.set(0);
         if (audioFileData) {
           this.initializeAudio(audioFileData.audio);
         }
@@ -72,10 +72,6 @@ export class AudioPlaybackService {
         this.play();
       }
     }
-  }
-
-  setCurPosition(secs: number) {
-    this._curPosition.set(secs);
   }
 
   initializeAudio(
@@ -128,8 +124,9 @@ export class AudioPlaybackService {
       return false;
     }
 
+    const isPlaying = this.isPlaying();
     // if playing, pause to properly restart
-    if (this.isPlaying()) {
+    if (isPlaying) {
       this.pause();
     }
 
@@ -167,9 +164,10 @@ export class AudioPlaybackService {
    */
   pause() {
     // can't pause with no source
-    if (!this.source()) {
-      return false;
-    }
+    // const source = this.source();
+    // if (source) {
+    //   return false;
+    // }
 
     // clear out interval for updates
     if (this._interval) {

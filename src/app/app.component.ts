@@ -2,12 +2,15 @@ import { PercentPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatDialog, MatDialogContent } from '@angular/material/dialog';
+import { AudioLoadingModalComponent } from './components/audio-loading-modal/audio-loading-modal.component';
 import {
   AudioSelectionAndSettings,
   AudioSelectionModalComponent,
 } from './components/audio-selection-modal/audio-selection-modal.component';
 import { AudioPlayerComponent } from './components/audioplayer/audioplayer.component';
 import { AudioVisualizerComponent } from './components/audiovisualizer/audiovisualizer.component';
+import { FileInfoBarComponent } from './components/file-info-bar/file-info-bar.component';
+import { LoadingIndicatorComponent } from './components/loading-indicator/loading-indicator.component';
 import { AudioLoadService } from './services/audio-load.service';
 import { AudioPlaybackService } from './services/audio-playback.service';
 import { ConstantqService } from './services/constantq.service';
@@ -22,6 +25,9 @@ import { ConstantqService } from './services/constantq.service';
     PercentPipe,
     AudioVisualizerComponent,
     AudioSelectionModalComponent,
+    AudioLoadingModalComponent,
+    FileInfoBarComponent,
+    LoadingIndicatorComponent,
   ],
 })
 export class AppComponent {
@@ -131,25 +137,6 @@ export class AppComponent {
 //   /** Update the loading bar (0–1). */
 //   function setLoadingProgress(fraction) {
 //     el.modalBar.style.width = `${clamp(fraction, 0, 1) * 100}%`;
-//   }
-
-//   /** Hide the loading modal and initialise UI with audio metadata. */
-//   function onAudioLoaded({ filename, duration, sampleRate }) {
-//     el.modalLoading.classList.add('hidden');
-//     state.duration      = duration;
-//     state.currentTime   = 0;
-//     state.processedTime = 0;
-//     state.fileLoaded    = true;
-
-//     el.fileInfoName.textContent = filename;
-//     el.fileInfoDur.textContent  = `${formatTime(duration)} total`;
-//     el.fileInfoSr.textContent   = `${sampleRate.toLocaleString()} Hz`;
-//     el.fileInfoBar.classList.remove('hidden');
-//     el.fileInfoBar.classList.add('anim-fadein');
-
-//     el.chartEmpty.classList.add('hidden');
-//     setStatus('processing');
-//     updateBarUI();
 //   }
 
 //   /* ── PROCESSED TIME ── */

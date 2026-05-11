@@ -13,32 +13,43 @@
  -->
 
 <!-- Progress bar row -->
-<div class="flex items-center gap-3">
+<div class="flex items-center gap-3 mb-2">
   <span class="tabular text-[11px] w-12">
-    <span id="time-current" class="text-accent font-medium">0:00.0</span>
+    <span class="text-blue-500 font-medium">{{ curPosition() | playtime }}</span>
   </span>
 
   <div
-    id="transport-bar"
-    class="flex-1 h-1.5 rounded-full bg-slate-200"
-    onmousedown="onBarMouseDown(event)"
-    ontouchstart="onBarTouchStart(event)"
+    class="flex-1 h-1.5 rounded-full bg-slate-200 relative overflow-visible cursor-pointer"
+    (mousedown)="onBarMouseDown($event)"
+    (touchstart)="onBarTouchStart($event)"
   >
     <!-- Processed region (sky blue gradient) -->
-    <div id="bar-processed" class="bg-gradient-to-r from-process-light to-process/30"></div>
+    <div
+      [style.width]="(loadedPerc() * 100) + '%'"
+      class="rounded-4px duration-400 ease-linear transition-width pointer-events-none absolute inset-0 bg-gradient-to-r from-process-light to-process/30"
+    ></div>
     <!-- Played region (blue gradient) -->
-    <div id="bar-played" class="bg-gradient-to-r from-accent-dark to-accent"></div>
+    <div
+      [style.width]="(curPositionPerc() * 100) + '%'"
+      class="rounded-4px pointer-events-none inset-0 absolute bg-gradient-to-r from-accent-dark to-accent"
+    ></div>
     <!-- Processing frontier tick -->
-    <div id="bar-tick" class="bg-process shadow-[0_0_5px_#0ea5e9]"></div>
+    <div
+      id="bar-tick"
+      [style.left]="(loadedPerc() * 100) + '%'"
+      class="w-2px -y-4px duration-400 ease-linear transition-left pointer-events-none abolute bg-process shadow-[0_0_5px_#0ea5e9]"
+    ></div>
     <!-- Playhead thumb -->
-    <div id="bar-thumb" class="bg-accent shadow-md"></div>
+    <div [style.left]="(curPositionPerc() * 100) + '%'" class="bar-thumb border-2 duration-50 transition-left border-white pointer-events-none absolute bg-blue-500 shadow-md"></div>
   </div>
 
-  <span id="time-total" class="tabular text-[11px] text-slate-400 w-12 text-right">0:00.0</span>
+  <span class="tabular text-[11px] text-slate-400 w-12 text-right">{{
+    duration() ?? 0 | playtime
+  }}</span>
 </div>
 
 <!-- Legend -->
-<div
+<!-- <div
   class="flex items-center justify-center gap-6 text-[9px] tracking-widest text-slate-400 uppercase"
 >
   <div class="flex items-center gap-1.5">
@@ -53,16 +64,16 @@
     <div class="w-5 h-1 rounded-full bg-gradient-to-r from-accent-dark to-accent"></div>
     <span>Playhead</span>
   </div>
-</div>
+</div> -->
 
 <!-- Transport controls -->
 <div class="flex items-center justify-center gap-3">
   <!-- Rewind -->
   <button
     id="btn-rewind"
-    onclick="onRewind()"
+    (click)="setCurPosition(0)"
     title="Rewind to start"
-    class="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-accent-light hover:border-accent-mid hover:text-accent transition-colors cursor-pointer"
+    class="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-blue-100 hover:border-blue-200 hover:text-blue-500 transition-colors cursor-pointer"
   >
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <path d="M2 3h1.5v10H2V3zM4.5 8l8-5v10l-8-5z" />
@@ -72,23 +83,19 @@
   <!-- Play / Pause -->
   <button
     id="btn-play"
-    onclick="onPlayPause()"
+    (click)="togglePlay()"
     title="Play / Pause"
-    class="flex items-center justify-center w-12 h-12 rounded-full bg-accent text-white shadow-md hover:bg-accent-dark active:scale-95 transition-all cursor-pointer"
+    class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
   >
-    <svg id="icon-play" width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-      <path d="M5 3.5l10 5.5-10 5.5V3.5z" />
-    </svg>
-    <svg
-      id="icon-pause"
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="currentColor"
-      class="hidden"
-    >
-      <rect x="4" y="3" width="3.5" height="12" rx="1" />
-      <rect x="10.5" y="3" width="3.5" height="12" rx="1" />
-    </svg>
+    @if (isPlaying()) {
+      <svg id="icon-pause" width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+        <rect x="4" y="3" width="3.5" height="12" rx="1" />
+        <rect x="10.5" y="3" width="3.5" height="12" rx="1" />
+      </svg>
+    } @else {
+      <svg id="icon-play" width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+        <path d="M5 3.5l10 5.5-10 5.5V3.5z" />
+      </svg>
+    }
   </button>
 </div>

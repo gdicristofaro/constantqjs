@@ -1,6 +1,38 @@
+<!-- Empty state -->
+<div
+  id="chart-empty"
+  class="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none text-slate-300"
+>
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" class="opacity-60">
+    <rect
+      x="8"
+      y="8"
+      width="48"
+      height="48"
+      rx="8"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-dasharray="4 3"
+    />
+    <path
+      d="M16 44 Q22 28 28 36 Q34 44 40 24 Q44 14 48 20"
+      stroke="currentColor"
+      stroke-width="1.5"
+      fill="none"
+      stroke-linecap="round"
+    />
+    <circle cx="32" cy="32" r="3" stroke="currentColor" stroke-width="1.2" />
+  </svg>
+  <p class="text-[11px] tracking-widest">Load an audio file to begin analysis</p>
+</div>
+
+<!-- Plotly chart — populated by your CQ pipeline -->
+<div id="cq-chart" class="absolute inset-0 w-full h-full"></div>
+<!-- 
+
 @if (title()) {
   <h4>{{ title() }}</h4>
 }
 <div style="display: block">
   <canvas #chartElement width="400" height="100"> </canvas>
-</div>
+</div> -->

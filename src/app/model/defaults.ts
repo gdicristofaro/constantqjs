@@ -22,4 +22,4 @@ export const MS_REFRESH = 100;
 /**
  * defines the default refresh rate for an fft window in milliseconds
  */
-export const FFT_MS_REFRESH = 500;
+export const FFT_MS_REFRESH = 100;

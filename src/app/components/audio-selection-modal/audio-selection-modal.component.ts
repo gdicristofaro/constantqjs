@@ -35,7 +35,6 @@ export interface RecommendedFile {
     FileSelectorComponent,
   ],
   templateUrl: './audio-selection-modal.component.html',
-  styleUrl: './audio-selection-modal.component.scss',
 })
 export class AudioSelectionModalComponent {
   readonly open = model(true);

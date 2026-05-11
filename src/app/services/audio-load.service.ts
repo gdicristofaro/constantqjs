@@ -15,6 +15,12 @@ export class AudioLoadService {
   private readonly _audioFileData = signal<AudioFileData | undefined>(undefined);
   readonly audioFileData = this._audioFileData.asReadonly();
 
+  private readonly _loading = signal(false);
+  readonly loading = this._loading.asReadonly();
+
+  private readonly _loadingTitle = signal('');
+  readonly loadingTitle = this._loadingTitle.asReadonly();
+
   /**
    * defines the audio context to use for audio playback
    */
@@ -84,12 +90,21 @@ export class AudioLoadService {
 
     const title = file.filename ?? '';
 
-    const audioBuffer =
-      'file' in file
-        ? await this.getFileBufferNode(file.file)
-        : await this.getHttpBufferNode(file.url);
+    this._loading.set(true);
+    this._loadingTitle.set(title);
+    this._audioFileData.set(undefined);
 
-    const audioFileData = this.getAudioFileData(audioBuffer, title, settings);
-    this._audioFileData.set(audioFileData);
+    try {
+      const audioBuffer =
+        'file' in file
+          ? await this.getFileBufferNode(file.file)
+          : await this.getHttpBufferNode(file.url);
+
+      const audioFileData = this.getAudioFileData(audioBuffer, title, settings);
+      this._audioFileData.set(audioFileData);
+    } finally {
+      this._loading.set(false);
+      this._loadingTitle.set('');
+    }
   }
 }

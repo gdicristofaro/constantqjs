@@ -1,0 +1,26 @@
+.rounded-4px {
+  border-radius: 4px;
+}
+
+.rounded-2px {
+  border-radius: 2px;
+}
+
+.-y-4px {
+  top: -4px;
+  bottom: -4px;
+}
+
+.w-2px {
+  width: 2px;
+}
+
+.bar-thumb {
+  top: 50%;
+  left: 0%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  // transition: left 0.05s;
+}
