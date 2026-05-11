@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { AudioLoadService } from '../../services/audio-load.service';
 import { ModalComponent } from '../modal/modal.component';
 
@@ -21,10 +21,9 @@ import { ModalComponent } from '../modal/modal.component';
           <p id="modal-loading-filename" class="mt-1 text-xs text-slate-400 truncate"></p>
         </div>
         <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-          <!-- TODO fix loading bar -->
           <div
-            id="modal-loading-bar"
-            class="h-full w-0 bg-accent rounded-full transition-all duration-300"
+            [style.width]="amountLoaded() + '%'"
+            class="h-full bg-blue-400 rounded-full transition-all duration-300"
           ></div>
         </div>
       </div>
@@ -44,19 +43,9 @@ import { ModalComponent } from '../modal/modal.component';
 })
 export class AudioLoadingModalComponent {
   protected readonly audioLoadSvc = inject(AudioLoadService);
-  open = this.audioLoadSvc.loading;
-  subtitle = this.audioLoadSvc.loadingTitle;
-
-  //   /* ── LOADING MODAL ── */
-  //   /** Show the loading modal. Call before you start decoding. */
-  //   function showLoadingModal(filename) {
-  //     el.modalFilename.textContent = filename || '';
-  //     el.modalBar.style.width = '0%';
-  //     el.modalLoading.classList.remove('hidden');
-  //   }
-
-  //   /** Update the loading bar (0–1). */
-  //   function setLoadingProgress(fraction) {
-  //     el.modalBar.style.width = `${clamp(fraction, 0, 1) * 100}%`;
-  //   }
+  protected readonly open = this.audioLoadSvc.loading;
+  protected readonly subtitle = this.audioLoadSvc.loadingTitle;
+  protected readonly amountLoaded = computed(() => {
+    Math.round(this.audioLoadSvc.fileLoadedPerc() * 100);
+  });
 }

@@ -63,4 +63,4 @@ export class UrlSelectorComponent {
   // }
 }
 
-const URL_REGEX = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/?';
+const URL_REGEX = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6}).*';

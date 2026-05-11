@@ -24,6 +24,7 @@ import { ConstantqService } from '../../services/constantq.service';
 export class AudioVisualizerComponent implements AfterViewInit {
   chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
 
+  private static readonly LINE_COLOR = undefined;
   private readonly audioSvc = inject(AudioPlaybackService);
   private readonly audioLoadSvc = inject(AudioLoadService);
 
@@ -54,7 +55,9 @@ export class AudioVisualizerComponent implements AfterViewInit {
     effect(() => {
       this.pitches();
       this.max();
-      this.reloadChart();
+      untracked(() => {
+        this.reloadChart();
+      });
     });
 
     effect(() => {
@@ -91,6 +94,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
       type: 'line',
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: false,
@@ -105,7 +109,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
       },
       data: {
         labels: pitches,
-        datasets: [{ data: pitchData }],
+        datasets: [{ borderColor: AudioVisualizerComponent.LINE_COLOR, data: pitchData }],
       },
     });
 

@@ -1,7 +1,6 @@
 import { PercentPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { MatDialog, MatDialogContent } from '@angular/material/dialog';
 import { AudioLoadingModalComponent } from './components/audio-loading-modal/audio-loading-modal.component';
 import {
   AudioSelectionAndSettings,
@@ -20,7 +19,6 @@ import { ConstantqService } from './services/constantq.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   imports: [
-    MatDialogContent,
     AudioPlayerComponent,
     PercentPipe,
     AudioVisualizerComponent,
@@ -36,7 +34,6 @@ export class AppComponent {
   protected readonly constantQSvc = inject(ConstantqService);
 
   private readonly http = inject(HttpClient);
-  private readonly modalService = inject(MatDialog);
 
   modalOpen = signal(true);
 

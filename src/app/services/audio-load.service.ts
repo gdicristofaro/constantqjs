@@ -21,6 +21,9 @@ export class AudioLoadService {
   private readonly _loadingTitle = signal('');
   readonly loadingTitle = this._loadingTitle.asReadonly();
 
+  private readonly _fileLoadedPerc = signal(0);
+  readonly fileLoadedPerc = this._fileLoadedPerc.asReadonly();
+
   /**
    * defines the audio context to use for audio playback
    */
@@ -51,6 +54,8 @@ export class AudioLoadService {
   async getHttpBufferNode(url: string): Promise<AudioBuffer> {
     const arrBuffer = await firstValueFrom(
       this.http.get(url, {
+        // reportProgress: true,
+        // observe: 'events',
         responseType: 'arraybuffer',
       }),
     );

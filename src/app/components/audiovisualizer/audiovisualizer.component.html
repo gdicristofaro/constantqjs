@@ -1,7 +1,12 @@
 <!-- Empty state -->
 
-<div [class.hidden]="!hasAudioFileData()" class="absolute inset-0 w-full h-full">
-  <canvas #chartElement class="inset-0 w-full h-full m-5"></canvas>
+<div
+  [class.hidden]="!hasAudioFileData()"
+  class="absolute inset-0 w-full h-full p-5 flex items-center"
+>
+  <div class="relative w-full h-full">
+    <canvas #chartElement></canvas>
+  </div>
 </div>
 <div
   [class.hidden]="hasAudioFileData()"

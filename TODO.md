@@ -5,3 +5,4 @@
 - take out unused scss / ids
 - visibility
 - commenting
+- drag on playback bar

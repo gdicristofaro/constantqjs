@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { MatSliderModule } from '@angular/material/slider';
 import { PlayTimePipe } from '../../pipes/playtime.pipe';
 import { AudioPlaybackService } from '../../services/audio-playback.service';
 import { ConstantqService } from '../../services/constantq.service';
@@ -11,7 +10,7 @@ import { ConstantqService } from '../../services/constantq.service';
 @Component({
   templateUrl: 'audioplayer.component.html',
   styleUrl: 'audioplayer.component.scss',
-  imports: [MatSliderModule, PlayTimePipe],
+  imports: [PlayTimePipe],
   selector: 'cq-audio-player',
 })
 export class AudioPlayerComponent {

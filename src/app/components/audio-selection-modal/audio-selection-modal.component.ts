@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, HostListener, model, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
 import { Settings } from '../../model/settings';
@@ -27,7 +26,6 @@ export interface RecommendedFile {
   imports: [
     CommonModule,
     FormsModule,
-    MatCardModule,
     ModalComponent,
     RecommendedFilesComponent,
     UrlSelectorComponent,

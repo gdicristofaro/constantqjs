@@ -25,9 +25,9 @@ export class RecommendedFilesComponent {
       size: 2.0 * 1024 * 1024,
     },
     {
-      filename: 'Bach Invention',
-      url: 'https://ia902904.us.archive.org/7/items/BachTwoPartInventionInCMinor/Bach%20-%20Two-part%20Invention%20in%20C%20minor.mp3',
-      size: 2 * 1024 * 1024,
+      filename: 'Fur Elise',
+      url: 'https://dn720302.ca.archive.org/0/items/lp_greatest-hits-of_frederic-chopin-ludwig-van-beethoven-jo/disc2%2F03.03.%20For%20Elise.mp3',
+      size: 5.1 * 1024 * 1024,
     },
   ];
 
