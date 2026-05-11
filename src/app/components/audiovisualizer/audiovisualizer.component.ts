@@ -5,7 +5,7 @@ import {
   effect,
   ElementRef,
   inject,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import AudioFileData from '../../model/audiofiledata';
@@ -21,7 +21,7 @@ import { ConstantqService } from '../../services/constantq.service';
   templateUrl: 'audiovisualizer.component.html',
 })
 export class AudioVisualizerComponent implements AfterViewInit {
-  @ViewChild('chartElement') chartElement: ElementRef | undefined;
+  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
 
   private readonly audioSvc = inject(AudioPlaybackService);
   private readonly audioLoadSvc = inject(AudioLoadService);
@@ -71,7 +71,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
   }
 
   reloadChart() {
-    const ctx = this.chartElement?.nativeElement;
+    const ctx = this.chartElement()?.nativeElement;
 
     if (!ctx) {
       return;

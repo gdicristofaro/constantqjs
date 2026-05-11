@@ -148,7 +148,7 @@ export class AudioPlaybackService {
     }
 
     // establish starting position
-    let startPos = pos ? pos : this.curPosition();
+    let startPos = pos;
     if (startPos >= (this.duration() ?? 0) || startPos < 0) {
       startPos = 0;
     }
@@ -206,6 +206,9 @@ export class AudioPlaybackService {
     if (isPlaying) {
       if (this.source()) {
         this.onUpdate();
+        if (playbackNode) {
+          playbackNode.onended = null;
+        }
         playbackNode?.disconnect();
         playbackNode?.stop(0);
       }
