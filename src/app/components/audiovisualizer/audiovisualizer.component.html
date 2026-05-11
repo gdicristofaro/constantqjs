@@ -1,6 +1,10 @@
 <!-- Empty state -->
+
+<div [class.hidden]="!hasAudioFileData()" class="absolute inset-0 w-full h-full">
+  <canvas #chartElement class="inset-0 w-full h-full m-5"></canvas>
+</div>
 <div
-  id="chart-empty"
+  [class.hidden]="hasAudioFileData()"
   class="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none text-slate-300"
 >
   <svg width="64" height="64" viewBox="0 0 64 64" fill="none" class="opacity-60">
@@ -26,10 +30,7 @@
   <p class="text-[11px] tracking-widest">Load an audio file to begin analysis</p>
 </div>
 
-<!-- Plotly chart — populated by your CQ pipeline -->
-<div #chartElement class="absolute inset-0 w-full h-full"></div>
 <!-- 
-
 @if (title()) {
   <h4>{{ title() }}</h4>
 }

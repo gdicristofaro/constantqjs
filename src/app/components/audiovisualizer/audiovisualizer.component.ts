@@ -5,6 +5,7 @@ import {
   effect,
   ElementRef,
   inject,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { Chart } from 'chart.js/auto';
@@ -26,6 +27,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
   private readonly audioSvc = inject(AudioPlaybackService);
   private readonly audioLoadSvc = inject(AudioLoadService);
 
+  protected readonly hasAudioFileData = computed(() => Boolean(this.audioLoadSvc.audioFileData()));
   readonly audioFileData = computed(
     () => this.audioLoadSvc.audioFileData() ?? ({} as AudioFileData),
   );
@@ -37,7 +39,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
   readonly max = computed(() => this.constantQSvc.constantQData()?.graphMax ?? 0);
 
   // the data to display on the chart
-  readonly pitchData = computed(() => {
+  readonly pitchData = computed<number[]>(() => {
     const { fps } = this.audioFileData();
     const { constantQData } = this.constantQSvc.constantQData() || { constantQData: [] };
     const pos = this.audioSvc.curPosition();
@@ -57,12 +59,15 @@ export class AudioVisualizerComponent implements AfterViewInit {
 
     effect(() => {
       const pitchData = this.pitchData();
-      if (this.chart) {
-        this.chart.data.datasets[0].data = pitchData;
-        this.chart.update();
-      } else {
-        this.reloadChart();
-      }
+      untracked(() => {
+        if (this.chart) {
+          this.chart.data.datasets[0].data = pitchData;
+          this.chart.update();
+        } else {
+          console.log('reloading for change: ', pitchData);
+          this.reloadChart();
+        }
+      });
     });
   }
 

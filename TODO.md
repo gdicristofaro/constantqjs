@@ -3,3 +3,5 @@
 - update resolution
 - TODOs in code
 - take out unused scss / ids
+- visibility
+- commenting
