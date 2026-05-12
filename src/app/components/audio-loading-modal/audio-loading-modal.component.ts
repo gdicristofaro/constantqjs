@@ -18,7 +18,7 @@ import { ModalComponent } from '../modal/modal.component';
           <p class="font-display font-bold text-xs tracking-widest uppercase text-blue-500">
             Loading Audio
           </p>
-          <p id="modal-loading-filename" class="mt-1 text-xs text-slate-400 truncate"></p>
+          <p class="mt-1 text-xs text-slate-400 truncate"></p>
         </div>
         <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
           <div

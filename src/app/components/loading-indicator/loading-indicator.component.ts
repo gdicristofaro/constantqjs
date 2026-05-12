@@ -7,7 +7,6 @@ import { ConstantqService } from '../../services/constantq.service';
   imports: [],
   template: `
     <span
-      id="badge-label"
       [class]="
         (state().msg === 'Loaded' ? 'text-blue-500' : 'text-slate-400') +
         ' inline-block px-2 py-0.5 rounded text-[9px] font-bold tracking-widest uppercase bg-slate-100 border border-slate-200'

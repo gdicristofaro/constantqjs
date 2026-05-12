@@ -30,14 +30,12 @@ import { Component, input, model } from '@angular/core';
     }
   `,
   template: `
-    <!-- Header -->
-    <!-- <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100"> -->
     <div
       [attr.open]="open() ? '' : null"
       (click)="closeable() && open.set(false)"
       (keypress.escape)="closeable() && open.set(false)"
       tabindex="-1"
-      class="cq-modal-transition absolute flex fixed w-dvw h-dvh z-100 inset-0 justify-center bg-black/50 backdrop-blur-sm p-4"
+      class="cq-modal-transition flex fixed w-dvw h-dvh z-100 inset-0 justify-center bg-black/50 backdrop-blur-sm p-4"
     >
       <div
         [class]="
@@ -93,7 +91,6 @@ import { Component, input, model } from '@angular/core';
         </div>
       </div>
     </div>
-    <!-- </div> -->
   `,
 })
 export class ModalComponent {

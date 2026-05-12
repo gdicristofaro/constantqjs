@@ -18,7 +18,6 @@ export class ConstantqService {
 
   private audioLoadSub: Subscription | undefined = undefined;
 
-  // TODO: load all of this
   constructor() {
     effect(() => {
       const audioFileData = this.audioSvc.audioFileData();

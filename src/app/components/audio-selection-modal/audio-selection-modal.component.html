@@ -73,19 +73,16 @@
       }
     </div>
 
-    <!-- Panel: Recommended -->
     <div class="px-6 py-5 h-70 max-h-95vh">
       <div class="relative">
-        <div
-          [class]="(activeTab() === 'recommended' ? 'visible' : 'invisible') + ' absolute inset-0'"
-        >
+        <div [class]="(activeTab() === 'recommended' ? '' : 'hidden ') + 'absolute inset-0'">
           <cq-recommended-files [(selectedFile)]="selectedFile"></cq-recommended-files>
         </div>
 
-        <div [class]="(activeTab() === 'url' ? 'visible' : 'invisible') + ' absolute inset-0'">
+        <div [class]="(activeTab() === 'url' ? '' : 'hidden ') + 'absolute inset-0'">
           <cq-url-selector [(selectedFile)]="selectedFile"></cq-url-selector>
         </div>
-        <div [class]="(activeTab() === 'local' ? 'visible' : 'invisible') + ' absolute inset-0'">
+        <div [class]="(activeTab() === 'local' ? '' : 'hidden ') + 'absolute inset-0'">
           <cq-file-selector [(selectedFile)]="selectedFile"></cq-file-selector>
         </div>
       </div>

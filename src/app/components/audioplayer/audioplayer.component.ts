@@ -30,7 +30,7 @@ export class AudioPlayerComponent {
     if (!duration) {
       return 0;
     } else {
-      return Math.round((curPos / duration) * 100) / 100;
+      return Math.round((curPos / duration) * 10000) / 10000;
     }
   });
 

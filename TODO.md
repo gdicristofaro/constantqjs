@@ -1,8 +1,13 @@
 - load failure handling
 - loading percentage
-- update resolution
-- TODOs in code
-- take out unused scss / ids
-- visibility
-- commenting
 - drag on playback bar
+
+- TODOs in code
+- visibility
+- show all notes?
+- tests
+- commenting
+- dark mode
+- integrate vexflow?
+- build script
+- unify colors and theming (buttons too)

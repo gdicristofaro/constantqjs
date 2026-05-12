@@ -19,7 +19,13 @@ import { ConstantqService } from '../../services/constantq.service';
  */
 @Component({
   selector: 'cq-audio-visualizer',
-  templateUrl: 'audiovisualizer.component.html',
+  template: `
+    <div class="absolute inset-0 w-full h-full p-5 flex items-center">
+      <div class="relative w-full h-full">
+        <canvas #chartElement></canvas>
+      </div>
+    </div>
+  `,
 })
 export class AudioVisualizerComponent implements AfterViewInit {
   chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
@@ -28,7 +34,6 @@ export class AudioVisualizerComponent implements AfterViewInit {
   private readonly audioSvc = inject(AudioPlaybackService);
   private readonly audioLoadSvc = inject(AudioLoadService);
 
-  protected readonly hasAudioFileData = computed(() => Boolean(this.audioLoadSvc.audioFileData()));
   readonly audioFileData = computed(
     () => this.audioLoadSvc.audioFileData() ?? ({} as AudioFileData),
   );

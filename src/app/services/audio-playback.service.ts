@@ -1,4 +1,6 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { Mutex } from 'async-mutex';
+import AudioFileData from '../model/audiofiledata';
 import { AudioLoadService } from './audio-load.service';
 
 /**
@@ -11,6 +13,7 @@ export class AudioPlaybackService {
   private static readonly DEFAULT_MS_REFRESH = 100;
 
   private readonly audioSvc = inject(AudioLoadService);
+  private readonly playPauseMutex = new Mutex();
 
   private readonly source = signal<AudioBuffer | undefined>(undefined);
   private readonly msRefresh = signal(AudioPlaybackService.DEFAULT_MS_REFRESH);
@@ -23,14 +26,6 @@ export class AudioPlaybackService {
 
   private readonly _curPosition = signal(0);
   readonly curPosition = this._curPosition.asReadonly();
-
-  // the analyzer node to provide fft data
-  private readonly _analyzer = signal<AnalyserNode | undefined>(undefined);
-
-  // creates the next frame of the fft based on the playback
-  private readonly _fftListener = signal<Uint8Array<ArrayBuffer> | undefined>(undefined);
-
-  readonly fftListener = this._fftListener.asReadonly();
 
   /**
    * defines the audio context to use for audio playback
@@ -56,7 +51,6 @@ export class AudioPlaybackService {
     isPlaying: false,
   });
 
-  // TODO threadsafe
   readonly isPlaying = computed(() => this.playbackContext().isPlaying);
 
   constructor() {
@@ -64,45 +58,26 @@ export class AudioPlaybackService {
     effect(() => {
       const audioFileData = this.audioSvc.audioFileData();
       untracked(() => {
-        this.pause();
-        this._curPosition.set(0);
-        if (audioFileData) {
-          this.initializeAudio(audioFileData.audio);
-        }
+        this.prepareInitializeNewAudio(audioFileData);
       });
     });
   }
 
-  togglePlay() {
-    if (this.hasSource()) {
-      if (this.isPlaying()) {
-        this.pause();
-      } else {
-        this.play();
+  private prepareInitializeNewAudio(audioFileData: AudioFileData | undefined) {
+    this.playPauseMutex.runExclusive(() => {
+      this._pause();
+      this._curPosition.set(0);
+      if (audioFileData) {
+        this.initializeAudio(audioFileData.audio);
       }
-    }
+    });
   }
 
-  initializeAudio(
+  private initializeAudio(
     source: AudioBuffer,
     // ms for refresh of playback position and fft
     msRefresh = AudioPlaybackService.DEFAULT_MS_REFRESH,
-    fftSize?: number,
   ) {
-    if (fftSize) {
-      const analyzer = this._audioContext.createAnalyser();
-      // so we get the right size for the bin count
-      analyzer.fftSize = fftSize * 2;
-
-      const bufferLength = analyzer.frequencyBinCount;
-      this._fftListener.set(new Uint8Array(bufferLength));
-
-      analyzer.connect(this._audioContext.destination);
-      this._analyzer.set(analyzer);
-    } else {
-      this._fftListener.set(undefined);
-    }
-
     this.msRefresh.set(msRefresh);
     this.source.set(source);
   }
@@ -112,6 +87,12 @@ export class AudioPlaybackService {
    */
   private onUpdate() {
     // update position
+    this.playPauseMutex.runExclusive(() => {
+      this._onUpdate();
+    });
+  }
+
+  private _onUpdate() {
     const { contextStart, audioStart } = this.playbackContext();
     this._curPosition.set(
       Math.min(
@@ -119,21 +100,31 @@ export class AudioPlaybackService {
         Math.max(0, this._audioContext.currentTime - contextStart + audioStart),
       ),
     );
+  }
 
-    // if there is an fft listener, update accordingly
-    this._fftListener.update(arr => {
-      if (arr) {
-        this._analyzer()?.getByteFrequencyData(arr);
+  togglePlay() {
+    this.playPauseMutex.runExclusive(() => this._togglePlay());
+  }
+
+  _togglePlay() {
+    if (this.hasSource()) {
+      if (this.isPlaying()) {
+        this._pause();
+      } else {
+        this._play(this.curPosition());
       }
-      return arr;
-    });
+    }
+  }
+
+  play(pos: number) {
+    this.playPauseMutex.runExclusive(() => this._play(pos));
   }
 
   /**
    * handles playing audio
    * @param pos   the position of playback; if none set, current position is used
    */
-  play(pos = 0) {
+  private _play(pos: number) {
     // can't play with no source
     const source = this.source();
     if (!source) {
@@ -144,7 +135,7 @@ export class AudioPlaybackService {
 
     // if playing, pause to properly restart
     if (isPlaying) {
-      this.pause();
+      this._pause();
     }
 
     // establish starting position
@@ -157,10 +148,6 @@ export class AudioPlaybackService {
     const playbackNode = this._audioContext.createBufferSource();
 
     playbackNode.buffer = source;
-    const analyzer = this._analyzer();
-    if (analyzer) {
-      playbackNode.connect(analyzer);
-    }
     playbackNode.connect(this._audioContext.destination);
 
     // establish context items for listeners
@@ -189,6 +176,10 @@ export class AudioPlaybackService {
    * pauses audio playback at current location
    */
   pause() {
+    this.playPauseMutex.runExclusive(() => this._pause());
+  }
+
+  private _pause() {
     // can't pause with no source
     const source = this.source();
     if (!source) {
@@ -205,7 +196,7 @@ export class AudioPlaybackService {
     // if playing, trigger one last update and stop
     if (isPlaying) {
       if (this.source()) {
-        this.onUpdate();
+        this._onUpdate();
         if (playbackNode) {
           playbackNode.onended = null;
         }
@@ -230,11 +221,15 @@ export class AudioPlaybackService {
    * @param pos   the new position for playback
    */
   seek(pos: number) {
+    this.playPauseMutex.runExclusive(() => this._seek(pos));
+  }
+
+  private _seek(pos: number) {
     // bound appropriately to length of song
     const boundedPos = Math.min(Math.max(0, pos), this.duration() ?? 0);
 
     if (this.isPlaying()) {
-      this.play(boundedPos);
+      this._play(boundedPos);
     } else {
       this._curPosition.set(boundedPos);
     }
