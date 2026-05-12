@@ -1,10 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
+import { MegabytesPipe } from '../../pipes/megabytes.pipe';
 import { PlayTimePipe } from '../../pipes/playtime.pipe';
 import { AudioLoadService } from '../../services/audio-load.service';
 
 @Component({
   selector: 'cq-file-info-bar',
-  imports: [],
+  imports: [MegabytesPipe],
   template: `
     <div
       id="file-info-bar"
@@ -17,6 +18,8 @@ import { AudioLoadService } from '../../services/audio-load.service';
       <span id="file-info-dur" class="text-slate-500">{{ fileDuration() }}</span>
       <span class="text-slate-300">|</span>
       <span id="file-info-sr" class="text-slate-500">{{ fileSampleRate() }}</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">{{ fileBytes() | megabytes }}</span>
     </div>
   `,
 })
@@ -25,6 +28,7 @@ export class FileInfoBarComponent {
 
   private readonly playtimePipe = new PlayTimePipe();
 
+  protected readonly fileBytes = computed(() => this.audioLoadSvc.audioFileData()?.size ?? 0);
   protected readonly fileName = computed(() => this.audioLoadSvc.audioFileData()?.title || '-');
   protected readonly fileDuration = computed(() => {
     const duration = this.audioLoadSvc.audioFileData()?.audio?.duration;

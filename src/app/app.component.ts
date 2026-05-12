@@ -1,4 +1,3 @@
-import { PercentPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { AudioLoadingModalComponent } from './components/audio-loading-modal/audio-loading-modal.component';
@@ -20,7 +19,6 @@ import { ConstantqService } from './services/constantq.service';
   styleUrl: './app.component.scss',
   imports: [
     AudioPlayerComponent,
-    PercentPipe,
     AudioVisualizerComponent,
     AudioSelectionModalComponent,
     AudioLoadingModalComponent,

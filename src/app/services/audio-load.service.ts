@@ -29,7 +29,7 @@ export class AudioLoadService {
    */
   private readonly _audioContext: AudioContext = new AudioContext();
 
-  async getFileBufferNode(file: File): Promise<AudioBuffer> {
+  async getFileBufferNode(file: File): Promise<{ audio: AudioBuffer; size: number }> {
     const arrayBuffer = await this.readFile(file);
     return this.arrayToDecodeData(arrayBuffer);
   }
@@ -51,7 +51,7 @@ export class AudioLoadService {
    * @param http  the http client to obtain the file
    * @param url   the url of the file to obtain
    */
-  async getHttpBufferNode(url: string): Promise<AudioBuffer> {
+  async getHttpBufferNode(url: string): Promise<{ audio: AudioBuffer; size: number }> {
     const arrBuffer = await firstValueFrom(
       this.http.get(url, {
         // reportProgress: true,
@@ -63,13 +63,27 @@ export class AudioLoadService {
     return this.arrayToDecodeData(arrBuffer);
   }
 
-  private arrayToDecodeData(arrBuffer: ArrayBuffer) {
-    return this._audioContext.decodeAudioData(arrBuffer);
-  }
-
-  private getAudioFileData(audio: AudioBuffer, title: string, settings: Settings): AudioFileData {
+  private async arrayToDecodeData(
+    arrBuffer: ArrayBuffer,
+  ): Promise<{ audio: AudioBuffer; size: number }> {
+    const size = arrBuffer.byteLength;
+    const audio = await this._audioContext.decodeAudioData(arrBuffer);
     return {
       audio,
+      size,
+    };
+  }
+
+  private getAudioFileData(
+    audio: AudioBuffer,
+    size: number,
+    title: string,
+    settings: Settings,
+  ): AudioFileData {
+    console.log('size is', size);
+    return {
+      audio,
+      size,
       settings,
       fps: settings.fps,
       noteLetters: getFreqRange(
@@ -100,12 +114,12 @@ export class AudioLoadService {
     this._audioFileData.set(undefined);
 
     try {
-      const audioBuffer =
+      const { audio, size } =
         'file' in file
           ? await this.getFileBufferNode(file.file)
           : await this.getHttpBufferNode(file.url);
 
-      const audioFileData = this.getAudioFileData(audioBuffer, title, settings);
+      const audioFileData = this.getAudioFileData(audio, size, title, settings);
       this._audioFileData.set(audioFileData);
     } finally {
       this._loading.set(false);
