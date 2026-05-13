@@ -1,5 +1,6 @@
 - load failure handling
 - loading percentage
+- better mobile experience
 
 - TODOs in code
 - visibility
@@ -8,6 +9,5 @@
 - commenting
 - dark mode
 - integrate vexflow?
-- build script
+- build script check
 - unify colors and theming (buttons too)
-- test in firefox
