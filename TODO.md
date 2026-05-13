@@ -1,13 +1,17 @@
-- load failure handling
-- loading percentage
+- cancellation
+
 - better mobile experience
+- show all notes in graph?
+
+- dark mode
+- unify colors and theming (buttons too)
+
+- tests
+- commenting
+- favicon
+- integrate vexflow?
 
 - TODOs in code
 - visibility
-- show all notes in graph?
-- tests
-- commenting
-- dark mode
-- integrate vexflow?
+
 - build script check
-- unify colors and theming (buttons too)

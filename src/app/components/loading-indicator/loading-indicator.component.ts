@@ -30,8 +30,9 @@ export class LoadingIndicatorComponent {
   private readonly constantQSvc = inject(ConstantqService);
 
   protected state = computed(() => {
-    if (this.audioLoadSvc.loading()) {
-      return { msg: 'Loading', pct: undefined };
+    const loadingState = this.audioLoadSvc.loadingState();
+    if (loadingState.state === 'loading') {
+      return { msg: 'Loading', pct: Math.round(loadingState.progress * 100) };
     }
 
     const audioData = this.audioLoadSvc.audioFileData();

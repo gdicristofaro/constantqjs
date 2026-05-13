@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { catchError, from, map, mergeMap, Observable, Observer, of } from 'rxjs';
 import { AudioFile } from '../model/audiofile';
 import AudioFileData from '../model/audiofiledata';
+import { LoadingState } from '../model/loadingstate';
 import { getFreqRange, noteToString } from '../model/pitch';
 import { Settings } from '../model/settings';
 
@@ -12,55 +13,79 @@ import { Settings } from '../model/settings';
 export class AudioLoadService {
   private readonly http = inject(HttpClient);
 
-  private readonly _audioFileData = signal<AudioFileData | undefined>(undefined);
-  readonly audioFileData = this._audioFileData.asReadonly();
+  private readonly _loadingState = signal<LoadingState>({ state: 'idle' });
 
-  private readonly _loading = signal(false);
-  readonly loading = this._loading.asReadonly();
+  readonly audioFileData = computed(() => {
+    const loadingState = this._loadingState();
+    return loadingState.state === 'loaded' ? loadingState.result : undefined;
+  });
 
-  private readonly _loadingTitle = signal('');
-  readonly loadingTitle = this._loadingTitle.asReadonly();
-
-  private readonly _fileLoadedPerc = signal(0);
-  readonly fileLoadedPerc = this._fileLoadedPerc.asReadonly();
+  readonly loadingState = this._loadingState.asReadonly();
 
   /**
    * defines the audio context to use for audio playback
    */
   private readonly _audioContext: AudioContext = new AudioContext();
 
-  async getFileBufferNode(file: File): Promise<{ audio: AudioBuffer; size: number }> {
-    const arrayBuffer = await this.readFile(file);
-    return this.arrayToDecodeData(arrayBuffer);
+  clearError() {
+    this._loadingState.update(prev => (prev.state === 'error' ? { state: 'idle' } : prev));
   }
 
-  // taken from https://stackoverflow.com/questions/34495796/javascript-promises-with-filereader
-  private readFile(blob: Blob): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => {
-        resolve(fr.result as ArrayBuffer);
-      };
-      fr.onerror = reject;
-      fr.readAsArrayBuffer(blob);
-    });
+  private loadFromUrl(url: string): Observable<LoadingProgress> {
+    return this.http
+      .get(url, {
+        responseType: 'arraybuffer',
+        reportProgress: true,
+        observe: 'events',
+      })
+      .pipe(
+        map((event: HttpEvent<ArrayBuffer>): LoadingProgress => {
+          switch (event.type) {
+            case HttpEventType.DownloadProgress: {
+              const progress = event.total ? event.loaded / event.total : 0;
+              return { state: 'loading', progress };
+            }
+            case HttpEventType.Response:
+              if (event.body) {
+                return { state: 'loaded', result: event.body };
+              } else {
+                return { state: 'error', error: 'Unable to load data' };
+              }
+            default:
+              return { state: 'loading', progress: 0 };
+          }
+        }),
+      );
   }
 
   /**
-   * obtains an observable returning an audio buffer based on the url of the audio file
-   * @param http  the http client to obtain the file
-   * @param url   the url of the file to obtain
+   * Load audio from a local File object (from <input type="file">)
    */
-  async getHttpBufferNode(url: string): Promise<{ audio: AudioBuffer; size: number }> {
-    const arrBuffer = await firstValueFrom(
-      this.http.get(url, {
-        // reportProgress: true,
-        // observe: 'events',
-        responseType: 'arraybuffer',
-      }),
-    );
+  private loadFromFile(file: File): Observable<LoadingProgress> {
+    return new Observable((observer: Observer<LoadingProgress>) => {
+      const reader = new FileReader();
 
-    return this.arrayToDecodeData(arrBuffer);
+      reader.onprogress = event => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          observer.next({ state: 'loading', progress });
+        }
+      };
+
+      reader.onload = () => {
+        observer.next({ state: 'loaded', result: reader.result as ArrayBuffer });
+        observer.complete();
+      };
+
+      reader.onerror = err => {
+        observer.error({ state: 'error', error: err });
+      };
+
+      reader.readAsArrayBuffer(file);
+
+      // Cleanup logic if the observable is unsubscribed
+      return () => reader.abort();
+    });
   }
 
   private async arrayToDecodeData(
@@ -97,6 +122,33 @@ export class AudioLoadService {
     };
   }
 
+  private loadAndDecode(
+    title: string,
+    settings: Settings,
+    obs: Observable<LoadingProgress>,
+  ): Observable<LoadingState> {
+    const observable = obs.pipe(
+      mergeMap((loadProgress): Observable<LoadingState> => {
+        switch (loadProgress.state) {
+          case 'error':
+            return of({ state: 'error', error: loadProgress.error, title });
+          case 'loading':
+            // save 10% for decoding
+            return of({ state: 'loading', title, progress: loadProgress.progress * 0.95 });
+          case 'loaded':
+            return from(this.arrayToDecodeData(loadProgress.result)).pipe(
+              map(({ audio, size }): LoadingState => {
+                const result = this.getAudioFileData(audio, size, title, settings);
+                return { state: 'loaded', result };
+              }),
+              catchError((error): Observable<LoadingState> => of({ state: 'error', error, title })),
+            );
+        }
+      }),
+    );
+    return observable;
+  }
+
   /**
    * when the selected file changes, this function is called
    * @param file  the new selected file
@@ -106,23 +158,29 @@ export class AudioLoadService {
       return;
     }
 
-    const title = file.filename ?? '';
+    await new Promise((res, rej) => {
+      const title = file.filename ?? '';
 
-    this._loading.set(true);
-    this._loadingTitle.set(title);
-    this._audioFileData.set(undefined);
+      const loadingProgressObservable =
+        'file' in file ? this.loadFromFile(file.file) : this.loadFromUrl(file.url);
 
-    try {
-      const { audio, size } =
-        'file' in file
-          ? await this.getFileBufferNode(file.file)
-          : await this.getHttpBufferNode(file.url);
-
-      const audioFileData = this.getAudioFileData(audio, size, title, settings);
-      this._audioFileData.set(audioFileData);
-    } finally {
-      this._loading.set(false);
-      this._loadingTitle.set('');
-    }
+      this.loadAndDecode(title, settings, loadingProgressObservable).subscribe({
+        next: data => {
+          this._loadingState.set(data);
+        },
+        complete: () => {
+          res(null);
+        },
+        error: error => {
+          this._loadingState.set({ state: 'error', error, title });
+          rej(error);
+        },
+      });
+    });
   }
 }
+
+type LoadingProgress =
+  | { state: 'loading'; progress: number }
+  | { state: 'loaded'; result: ArrayBuffer }
+  | { state: 'error'; error: {} };

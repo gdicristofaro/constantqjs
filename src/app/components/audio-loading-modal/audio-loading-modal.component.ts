@@ -6,27 +6,45 @@ import { ModalComponent } from '../modal/modal.component';
   selector: 'cq-audio-loading-modal',
   imports: [ModalComponent],
   template: `
-    <cq-modal [open]="open()" [closeable]="false">
+    <cq-modal [open]="loadingData().open" [closeable]="false">
       <span title>Loading...</span>
-      <span description>{{ subtitle() }}</span>
+      <span subtitle>{{ loadingData().title }}</span>
 
-      <div body class="flex flex-col items-center w-full gap-5 px-10 py-8">
+      <div body class="flex flex-col items-center w-full gap-5 p-5">
         <div
           class="anim-spin w-12 h-12 rounded-full border-4 border-slate-200 border-t-blue-400"
         ></div>
         <div class="text-center w-full">
-          <p class="font-display font-bold text-xs tracking-widest uppercase text-blue-500">
+          <p class="font-display font-bold text-xs mb-1 tracking-widest uppercase text-blue-500">
             Loading Audio
           </p>
-          <p class="mt-1 text-xs text-slate-400 truncate"></p>
         </div>
-        <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        @if (loadingData().error) {
           <div
-            [style.width]="amountLoaded() + '%'"
-            class="h-full bg-blue-400 rounded-full transition-all duration-300"
-          ></div>
-        </div>
+            class="bg-red-100 border border-red-400 text-sm text-red-700 px-4 py-3 rounded-md relative w-full"
+            role="alert"
+          >
+            <span class="font-medium">Error occured while loading:</span> {{ loadingData().error }}
+          </div>
+        } @else {
+          <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mx-4 mb-4">
+            <div
+              [style.width]="loadingData().percentLoaded + '%'"
+              class="h-full bg-blue-400 rounded-full transition-all duration-300"
+            ></div>
+          </div>
+        }
       </div>
+      @if (loadingData().error) {
+        <div footer class="flex items-center justify-end w-full">
+          <button
+            (click)="audioLoadSvc.clearError()"
+            class="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 text-sm font-medium rounded-xl transition-colors"
+          >
+            Ok
+          </button>
+        </div>
+      }
     </cq-modal>
   `,
   styles: `
@@ -43,9 +61,27 @@ import { ModalComponent } from '../modal/modal.component';
 })
 export class AudioLoadingModalComponent {
   protected readonly audioLoadSvc = inject(AudioLoadService);
-  protected readonly open = this.audioLoadSvc.loading;
-  protected readonly subtitle = this.audioLoadSvc.loadingTitle;
-  protected readonly amountLoaded = computed(() => {
-    Math.round(this.audioLoadSvc.fileLoadedPerc() * 100);
+
+  protected readonly loadingData = computed(() => {
+    const loadingState = this.audioLoadSvc.loadingState();
+    if (loadingState.state === 'loading') {
+      return {
+        open: true,
+        title: loadingState.title,
+        error: undefined,
+        percentLoaded: Math.round(loadingState.progress * 100),
+      };
+    } else if (loadingState.state === 'error') {
+      {
+        return {
+          open: true,
+          error: loadingState.error,
+          title: loadingState.title,
+          percentLoaded: 0,
+        };
+      }
+    } else {
+      return { open: false, error: undefined, title: '', percentLoaded: 0 };
+    }
   });
 }
