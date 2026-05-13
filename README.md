@@ -1,59 +1,23 @@
-# Constantqjs
+# ConstantQJs
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
+In this project, someone can view all the pitches in a piece of music. ConstantQJs utilizes Benjamin Blankertz's [algorithm](http://doc.ml.tu-berlin.de/bbci/material/publications/Bla_constQ.pdf) implementing the [Constant Q Transform](https://en.wikipedia.org/wiki/Constant-Q_transform).
 
-## Development server
+## Live Demo
 
-To start a local development server, run:
+**The live demo can be found [here](http://gdicristofaro.github.io/constantqjs/).**
 
-```bash
-ng serve
-```
+## How it works
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Audio file data is imported utilizing the Web Audio API. Then the audio data is analyzed for pitch information utilizing Benjamin Blankertz's [algorithm](http://doc.ml.tu-berlin.de/bbci/material/publications/Bla_constQ.pdf) where a sparse kernel is generated depending on the pitch range to consider as well as the frame rate of the audio. Then, the audio is processed split into segments and processed. This implementation utilizes C++ code compiled to web assembly utilizing [emscripten](https://emscripten.org/) in combination with web workers for performance and parallelization.
 
-## Code scaffolding
+## Setup and install
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+The project can be built with `npm install` and ran with `npm start`. The compiled web assembly is included, however the web assembly code can be built from the C++ code using `npm buildwasm`. Building the web assembly from the C++ code will require the [emscripten SDK](https://github.com/emscripten-core/emsdk).
 
-```bash
-ng generate component component-name
-```
+## Music
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+The recommended files includes the following:
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- A C major chord generated using [Audacity](https://www.audacityteam.org/)
+- [Laura Denardis Performing Bach Chorale](https://archive.org/details/LauradenardisperformingbachChorale)
+- [For Elise)](https://archive.org/details/lp_greatest-hits-of_frederic-chopin-ludwig-van-beethoven-jo/disc2/)
