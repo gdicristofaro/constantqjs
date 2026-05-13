@@ -80,7 +80,6 @@ export class AudioLoadService {
     title: string,
     settings: Settings,
   ): AudioFileData {
-    console.log('size is', size);
     return {
       audio,
       size,

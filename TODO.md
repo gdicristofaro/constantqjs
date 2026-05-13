@@ -1,13 +1,13 @@
 - load failure handling
 - loading percentage
-- drag on playback bar
 
 - TODOs in code
 - visibility
-- show all notes?
+- show all notes in graph?
 - tests
 - commenting
 - dark mode
 - integrate vexflow?
 - build script
 - unify colors and theming (buttons too)
+- test in firefox

@@ -4,32 +4,43 @@
     <span class="text-blue-500 font-medium">{{ curPosition() | playtime }}</span>
   </span>
 
-  <div
-    class="flex-1 h-1.5 rounded-full bg-slate-200 relative overflow-visible cursor-pointer"
-    (mousedown)="onBarMouseDown($event)"
-    (touchstart)="onBarTouchStart($event)"
-  >
+  <div class="flex-1 h-1.5 rounded-full relative">
+    <!-- Range input container with overlays -->
+    <div class="range-slider-holder absolute">
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.001"
+        [value]="curPositionPerc()"
+        (input)="onRangeChange($event)"
+        class="range-slider w-full h-1.5 appearance-none rounded-full cursor-pointer relative z-10"
+      />
+    </div>
+
+    <div class="z-1 rounded-4px pointer-events-none absolute inset-0 bg-slate-200 w-full"></div>
+
     <!-- Processed region (sky blue gradient) -->
     <div
       [style.width]="loadedPerc() * 100 + '%'"
-      class="rounded-4px duration-400 ease-linear transition-width pointer-events-none absolute inset-0 bg-gradient-to-r from-sky-50 to-sky-300"
+      class="z-2 rounded-4px duration-400 ease-linear transition-width pointer-events-none absolute inset-0 bg-gradient-to-r from-sky-50 to-sky-300"
     ></div>
     <!-- Played region (blue gradient) -->
     <div
       [style.width]="curPositionPerc() * 100 + '%'"
-      class="rounded-4px pointer-events-none inset-0 absolute bg-blue-700"
+      class="z-3 rounded-4px pointer-events-none inset-0 absolute bg-blue-700"
     ></div>
     <!-- Processing frontier tick -->
 
     <div
       [style.left]="loadedPerc() * 100 + '%'"
-      class="absolute pointer-events-none duration-400 ease-linear transition-left pointer-events-none abolute bar-tick bg-sky-500 shadow-[0_0_5px] shadow-sky-500"
+      class="z-9 absolute pointer-events-none duration-400 ease-linear transition-left pointer-events-none abolute bar-tick bg-sky-500 shadow-[0_0_5px] shadow-sky-500"
     ></div>
     <!-- Playhead thumb -->
-    <div
+    <!-- <div
       [style.left]="curPositionPerc() * 100 + '%'"
       class="bar-thumb border-2 duration-50 transition-left border-white pointer-events-none absolute bg-blue-700 shadow-md"
-    ></div>
+    ></div> -->
   </div>
 
   <span class="tabular text-[11px] text-slate-400 w-12 text-right">{{

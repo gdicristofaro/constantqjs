@@ -42,27 +42,10 @@ export class AudioPlayerComponent {
     this.playback.seek(secs);
   }
 
-  onBarTouchStart(event: TouchEvent) {
-    const touch = event.touches[0];
-    const bar = event.target as HTMLElement;
-    if (!bar) return;
-
-    this.onPlaybarClick(bar, touch.clientX);
-  }
-
-  onBarMouseDown(event: MouseEvent) {
-    const bar = event.target as HTMLElement;
-    if (!bar) return;
-
-    this.onPlaybarClick(bar, event.clientX);
-  }
-
-  private onPlaybarClick(el: HTMLElement, clickX: number) {
-    const rect = el.getBoundingClientRect();
-    const percentage = (clickX - rect.left) / rect.width;
-    const clampedPercentage = Math.max(0, Math.min(1, percentage));
-    const newPosition = clampedPercentage * (this.duration() ?? 0);
-
+  onRangeChange(event: Event) {
+    const inputVal = (event.target as HTMLInputElement)?.value ?? 0;
+    const percentage = parseFloat(inputVal);
+    const newPosition = percentage * (this.duration() ?? 0);
     this.setCurPosition(newPosition);
   }
   /**
