@@ -29,6 +29,9 @@ interface ProcessorModule {
   ): number;
   terminate_worker(_0: number): void;
 
+  addFunction(funct: {}, id: string): {};
+  removeFunction(ptr: {}): void;
+
   VectorDouble: new () => VectorDouble;
 }
 
@@ -59,7 +62,13 @@ export default class ConstantQDataUtil {
   private module: ProcessorModule | undefined = undefined;
 
   private readonly processingMutex = new Mutex();
-  private workerId: number | undefined = undefined;
+  private prevRun:
+    | {
+        workerId: number;
+        statusUpdatePtr: {};
+        dataUpdatePtr: {};
+      }
+    | undefined = undefined;
 
   async loadModule(): Promise<ProcessorModule> {
     return await this.moduleMutex.runExclusive(async () => {
@@ -186,20 +195,20 @@ export default class ConstantQDataUtil {
           case 2:
             count += num;
             if (count >= totCount) {
-              // eslint-disable-next-line
-              (window as any).removeFunction(statusUpdate);
-              // eslint-disable-next-line
-              (window as any).removeFunction(dataUpdate);
-              const paddedArr = this.padAudioArray(retArr, 1 / fps, buffer.duration);
+              this.cleanupPrevRun(mod, false)
+                .then(() => {
+                  const paddedArr = this.padAudioArray(retArr, 1 / fps, buffer.duration);
 
-              const constantqdata: ConstantQData = {
-                constantQData: paddedArr,
-                graphMax,
-              };
-              this.processingMutex.runExclusive(() => {
-                this.workerId = undefined;
-                subject.next({ status: 'Complete', data: constantqdata });
-              });
+                  const constantqdata: ConstantQData = {
+                    constantQData: paddedArr,
+                    graphMax,
+                  };
+                  this.processingMutex.runExclusive(() => {
+                    this.prevRun = undefined;
+                    subject.next({ status: 'Complete', data: constantqdata });
+                  });
+                })
+                .catch(e => console.log('There was an error on completion', e));
             } else {
               subject.next({
                 status: 'Loading',
@@ -218,10 +227,12 @@ export default class ConstantQDataUtil {
 
       this.processingMutex
         .runExclusive(async () => {
-          if (this.workerId !== undefined) {
-            await mod.terminate_worker(this.workerId);
-          }
-          mod.evaluate(
+          await this.cleanupPrevRun(mod, true);
+
+          const statUpdateFunc = mod.addFunction(statusUpdate, 'vii');
+          const dataUpdateFunc = mod.addFunction(dataUpdate, 'viid');
+
+          const workerId = mod.evaluate(
             buffer.sampleRate,
             minPitch.frequency,
             maxPitch.frequency,
@@ -230,9 +241,15 @@ export default class ConstantQDataUtil {
             buffer.sampleRate / fps,
             20,
             amplitudeBuffer,
-            statusUpdate,
-            dataUpdate,
+            statUpdateFunc.toString(),
+            dataUpdateFunc.toString(),
           );
+
+          this.prevRun = {
+            workerId,
+            statusUpdatePtr: statUpdateFunc,
+            dataUpdatePtr: dataUpdateFunc,
+          };
         })
         .catch(e => {
           console.log('An error occurred', e);
@@ -244,6 +261,18 @@ export default class ConstantQDataUtil {
     }
 
     return subject;
+  }
+
+  private async cleanupPrevRun(mod: ProcessorModule, terminateWorker: boolean) {
+    const prevRun = this.prevRun;
+    if (prevRun !== undefined) {
+      mod.removeFunction(prevRun.statusUpdatePtr);
+      mod.removeFunction(prevRun.dataUpdatePtr);
+      if (terminateWorker) {
+        await mod.terminate_worker(prevRun.workerId);
+      }
+    }
+    this.prevRun = undefined;
   }
 
   /**
@@ -258,7 +287,7 @@ export default class ConstantQDataUtil {
    *                              (if undefined use sparse kernel length)
    * @returns         the generated ConstantQData
    */
-  process(
+  static process(
     buffer: AudioBuffer,
     minPitch: Pitch = DEFAULT_MIN_FREQ,
     maxPitch: Pitch = DEFAULT_MAX_FREQ,

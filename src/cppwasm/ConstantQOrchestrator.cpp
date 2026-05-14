@@ -1,18 +1,19 @@
 #include "ConstantQSession.hpp"
 #include <cassert>
 #include <emscripten/bind.h>
-#include <emscripten/val.h>
 #include <emscripten.h>
 #include <emscripten/wasm_worker.h>
 #include <string>
 #include <cmath>
-#include <functional>
 #include "WorkerArgs.hpp"
 
 using namespace std;
 
 extern "C"
 {
+    typedef void (*StatusUpdate)(int, int);
+    typedef void (*DataUpdate)(int, int, double);
+
     const int STATUS_START_SPARSE_KERNEL = 0;
     // will also return the number of constant q frames
     const int STATUS_SPARSE_KERNEL_COMPLETE = 1;
@@ -27,15 +28,15 @@ extern "C"
         worker_handle worker;
         int audioDataSize;
         double *audioDataPtr;
-        std::function<void(int, int)> statusUpdate;
-        std::function<void(int, int, double)> dataUpdate;
+        StatusUpdate statusUpdate;
+        DataUpdate dataUpdate;
     };
 
     // data to use on the callback when constant q is determined
     struct OnConstantQArgs
     {
-        std::function<void(int, int)> statusUpdate;
-        std::function<void(int, int, double)> dataUpdate;
+        StatusUpdate statusUpdate;
+        DataUpdate dataUpdate;
     };
 
     void onConstantQ(char *data, int size, void *arg)
@@ -88,8 +89,8 @@ extern "C"
         worker_handle worker = args->worker;
         int doubleSize = args->audioDataSize;
         double *audioArrPtr = args->audioDataPtr;
-        std::function<void(int, int)> statusUpdate = args->statusUpdate;
-        std::function<void(int, int, double)> dataUpdate = args->dataUpdate;
+        StatusUpdate statusUpdate = args->statusUpdate;
+        DataUpdate dataUpdate = args->dataUpdate;
 
         vector<double> audioData(audioArrPtr, audioArrPtr + doubleSize);
 
@@ -169,21 +170,17 @@ extern "C"
     int evaluate(
         int fs, double minFreq, double maxFreq, int bins, double thresh,
         int frameInterval, int workerNumber, vector<double> data,
-        emscripten::val statusUpdatePtr, emscripten::val dataUpdatePtr)
+        string statusUpdatePtr, string dataUpdatePtr)
     {
+
 #ifdef DEBUG
         EM_ASM({console.log("Beginning evaluate...")});
 #endif
 
-        std::function<void(int, int)> statusUpdate = [statusUpdatePtr = std::move(statusUpdatePtr)](int status, int num)
-        {
-            statusUpdatePtr(status, num);
-        };
-
-        std::function<void(int, int, double)> dataUpdate = [dataUpdatePtr = std::move(dataUpdatePtr)](int i, int b, double val)
-        {
-            dataUpdatePtr(i, b, val);
-        };
+        int statusUpdateInt = atoi(&statusUpdatePtr[0]);
+        StatusUpdate statusUpdate = reinterpret_cast<StatusUpdate>(statusUpdateInt);
+        int dataUpdateInt = atoi(&dataUpdatePtr[0]);
+        DataUpdate dataUpdate = reinterpret_cast<DataUpdate>(dataUpdateInt);
 
         statusUpdate(STATUS_START_SPARSE_KERNEL, 0);
 

@@ -17,11 +17,13 @@ EMFLAGS = \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s MODULARIZE=1 \
   -s EXPORT_NAME="createProcessorModule" \
-  -s RESERVED_FUNCTION_POINTERS=20 \
+  -s ALLOW_TABLE_GROWTH=1 \
+  -s EXPORTED_RUNTIME_METHODS='["addFunction","removeFunction"]' \
   -s ENVIRONMENT='web'   # or 'node' if running in Node
 
 EM_WORKER_FLAGS = \
   -s ALLOW_MEMORY_GROWTH=1 \
+  -s ALLOW_TABLE_GROWTH=1 \
   -s EXPORTED_FUNCTIONS='["_initializeSession", "_sessionAnalyze"]' \
   -s BUILD_AS_WORKER=1 
 
@@ -34,11 +36,6 @@ ALL_CPP_WORKER_FILES = $(filter-out Tests.cpp ConstantQOrchestrator.cpp, $(ALL_C
 
 .PHONY: all clean
 all: $(OUT_DIR)/constantq.js $(OUT_DIR)/worker.js
-
-
-.PHONY: print-sources
-print-sources:
-	@echo $(ALL_FILES)
 
 $(OUT_DIR)/constantq.js: ConstantQOrchestrator.cpp | $(OUT_DIR)
 	$(CXX) $(CXXFLAGS) $(EMFLAGS) $< -o $@
