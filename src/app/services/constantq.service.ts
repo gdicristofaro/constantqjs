@@ -11,6 +11,7 @@ import ConstantQDataUtil, { ConstantQMessage } from './constantq/ConstantQDataUt
 })
 export class ConstantqService {
   private readonly audioSvc = inject(AudioLoadService);
+  private readonly constantQUtil = new ConstantQDataUtil();
   readonly constantQData = signal<ConstantQData | undefined>(undefined);
 
   readonly loadingPercentage = signal(0);
@@ -46,16 +47,18 @@ export class ConstantqService {
     }
   }
 
-  private onLoad(audioBuffer: AudioBuffer, settings: Settings) {
+  private async onLoad(audioBuffer: AudioBuffer, settings: Settings) {
     this.loadingPercentage.set(0);
     this.audioLoadSub?.unsubscribe();
-    this.audioLoadSub = ConstantQDataUtil.messageProcessing(
-      audioBuffer,
-      settings.minPitch,
-      settings.maxPitch,
-      DEFAULT_BINS,
-      DEFAULT_THRESH,
-      settings.fps,
+    this.audioLoadSub = (
+      await this.constantQUtil.messageProcessing(
+        audioBuffer,
+        settings.minPitch,
+        settings.maxPitch,
+        DEFAULT_BINS,
+        DEFAULT_THRESH,
+        settings.fps,
+      )
     ).subscribe({
       next: message => this.onConstantQMsg(message),
       error: err => this.setError(err),

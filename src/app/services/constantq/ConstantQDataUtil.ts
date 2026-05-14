@@ -1,3 +1,4 @@
+import { Mutex } from 'async-mutex';
 import { Observable, Subject } from 'rxjs';
 import Complex from '../../model/complex';
 import { ConstantQData } from '../../model/constantqdata';
@@ -10,6 +11,36 @@ import {
 } from '../../model/defaults';
 import { Pitch } from '../../model/pitch';
 import ConstantQ from './ConstantQ';
+
+interface ProcessorModule {
+  evaluate(
+    _0: number,
+    _1: number,
+    _2: number,
+    _3: number,
+    _4: number,
+    _5: number,
+    _6: number,
+    _7: VectorDouble,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _8: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _9: any,
+  ): number;
+  terminate_worker(_0: number): void;
+
+  VectorDouble: new () => VectorDouble;
+}
+
+export interface VectorDouble extends Iterable<number> {
+  push_back(_0: number): void;
+  resize(_0: number, _1: number): void;
+  size(): number;
+  get(_0: number): number | undefined;
+  set(_0: number, _1: number): boolean;
+}
+
+declare function createProcessorModule(): Promise<ProcessorModule>;
 
 /**
  * the return message type along with data
@@ -24,8 +55,26 @@ export type ConstantQMessage =
  * utilities for generating Constant Q data for an entire song
  */
 export default class ConstantQDataUtil {
+  private readonly moduleMutex = new Mutex();
+  private module: ProcessorModule | undefined = undefined;
+
+  private readonly processingMutex = new Mutex();
+  private workerId: number | undefined = undefined;
+
+  async loadModule(): Promise<ProcessorModule> {
+    return await this.moduleMutex.runExclusive(async () => {
+      if (!this.module) {
+        const newModule = await createProcessorModule();
+        this.module = newModule;
+        return newModule;
+      } else {
+        return this.module;
+      }
+    });
+  }
+
   // how often user will get updates
-  static readonly PERCENTAGE_INCREMENTS = 5;
+  readonly PERCENTAGE_INCREMENTS = 5;
 
   /**
    * pads the processed info array so that all frames for the length of the song are covered
@@ -36,7 +85,7 @@ export default class ConstantQDataUtil {
    * @param seconds       the total length of the song in seconds
    * @return              the padded array
    */
-  private static padAudioArray(retArr: number[][], frameRate: number, seconds: number) {
+  private padAudioArray(retArr: number[][], frameRate: number, seconds: number) {
     if (!retArr || !retArr.length) return retArr;
 
     const totalExpectedFrames = Math.ceil(seconds / frameRate);
@@ -67,24 +116,28 @@ export default class ConstantQDataUtil {
    *                      [data?]: on complete, returns ConstantQData
    *                  }
    */
-  static messageProcessing(
+  async messageProcessing(
     buffer: AudioBuffer,
     minPitch: Pitch = DEFAULT_MIN_FREQ,
     maxPitch: Pitch = DEFAULT_MAX_FREQ,
     bins: number = DEFAULT_BINS,
     thresh: number = DEFAULT_THRESH,
     fps: number = DEFAULT_FPS,
-  ): Observable<ConstantQMessage> {
+  ): Promise<Observable<ConstantQMessage>> {
     const subject = new Subject<ConstantQMessage>();
 
     try {
-      // eslint-disable-next-line
-      const amplitudeBuffer = new (window as any).Module.VectorDouble();
+      const mod = await this.loadModule();
+
+      const amplitudeBuffer = new mod.VectorDouble();
       for (let c = 0; c < buffer.numberOfChannels; c++) {
         const floatData = buffer.getChannelData(c);
         for (let i = 0; i < buffer.length; i++) {
-          if (c == 0) amplitudeBuffer.push_back(floatData[i]);
-          else amplitudeBuffer[i] = amplitudeBuffer[i] + floatData[i];
+          if (c == 0) {
+            amplitudeBuffer.push_back(floatData[i]);
+          } else {
+            amplitudeBuffer.set(i, (amplitudeBuffer.get(i) ?? 0) + floatData[i]);
+          }
         }
       }
 
@@ -137,13 +190,16 @@ export default class ConstantQDataUtil {
               (window as any).removeFunction(statusUpdate);
               // eslint-disable-next-line
               (window as any).removeFunction(dataUpdate);
-              const paddedArr = ConstantQDataUtil.padAudioArray(retArr, 1 / fps, buffer.duration);
+              const paddedArr = this.padAudioArray(retArr, 1 / fps, buffer.duration);
 
               const constantqdata: ConstantQData = {
                 constantQData: paddedArr,
                 graphMax,
               };
-              subject.next({ status: 'Complete', data: constantqdata });
+              this.processingMutex.runExclusive(() => {
+                this.workerId = undefined;
+                subject.next({ status: 'Complete', data: constantqdata });
+              });
             } else {
               subject.next({
                 status: 'Loading',
@@ -160,25 +216,30 @@ export default class ConstantQDataUtil {
         }
       };
 
-      // eslint-disable-next-line
-      const statUpdateFunc = (window as any).addFunction(statusUpdate, 'vii');
-      // eslint-disable-next-line
-      const dataUpdateFunc = (window as any).addFunction(dataUpdate, 'viid');
-
-      // eslint-disable-next-line
-      (window as any).Module.evaluate(
-        buffer.sampleRate,
-        minPitch.frequency,
-        maxPitch.frequency,
-        bins,
-        thresh,
-        buffer.sampleRate / fps,
-        20,
-        amplitudeBuffer,
-        statUpdateFunc.toString(),
-        dataUpdateFunc.toString(),
-      );
+      this.processingMutex
+        .runExclusive(async () => {
+          if (this.workerId !== undefined) {
+            await mod.terminate_worker(this.workerId);
+          }
+          mod.evaluate(
+            buffer.sampleRate,
+            minPitch.frequency,
+            maxPitch.frequency,
+            bins,
+            thresh,
+            buffer.sampleRate / fps,
+            20,
+            amplitudeBuffer,
+            statusUpdate,
+            dataUpdate,
+          );
+        })
+        .catch(e => {
+          console.log('An error occurred', e);
+          subject.next({ status: 'Error', message: e?.toString() ?? '' });
+        });
     } catch (e) {
+      console.log('An error occurred', e);
       subject.next({ status: 'Error', message: e?.toString() ?? '' });
     }
 
@@ -197,7 +258,7 @@ export default class ConstantQDataUtil {
    *                              (if undefined use sparse kernel length)
    * @returns         the generated ConstantQData
    */
-  static process(
+  process(
     buffer: AudioBuffer,
     minPitch: Pitch = DEFAULT_MIN_FREQ,
     maxPitch: Pitch = DEFAULT_MAX_FREQ,
