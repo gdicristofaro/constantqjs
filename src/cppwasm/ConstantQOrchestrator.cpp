@@ -47,8 +47,8 @@ extern "C"
         int sampleStart = retHeaderArgs->sampleStart;
 
         OnConstantQArgs *onConstantQArgs = (OnConstantQArgs *)arg;
-        std::function<void(int, int)> statusUpdate = onConstantQArgs->statusUpdate;
-        std::function<void(int, int, double)> dataUpdate = onConstantQArgs->dataUpdate;
+        StatusUpdate statusUpdate = onConstantQArgs->statusUpdate;
+        DataUpdate dataUpdate = onConstantQArgs->dataUpdate;
 
         int audioArrSize = (size - sizeof(ConstantQReturnHeaderArgs)) / sizeof(double);
         assert(audioArrSize >= bins * totalSamples);
@@ -181,6 +181,10 @@ extern "C"
         StatusUpdate statusUpdate = reinterpret_cast<StatusUpdate>(statusUpdateInt);
         int dataUpdateInt = atoi(&dataUpdatePtr[0]);
         DataUpdate dataUpdate = reinterpret_cast<DataUpdate>(dataUpdateInt);
+
+#ifdef DEBUG
+        EM_ASM({ console.log("table size:", wasmTable.length, "data ptr:", $0, "status ptr: ", $1); }, dataUpdateInt, statusUpdateInt);
+#endif
 
         statusUpdate(STATUS_START_SPARSE_KERNEL, 0);
 

@@ -1,5 +1,6 @@
 CXX      = em++
-CXXFLAGS = -O3 -std=c++23 -DDEBUG 
+CXXFLAGS = -O3 -std=c++23 
+# can run with -DDEBUG 
 
 OUT_DIR  = ../../public/assets/wasm
 
