@@ -11,39 +11,9 @@ import {
 } from '../../model/defaults';
 import { Pitch } from '../../model/pitch';
 import ConstantQ from './ConstantQ';
+import { MainModule } from './constantq.wasm.interface';
 
-interface ProcessorModule {
-  evaluate(
-    _0: number,
-    _1: number,
-    _2: number,
-    _3: number,
-    _4: number,
-    _5: number,
-    _6: number,
-    _7: VectorDouble,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _8: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _9: any,
-  ): number;
-  terminate_worker(_0: number): void;
-
-  addFunction(funct: {}, id: string): {};
-  removeFunction(ptr: {}): void;
-
-  VectorDouble: new () => VectorDouble;
-}
-
-export interface VectorDouble extends Iterable<number> {
-  push_back(_0: number): void;
-  resize(_0: number, _1: number): void;
-  size(): number;
-  get(_0: number): number | undefined;
-  set(_0: number, _1: number): boolean;
-}
-
-declare function createProcessorModule(): Promise<ProcessorModule>;
+declare function createProcessorModule(): Promise<MainModule>;
 
 /**
  * the return message type along with data
@@ -59,28 +29,17 @@ export type ConstantQMessage =
  */
 export default class ConstantQDataUtil {
   private readonly moduleMutex = new Mutex();
-  private module: ProcessorModule | undefined = undefined;
+  private module: MainModule | undefined = undefined;
 
   private readonly processingMutex = new Mutex();
   private prevRun:
     | {
-        workerId: number;
+        cancelledUpdatePtr: {};
         statusUpdatePtr: {};
         dataUpdatePtr: {};
+        cancel: () => void;
       }
     | undefined = undefined;
-
-  async loadModule(): Promise<ProcessorModule> {
-    return await this.moduleMutex.runExclusive(async () => {
-      if (!this.module) {
-        const newModule = await createProcessorModule();
-        this.module = newModule;
-        return newModule;
-      } else {
-        return this.module;
-      }
-    });
-  }
 
   // how often user will get updates
   readonly PERCENTAGE_INCREMENTS = 5;
@@ -136,7 +95,7 @@ export default class ConstantQDataUtil {
     const subject = new Subject<ConstantQMessage>();
 
     try {
-      const mod = await this.loadModule();
+      const mod = await createProcessorModule();
 
       const amplitudeBuffer = new mod.VectorDouble();
       for (let c = 0; c < buffer.numberOfChannels; c++) {
@@ -154,6 +113,10 @@ export default class ConstantQDataUtil {
       let count = 0;
       let totCount = 0;
       let graphMax = 0;
+
+      let isCancelled = false;
+      const cancel = () => (isCancelled = true);
+      const cancelledUpdate = () => isCancelled;
 
       const dataUpdate = (i: number, b: number, val: number) => {
         while (retArr.length <= i) {
@@ -195,20 +158,16 @@ export default class ConstantQDataUtil {
           case 2:
             count += num;
             if (count >= totCount) {
-              this.cleanupPrevRun(mod, false)
-                .then(() => {
-                  const paddedArr = this.padAudioArray(retArr, 1 / fps, buffer.duration);
+              const paddedArr = this.padAudioArray(retArr, 1 / fps, buffer.duration);
 
-                  const constantqdata: ConstantQData = {
-                    constantQData: paddedArr,
-                    graphMax,
-                  };
-                  this.processingMutex.runExclusive(() => {
-                    this.prevRun = undefined;
-                    subject.next({ status: 'Complete', data: constantqdata });
-                  });
-                })
-                .catch(e => console.log('There was an error on completion', e));
+              const constantqdata: ConstantQData = {
+                constantQData: paddedArr,
+                graphMax,
+              };
+              this.processingMutex.runExclusive(() => {
+                this.prevRun = undefined;
+                subject.next({ status: 'Complete', data: constantqdata });
+              });
             } else {
               subject.next({
                 status: 'Loading',
@@ -222,17 +181,21 @@ export default class ConstantQDataUtil {
             }
 
             break;
+          case 3:
+            console.log('Processing has been cancelled');
+            break;
         }
       };
 
       this.processingMutex
         .runExclusive(async () => {
-          await this.cleanupPrevRun(mod, true);
+          this.prevRun?.cancel();
 
           const statUpdateFunc = mod.addFunction(statusUpdate, 'vii');
           const dataUpdateFunc = mod.addFunction(dataUpdate, 'viid');
+          const cancelledUpdateFunc = mod.addFunction(cancelledUpdate, 'i');
 
-          const workerId = mod.evaluate(
+          mod.evaluate(
             buffer.sampleRate,
             minPitch.frequency,
             maxPitch.frequency,
@@ -243,10 +206,12 @@ export default class ConstantQDataUtil {
             amplitudeBuffer,
             statUpdateFunc.toString(),
             dataUpdateFunc.toString(),
+            cancelledUpdateFunc.toString(),
           );
 
           this.prevRun = {
-            workerId,
+            cancel,
+            cancelledUpdatePtr: cancelledUpdateFunc,
             statusUpdatePtr: statUpdateFunc,
             dataUpdatePtr: dataUpdateFunc,
           };
@@ -261,18 +226,6 @@ export default class ConstantQDataUtil {
     }
 
     return subject;
-  }
-
-  private async cleanupPrevRun(mod: ProcessorModule, terminateWorker: boolean) {
-    const prevRun = this.prevRun;
-    if (prevRun !== undefined) {
-      mod.removeFunction(prevRun.statusUpdatePtr);
-      mod.removeFunction(prevRun.dataUpdatePtr);
-      if (terminateWorker) {
-        await mod.terminate_worker(prevRun.workerId);
-      }
-    }
-    this.prevRun = undefined;
   }
 
   /**

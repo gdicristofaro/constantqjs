@@ -10,17 +10,21 @@ OUT_DIR  = ../../public/assets/wasm
 # ALLOW_TABLE_GROWTH→ required if you ever use addFunction(); safe to include
 # EXPORTED_RUNTIME_METHODS → expose 'addFunction' to JS if needed later
 
-# can run with --emit-tsd interface.d.ts to create interface
+# can run with  to create interface
+# -s MODULARIZE=1 \
+#   -s EXPORT_NAME="createProcessorModule" \
+#   -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE='["emscripten_create_worker","emscripten_call_worker","emscripten_terminate_wasm_worker"]' \
+#   -s ENVIRONMENT='web'   # or 'node' if running in Node
 
 EMFLAGS = \
   --bind \
-  -s WASM_WORKERS=1 \
+  --emit-tsd ../../../src/app/services/constantq/constantq.wasm.interface.d.ts \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s MODULARIZE=1 \
   -s EXPORT_NAME="createProcessorModule" \
   -s ALLOW_TABLE_GROWTH=1 \
-  -s EXPORTED_RUNTIME_METHODS='["addFunction","removeFunction"]' \
-  -s ENVIRONMENT='web'   # or 'node' if running in Node
+  -s WASM_WORKERS=1 \
+  -s EXPORTED_RUNTIME_METHODS='["addFunction","removeFunction"]'
 
 EM_WORKER_FLAGS = \
   -s ALLOW_MEMORY_GROWTH=1 \

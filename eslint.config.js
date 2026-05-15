@@ -6,6 +6,7 @@ const angular = require('angular-eslint');
 
 module.exports = defineConfig([
   {
+    ignores: ['./src/app/services/constantq/constantq.wasm.interface.d.ts'],
     files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,

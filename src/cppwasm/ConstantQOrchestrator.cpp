@@ -13,12 +13,14 @@ extern "C"
 {
     typedef void (*StatusUpdate)(int, int);
     typedef void (*DataUpdate)(int, int, double);
+    typedef int (*CancelledUpdate)();
 
     const int STATUS_START_SPARSE_KERNEL = 0;
     // will also return the number of constant q frames
     const int STATUS_SPARSE_KERNEL_COMPLETE = 1;
     // will also return the number of constant q samples in most recent iteration
     const int STATUS_CONSTANTQ_ITEM = 2;
+    const int STATUS_CANCELLED = 3;
 
     // data to use on the callback when sparse kernel is determined
     struct OnSparseKernelArgs
@@ -30,6 +32,7 @@ extern "C"
         double *audioDataPtr;
         StatusUpdate statusUpdate;
         DataUpdate dataUpdate;
+        CancelledUpdate cancelledUpdate;
     };
 
     // data to use on the callback when constant q is determined
@@ -37,6 +40,7 @@ extern "C"
     {
         StatusUpdate statusUpdate;
         DataUpdate dataUpdate;
+        CancelledUpdate cancelledUpdate;
     };
 
     void onConstantQ(char *data, int size, void *arg)
@@ -49,6 +53,12 @@ extern "C"
         OnConstantQArgs *onConstantQArgs = (OnConstantQArgs *)arg;
         StatusUpdate statusUpdate = onConstantQArgs->statusUpdate;
         DataUpdate dataUpdate = onConstantQArgs->dataUpdate;
+        CancelledUpdate cancelledUpdate = onConstantQArgs->cancelledUpdate;
+
+        if (cancelledUpdate())
+        {
+            return;
+        }
 
         int audioArrSize = (size - sizeof(ConstantQReturnHeaderArgs)) / sizeof(double);
         assert(audioArrSize >= bins * totalSamples);
@@ -91,6 +101,12 @@ extern "C"
         double *audioArrPtr = args->audioDataPtr;
         StatusUpdate statusUpdate = args->statusUpdate;
         DataUpdate dataUpdate = args->dataUpdate;
+        CancelledUpdate cancelledUpdate = args->cancelledUpdate;
+
+        if (cancelledUpdate())
+        {
+            statusUpdate(STATUS_CANCELLED, 0);
+        }
 
         vector<double> audioData(audioArrPtr, audioArrPtr + doubleSize);
 
@@ -114,11 +130,17 @@ extern "C"
         OnConstantQArgs onConstantQArgs;
         onConstantQArgs.dataUpdate = dataUpdate;
         onConstantQArgs.statusUpdate = statusUpdate;
+        onConstantQArgs.cancelledUpdate = cancelledUpdate;
 
         // the last ending frame
         int startSample = 0;
         for (int w = 0; w < workerNumber; w++)
         {
+            if (cancelledUpdate())
+            {
+                statusUpdate(STATUS_CANCELLED, startSample);
+            }
+
             int endingSample = ceil(((((double)w) + 1) / workerNumber) * sampleNum);
 
             int totalSamples = endingSample - startSample;
@@ -170,7 +192,7 @@ extern "C"
     int evaluate(
         int fs, double minFreq, double maxFreq, int bins, double thresh,
         int frameInterval, int workerNumber, vector<double> data,
-        string statusUpdatePtr, string dataUpdatePtr)
+        string statusUpdatePtr, string dataUpdatePtr, string cancelledUpdatePtr)
     {
 
 #ifdef DEBUG
@@ -181,6 +203,8 @@ extern "C"
         StatusUpdate statusUpdate = reinterpret_cast<StatusUpdate>(statusUpdateInt);
         int dataUpdateInt = atoi(&dataUpdatePtr[0]);
         DataUpdate dataUpdate = reinterpret_cast<DataUpdate>(dataUpdateInt);
+        int cancelledUpdateInt = atoi(&cancelledUpdatePtr[0]);
+        CancelledUpdate cancelledUpdate = reinterpret_cast<CancelledUpdate>(cancelledUpdateInt);
 
 #ifdef DEBUG
         EM_ASM({ console.log("table size:", wasmTable.length, "data ptr:", $0, "status ptr: ", $1); }, dataUpdateInt, statusUpdateInt);
@@ -211,6 +235,7 @@ extern "C"
         args.audioDataPtr = &data[0];
         args.statusUpdate = statusUpdate;
         args.dataUpdate = dataUpdate;
+        args.cancelledUpdate = cancelledUpdate;
 
 #ifdef DEBUG
         EM_ASM({ console.log('evaluate: fs', $0,
@@ -230,11 +255,6 @@ extern "C"
         return worker;
     }
 
-    void terminate_worker(int worker_id)
-    {
-        emscripten_terminate_wasm_worker((worker_handle)worker_id);
-    }
-
     EMSCRIPTEN_BINDINGS(stl_wrappers)
     {
         emscripten::register_vector<double>("VectorDouble");
@@ -243,6 +263,5 @@ extern "C"
     EMSCRIPTEN_BINDINGS(ConstantQOrchestrator)
     {
         emscripten::function("evaluate", &evaluate);
-        emscripten::function("terminate_worker", &terminate_worker);
     }
 }
