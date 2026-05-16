@@ -30,6 +30,7 @@ interface EmbindModule {
     new(): VectorDouble;
   };
   evaluate(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number, _6: number, _7: VectorDouble, _8: EmbindString, _9: EmbindString, _10: EmbindString): number;
+  forceExit(): number;
 }
 
 export type MainModule = WasmModule & typeof RuntimeExports & EmbindModule;

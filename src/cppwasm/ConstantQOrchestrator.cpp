@@ -6,182 +6,81 @@
 #include <string>
 #include <cmath>
 #include "WorkerArgs.hpp"
+#include "Status.hpp"
 
 using namespace std;
 
 extern "C"
 {
-    typedef void (*StatusUpdate)(int, int);
-    typedef void (*DataUpdate)(int, int, double);
-    typedef int (*CancelledUpdate)();
-
-    const int STATUS_START_SPARSE_KERNEL = 0;
-    // will also return the number of constant q frames
-    const int STATUS_SPARSE_KERNEL_COMPLETE = 1;
-    // will also return the number of constant q samples in most recent iteration
-    const int STATUS_CONSTANTQ_ITEM = 2;
-    const int STATUS_CANCELLED = 3;
-
-    // data to use on the callback when sparse kernel is determined
-    struct OnSparseKernelArgs
+    void handleWorkerMessage(char *data, int size, void *arg)
     {
-        int frameInterval;
-        int workerNumber;
-        worker_handle worker;
-        int audioDataSize;
-        double *audioDataPtr;
-        StatusUpdate statusUpdate;
-        DataUpdate dataUpdate;
-        CancelledUpdate cancelledUpdate;
-    };
-
-    // data to use on the callback when constant q is determined
-    struct OnConstantQArgs
-    {
-        StatusUpdate statusUpdate;
-        DataUpdate dataUpdate;
-        CancelledUpdate cancelledUpdate;
-    };
-
-    void onConstantQ(char *data, int size, void *arg)
-    {
-        ConstantQReturnHeaderArgs *retHeaderArgs = (ConstantQReturnHeaderArgs *)data;
-        int totalSamples = retHeaderArgs->totalSamples;
-        int bins = retHeaderArgs->bins;
-        int sampleStart = retHeaderArgs->sampleStart;
 
         OnConstantQArgs *onConstantQArgs = (OnConstantQArgs *)arg;
         StatusUpdate statusUpdate = onConstantQArgs->statusUpdate;
         DataUpdate dataUpdate = onConstantQArgs->dataUpdate;
         CancelledUpdate cancelledUpdate = onConstantQArgs->cancelledUpdate;
 
-        if (cancelledUpdate())
-        {
-            return;
-        }
-
-        int audioArrSize = (size - sizeof(ConstantQReturnHeaderArgs)) / sizeof(double);
-        assert(audioArrSize >= bins * totalSamples);
-
-        double *analyzedPtr = (double *)(data + sizeof(ConstantQReturnHeaderArgs));
-        vector<double> analyzed(analyzedPtr, analyzedPtr + audioArrSize);
+        Status status = ((Status *)data)[0];
 
 #ifdef DEBUG
-        EM_ASM({ console.log('constantq: totalSamples', $0,
-                             'bins', $1,
-                             'sampleStart', $2,
-                             'audioSize', $3); }, totalSamples, bins, sampleStart, audioArrSize);
+        EM_ASM({ console.log('received status to display: ', $0, 'and size', $1); }, status, size);
 #endif
 
-        for (int i = 0; i < totalSamples; i++)
+        switch (status)
         {
-            for (int b = 0; b < bins; b++)
-            {
-                double value = analyzed[i * bins + b];
-                dataUpdate(sampleStart + i, b, value);
-            }
-        }
-
-        statusUpdate(STATUS_CONSTANTQ_ITEM, totalSamples);
-    }
-
-    void onSparseKernel(char *data, int sz, void *arg)
-    {
-        assert(sz == sizeof(SparseKernelReturnArgs));
-        SparseKernelReturnArgs *retArgs = (SparseKernelReturnArgs *)data;
-        int sparseKernelSize = retArgs->size;
-        int bins = retArgs->bins;
-
-        OnSparseKernelArgs *args = (OnSparseKernelArgs *)arg;
-
-        int frameInterval = args->frameInterval;
-        int workerNumber = args->workerNumber;
-        worker_handle worker = args->worker;
-        int doubleSize = args->audioDataSize;
-        double *audioArrPtr = args->audioDataPtr;
-        StatusUpdate statusUpdate = args->statusUpdate;
-        DataUpdate dataUpdate = args->dataUpdate;
-        CancelledUpdate cancelledUpdate = args->cancelledUpdate;
-
-        if (cancelledUpdate())
+        case STATUS_SPARSE_KERNEL_COMPLETE:
         {
-            statusUpdate(STATUS_CANCELLED, 0);
-        }
-
-        vector<double> audioData(audioArrPtr, audioArrPtr + doubleSize);
-
-        // total number of constantq samplings
-        int sampleNum = floor((audioData.size() - sparseKernelSize) / frameInterval);
-
-        statusUpdate(STATUS_SPARSE_KERNEL_COMPLETE, sampleNum);
-
+            int sampleNum = *reinterpret_cast<int *>((data + sizeof(Status)));
 #ifdef DEBUG
-        for (int i = 0; i < min(100, (int)audioData.size()); i += 10)
-            EM_ASM({console.log("sparse kernel audio data at ", $0, $1)}, i, audioData[i]);
-
-        EM_ASM({ console.log('sparsekernel: sparseKernelSize', $0,
-                             'bins', $1,
-                             'frameInterval', $2,
-                             'workerNumber', $3,
-                             'sampleNum', $4,
-                             'audioData size', $5); }, sparseKernelSize, bins, frameInterval, workerNumber, sampleNum, audioData.size());
+            EM_ASM({ console.log('calling status update with sparse kernel complete: ', $0); }, sampleNum);
 #endif
 
-        OnConstantQArgs onConstantQArgs;
-        onConstantQArgs.dataUpdate = dataUpdate;
-        onConstantQArgs.statusUpdate = statusUpdate;
-        onConstantQArgs.cancelledUpdate = cancelledUpdate;
-
-        // the last ending frame
-        int startSample = 0;
-        for (int w = 0; w < workerNumber; w++)
+            statusUpdate(Status::STATUS_SPARSE_KERNEL_COMPLETE, sampleNum);
+            break;
+        }
+        case STATUS_CONSTANTQ_ITEM:
         {
+
+            ConstantQReturnHeaderArgs *retHeaderArgs = (ConstantQReturnHeaderArgs *)(data + sizeof(Status));
+            int totalSamples = retHeaderArgs->totalSamples;
+            int bins = retHeaderArgs->bins;
+            int sampleStart = retHeaderArgs->sampleStart;
+
             if (cancelledUpdate())
             {
-                statusUpdate(STATUS_CANCELLED, startSample);
+                return;
             }
 
-            int endingSample = ceil(((((double)w) + 1) / workerNumber) * sampleNum);
+            int audioArrSize = (size - sizeof(ConstantQReturnHeaderArgs) - sizeof(Status)) / sizeof(double);
+            assert(audioArrSize >= bins * totalSamples);
 
-            int totalSamples = endingSample - startSample;
-            if (totalSamples < 1)
-                continue;
-
-            ConstantQHeaderArgs theseArgs;
-            theseArgs.frameInterval = frameInterval;
-            theseArgs.startFrame = 0;
-            theseArgs.sampleStart = startSample;
-            theseArgs.totalSamples = totalSamples;
-
-            auto audioSampleSize = ((totalSamples - 1) * frameInterval) + sparseKernelSize;
-
-            auto totalObjSize = sizeof(ConstantQHeaderArgs) + sizeof(double) * audioSampleSize;
-            vector<char> thisData(totalObjSize);
+            double *analyzedPtr = (double *)(data + sizeof(ConstantQReturnHeaderArgs) + sizeof(Status));
+            vector<double> analyzed(analyzedPtr, analyzedPtr + audioArrSize);
 
 #ifdef DEBUG
-            EM_ASM({ console.log('sparsekernel loop: sampleStart', $0,
-                                 'totalSamples', $1,
-                                 'audioSampleSize', $2); }, startSample, totalSamples, audioSampleSize);
-
-            for (int i = startSample * frameInterval; i < min(100, (int)audioData.size()); i += 10)
-                EM_ASM({console.log("sparse kernel loop audio data at", $0, $1)}, i, audioData[i]);
+            EM_ASM({ console.log('constantq: totalSamples', $0,
+                                 'bins', $1,
+                                 'sampleStart', $2,
+                                 'audioSize', $3); }, totalSamples, bins, sampleStart, audioArrSize);
 #endif
 
-            std::memcpy(
-                &thisData[0],
-                &theseArgs,
-                sizeof(ConstantQHeaderArgs));
+            for (int i = 0; i < totalSamples; i++)
+            {
+                for (int b = 0; b < bins; b++)
+                {
+                    double value = analyzed[i * bins + b];
+                    dataUpdate(sampleStart + i, b, value);
+                }
+            }
 
-            std::memcpy(
-                &thisData[0] + sizeof(ConstantQHeaderArgs),
-                &audioData[startSample * frameInterval],
-                sizeof(double) * audioSampleSize);
+            statusUpdate(Status::STATUS_CONSTANTQ_ITEM, totalSamples);
 
-            emscripten_call_worker(worker, "sessionAnalyze",
-                                   (char *)&thisData[0], totalObjSize,
-                                   onConstantQ, (void *)&onConstantQArgs);
-
-            startSample = endingSample;
+            break;
+        }
+        default:
+        {
+            break;
+        }
         }
     }
 
@@ -210,7 +109,7 @@ extern "C"
         EM_ASM({ console.log("table size:", wasmTable.length, "data ptr:", $0, "status ptr: ", $1); }, dataUpdateInt, statusUpdateInt);
 #endif
 
-        statusUpdate(STATUS_START_SPARSE_KERNEL, 0);
+        statusUpdate(Status::STATUS_START_SPARSE_KERNEL, 0);
 
 #ifdef DEBUG
         for (int i = 0; i < min(100, (int)data.size()); i += 10)
@@ -219,24 +118,30 @@ extern "C"
 
         worker_handle worker = emscripten_create_worker("./assets/wasm/worker.js");
 
-        // initialize sparse Kernel
-        SparseKernelWorkerArgs sparseKernelArgs;
-        sparseKernelArgs.fs = fs;
-        sparseKernelArgs.minFreq = minFreq;
-        sparseKernelArgs.maxFreq = maxFreq;
-        sparseKernelArgs.bins = bins;
-        sparseKernelArgs.thresh = thresh;
+        int callObjSize = sizeof(ConstantQWorkerArgs) + data.size() * sizeof(double);
+        vector<char> callObjData(callObjSize);
 
-        OnSparseKernelArgs args;
-        args.frameInterval = frameInterval;
-        args.worker = worker;
-        args.workerNumber = workerNumber;
-        args.audioDataSize = data.size();
-        args.audioDataPtr = &data[0];
-        args.statusUpdate = statusUpdate;
-        args.dataUpdate = dataUpdate;
-        args.cancelledUpdate = cancelledUpdate;
+        ConstantQWorkerArgs *constantQWorkerArgs = (ConstantQWorkerArgs *)&callObjData[0];
+        constantQWorkerArgs->sparseKernelArgs.fs = fs;
+        constantQWorkerArgs->sparseKernelArgs.minFreq = minFreq;
+        constantQWorkerArgs->sparseKernelArgs.maxFreq = maxFreq;
+        constantQWorkerArgs->sparseKernelArgs.bins = bins;
+        constantQWorkerArgs->sparseKernelArgs.thresh = thresh;
 
+        constantQWorkerArgs->onSparseKernelArgs.frameInterval = frameInterval;
+        constantQWorkerArgs->onSparseKernelArgs.workerNumber = workerNumber;
+        constantQWorkerArgs->onSparseKernelArgs.audioDataSize = data.size();
+        constantQWorkerArgs->onSparseKernelArgs.audioDataPtr = &data[0];
+        constantQWorkerArgs->onSparseKernelArgs.statusUpdate = statusUpdate;
+        constantQWorkerArgs->onSparseKernelArgs.dataUpdate = dataUpdate;
+        constantQWorkerArgs->onSparseKernelArgs.cancelledUpdate = cancelledUpdate;
+
+        std::memcpy(&callObjData[0] + sizeof(ConstantQWorkerArgs), &data[0], sizeof(double) * data.size());
+
+        OnConstantQArgs onConstantQArgs = {
+            statusUpdate,
+            dataUpdate,
+            cancelledUpdate};
 #ifdef DEBUG
         EM_ASM({ console.log('evaluate: fs', $0,
                              'minFreq', $1,
@@ -249,10 +154,17 @@ extern "C"
 #endif
 
         emscripten_call_worker(worker, "initializeSession",
-                               (char *)&sparseKernelArgs, sizeof(SparseKernelWorkerArgs),
-                               onSparseKernel, (void *)&args);
+                               &callObjData[0],
+                               callObjSize,
+                               handleWorkerMessage,
+                               (void *)&onConstantQArgs);
 
         return worker;
+    }
+
+    int forceExit()
+    {
+        emscripten_force_exit(0);
     }
 
     EMSCRIPTEN_BINDINGS(stl_wrappers)
@@ -263,5 +175,6 @@ extern "C"
     EMSCRIPTEN_BINDINGS(ConstantQOrchestrator)
     {
         emscripten::function("evaluate", &evaluate);
+        emscripten::function("forceExit", &forceExit);
     }
 }

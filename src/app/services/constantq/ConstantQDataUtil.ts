@@ -37,6 +37,7 @@ export default class ConstantQDataUtil {
         cancelledUpdatePtr: {};
         statusUpdatePtr: {};
         dataUpdatePtr: {};
+        mod: MainModule;
         cancel: () => void;
       }
     | undefined = undefined;
@@ -93,6 +94,9 @@ export default class ConstantQDataUtil {
     fps: number = DEFAULT_FPS,
   ): Promise<Observable<ConstantQMessage>> {
     const subject = new Subject<ConstantQMessage>();
+    subject.subscribe(msg => {
+      console.log('constant q', msg);
+    });
 
     try {
       const mod = await createProcessorModule();
@@ -164,10 +168,16 @@ export default class ConstantQDataUtil {
                 constantQData: paddedArr,
                 graphMax,
               };
-              this.processingMutex.runExclusive(() => {
-                this.prevRun = undefined;
-                subject.next({ status: 'Complete', data: constantqdata });
-              });
+              this.processingMutex
+                .runExclusive(() => {
+                  this.cleanupPrevRun();
+                })
+                .catch(err => {
+                  console.log('An error occurred while cleaning up resources', err);
+                })
+                .finally(() => {
+                  subject.next({ status: 'Complete', data: constantqdata });
+                });
             } else {
               subject.next({
                 status: 'Loading',
@@ -190,6 +200,7 @@ export default class ConstantQDataUtil {
       this.processingMutex
         .runExclusive(async () => {
           this.prevRun?.cancel();
+          this.cleanupPrevRun();
 
           const statUpdateFunc = mod.addFunction(statusUpdate, 'vii');
           const dataUpdateFunc = mod.addFunction(dataUpdate, 'viid');
@@ -210,6 +221,7 @@ export default class ConstantQDataUtil {
           );
 
           this.prevRun = {
+            mod,
             cancel,
             cancelledUpdatePtr: cancelledUpdateFunc,
             statusUpdatePtr: statUpdateFunc,
@@ -226,6 +238,23 @@ export default class ConstantQDataUtil {
     }
 
     return subject;
+  }
+
+  private cleanupPrevRun() {
+    const prevRun = this.prevRun;
+    if (!prevRun) {
+      return;
+    }
+
+    this.prevRun = undefined;
+
+    const prevMod = prevRun.mod;
+    if (prevMod) {
+      prevMod.removeFunction(prevRun.cancelledUpdatePtr);
+      prevMod.removeFunction(prevRun.dataUpdatePtr);
+      prevMod.removeFunction(prevRun.statusUpdatePtr);
+      prevMod.forceExit();
+    }
   }
 
   /**

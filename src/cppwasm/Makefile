@@ -10,11 +10,8 @@ OUT_DIR  = ../../public/assets/wasm
 # ALLOW_TABLE_GROWTH→ required if you ever use addFunction(); safe to include
 # EXPORTED_RUNTIME_METHODS → expose 'addFunction' to JS if needed later
 
-# can run with  to create interface
-# -s MODULARIZE=1 \
-#   -s EXPORT_NAME="createProcessorModule" \
-#   -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE='["emscripten_create_worker","emscripten_call_worker","emscripten_terminate_wasm_worker"]' \
-#   -s ENVIRONMENT='web'   # or 'node' if running in Node
+#-s ENVIRONMENT='web'   # or 'node' if running in Node
+#   -DDEBUG=1 \
 
 EMFLAGS = \
   --bind \
@@ -24,12 +21,14 @@ EMFLAGS = \
   -s EXPORT_NAME="createProcessorModule" \
   -s ALLOW_TABLE_GROWTH=1 \
   -s WASM_WORKERS=1 \
+  -s EXIT_RUNTIME=1 \
   -s EXPORTED_RUNTIME_METHODS='["addFunction","removeFunction"]'
 
 EM_WORKER_FLAGS = \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s ALLOW_TABLE_GROWTH=1 \
-  -s EXPORTED_FUNCTIONS='["_initializeSession", "_sessionAnalyze"]' \
+  -s EXPORTED_FUNCTIONS='["_initializeSession"]' \
+  -s EXIT_RUNTIME=1 \
   -s BUILD_AS_WORKER=1 
 
   # 1. Get all cpp and hpp files
