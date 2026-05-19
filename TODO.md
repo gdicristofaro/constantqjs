@@ -15,3 +15,5 @@
 - visibility
 
 - build script check
+
+- fix settings

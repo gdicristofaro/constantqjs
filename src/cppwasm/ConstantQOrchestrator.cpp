@@ -12,6 +12,17 @@ using namespace std;
 
 extern "C"
 {
+    typedef void (*StatusUpdate)(int, int);
+    typedef void (*DataUpdate)(int, int, double);
+    typedef int (*CancelledUpdate)();
+
+    struct OnConstantQArgs
+    {
+        StatusUpdate statusUpdate;
+        DataUpdate dataUpdate;
+        CancelledUpdate cancelledUpdate;
+    };
+
     void handleWorkerMessage(char *data, int size, void *arg)
     {
 
@@ -45,11 +56,6 @@ extern "C"
             int totalSamples = retHeaderArgs->totalSamples;
             int bins = retHeaderArgs->bins;
             int sampleStart = retHeaderArgs->sampleStart;
-
-            if (cancelledUpdate())
-            {
-                return;
-            }
 
             int audioArrSize = (size - sizeof(ConstantQReturnHeaderArgs) - sizeof(Status)) / sizeof(double);
             assert(audioArrSize >= bins * totalSamples);
@@ -122,19 +128,15 @@ extern "C"
         vector<char> callObjData(callObjSize);
 
         ConstantQWorkerArgs *constantQWorkerArgs = (ConstantQWorkerArgs *)&callObjData[0];
-        constantQWorkerArgs->sparseKernelArgs.fs = fs;
-        constantQWorkerArgs->sparseKernelArgs.minFreq = minFreq;
-        constantQWorkerArgs->sparseKernelArgs.maxFreq = maxFreq;
-        constantQWorkerArgs->sparseKernelArgs.bins = bins;
-        constantQWorkerArgs->sparseKernelArgs.thresh = thresh;
+        constantQWorkerArgs->fs = fs;
+        constantQWorkerArgs->minFreq = minFreq;
+        constantQWorkerArgs->maxFreq = maxFreq;
+        constantQWorkerArgs->bins = bins;
+        constantQWorkerArgs->thresh = thresh;
 
-        constantQWorkerArgs->onSparseKernelArgs.frameInterval = frameInterval;
-        constantQWorkerArgs->onSparseKernelArgs.workerNumber = workerNumber;
-        constantQWorkerArgs->onSparseKernelArgs.audioDataSize = data.size();
-        constantQWorkerArgs->onSparseKernelArgs.audioDataPtr = &data[0];
-        constantQWorkerArgs->onSparseKernelArgs.statusUpdate = statusUpdate;
-        constantQWorkerArgs->onSparseKernelArgs.dataUpdate = dataUpdate;
-        constantQWorkerArgs->onSparseKernelArgs.cancelledUpdate = cancelledUpdate;
+        constantQWorkerArgs->frameInterval = frameInterval;
+        constantQWorkerArgs->progressMessageCount = workerNumber;
+        constantQWorkerArgs->audioDataLen = data.size();
 
         std::memcpy(&callObjData[0] + sizeof(ConstantQWorkerArgs), &data[0], sizeof(double) * data.size());
 
@@ -153,7 +155,7 @@ extern "C"
                              'audioData size', $7); }, fs, minFreq, maxFreq, bins, thresh, frameInterval, workerNumber, data.size());
 #endif
 
-        emscripten_call_worker(worker, "initializeSession",
+        emscripten_call_worker(worker, "onmessage",
                                &callObjData[0],
                                callObjSize,
                                handleWorkerMessage,

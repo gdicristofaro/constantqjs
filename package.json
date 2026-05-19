@@ -14,7 +14,7 @@
     "gh-pages-build": "ng build --base-href /constantqjs/",
     "predeploy": "npm run gh-pages-build && touch dist/constantqjs/browser/.nojekyll",
     "deploy": "gh-pages -d dist/constantqjs/browser -t",
-    "buildwasm": "make clean -C src/cppwasm && make -C src/cppwasm"
+    "buildwasm": "make clean && make"
   },
   "private": true,
   "dependencies": {

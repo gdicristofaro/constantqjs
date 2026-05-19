@@ -6,19 +6,22 @@
 
 using namespace std;
 
-namespace constantq {
+namespace constantq
+{
     complex<double> KernelEntry::multiplier() const { return _multiplier; }
     int KernelEntry::fftIndex() const { return _fftIndex; }
 
-    KernelEntry::KernelEntry(int fftIndex, complex<double> multiplier) {
+    KernelEntry::KernelEntry(int fftIndex, complex<double> multiplier)
+    {
         _fftIndex = fftIndex;
         _multiplier = multiplier;
     }
 
-    string KernelEntry::toString() {
+    string KernelEntry::toString()
+    {
         ostringstream stringStream;
-        stringStream << "{ Index: " << _fftIndex << ", Multiplier: " 
-            << _multiplier.real() << " + " << _multiplier.imag() << "i }";
+        stringStream << "{ Index: " << _fftIndex << ", Multiplier: "
+                     << _multiplier.real() << " + " << _multiplier.imag() << "i }";
 
         return stringStream.str();
     }

@@ -1,8 +1,16 @@
 CXX      = em++
 CXXFLAGS = -O3 -std=c++23 
-# can run with -DDEBUG 
 
-OUT_DIR  = ../../public/assets/wasm
+OUT_DIR  = public/assets/wasm
+INTERFACE_PATH = ../../../src/app/services/constantq/constantq.wasm.interface.d.ts
+SRC_DIR = src/cppwasm
+
+# can be run with make DEBUG=1
+ifeq ($(DEBUG), 1)
+    override CFLAGS += -DDEBUG
+endif
+
+
 
 # --bind            → enables Embind (required for val + EMSCRIPTEN_BINDINGS)
 # MODULARIZE        → wraps output in a factory fn so multiple instances are safe
@@ -11,11 +19,12 @@ OUT_DIR  = ../../public/assets/wasm
 # EXPORTED_RUNTIME_METHODS → expose 'addFunction' to JS if needed later
 
 #-s ENVIRONMENT='web'   # or 'node' if running in Node
-#   -DDEBUG=1 \
+
+
 
 EMFLAGS = \
   --bind \
-  --emit-tsd ../../../src/app/services/constantq/constantq.wasm.interface.d.ts \
+  --emit-tsd $(INTERFACE_PATH) \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s MODULARIZE=1 \
   -s EXPORT_NAME="createProcessorModule" \
@@ -27,21 +36,22 @@ EMFLAGS = \
 EM_WORKER_FLAGS = \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s ALLOW_TABLE_GROWTH=1 \
-  -s EXPORTED_FUNCTIONS='["_initializeSession"]' \
+  -s EXPORTED_FUNCTIONS='["_onmessage"]' \
   -s EXIT_RUNTIME=1 \
   -s BUILD_AS_WORKER=1 
 
+
   # 1. Get all cpp and hpp files
-ALL_HPP_FILES =  $(wildcard *.hpp)
-ALL_CPP_FILES = $(wildcard *.cpp)
+ALL_HPP_FILES =  $(wildcard $(SRC_DIR)/*.hpp)
+ALL_CPP_FILES = $(wildcard $(SRC_DIR)/*.cpp)
 
 # 2. Filter out the two specific files
-ALL_CPP_WORKER_FILES = $(filter-out Tests.cpp ConstantQOrchestrator.cpp, $(ALL_CPP_FILES))
+ALL_CPP_WORKER_FILES = $(filter-out $(SRC_DIR)/Tests.cpp $(SRC_DIR)/ConstantQOrchestrator.cpp, $(ALL_CPP_FILES))
 
 .PHONY: all clean
 all: $(OUT_DIR)/constantq.js $(OUT_DIR)/worker.js
 
-$(OUT_DIR)/constantq.js: ConstantQOrchestrator.cpp | $(OUT_DIR)
+$(OUT_DIR)/constantq.js: $(SRC_DIR)/ConstantQOrchestrator.cpp | $(OUT_DIR)
 	$(CXX) $(CXXFLAGS) $(EMFLAGS) $< -o $@
 
 $(OUT_DIR)/worker.js: $(ALL_CPP_WORKER_FILES) $(ALL_HPP_FILES) | $(OUT_DIR)
