@@ -4,14 +4,14 @@ import { ConstantQData } from '../model/constantqdata';
 import { DEFAULT_BINS, DEFAULT_THRESH } from '../model/defaults';
 import { Settings } from '../model/settings';
 import { AudioLoadService } from './audio-load.service';
-import ConstantQDataUtil, { ConstantQMessage } from './constantq/ConstantQDataUtil';
+import ConstantQWorkerInterface, { ConstantQMessage } from './constantq/ConstantQWorkerInterface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConstantqService {
   private readonly audioSvc = inject(AudioLoadService);
-  private readonly constantQUtil = new ConstantQDataUtil();
+  private readonly constantQUtil = new ConstantQWorkerInterface();
   readonly constantQData = signal<ConstantQData | undefined>(undefined);
 
   readonly loadingPercentage = signal(0);
@@ -59,7 +59,7 @@ export class ConstantqService {
         DEFAULT_THRESH,
         settings.fps,
       )
-    ).subscribe({
+    ).data.subscribe({
       next: message => this.onConstantQMsg(message),
       error: err => this.setError(err),
     });
