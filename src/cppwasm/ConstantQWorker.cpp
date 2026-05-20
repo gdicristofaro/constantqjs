@@ -201,10 +201,10 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, double *audioArrPtr)
 extern "C"
 {
         EMSCRIPTEN_KEEPALIVE
-        void onmessage(const char *charData)
+        void constantq_worker_message(const double *arr, int len)
         {
-                ConstantQWorkerArgs *constantQArgs = (ConstantQWorkerArgs *)charData;
-                double *audioArrPtr = (double *)(charData + sizeof(ConstantQWorkerArgs));
+                ConstantQWorkerArgs *constantQArgs = (ConstantQWorkerArgs *)arr;
+                double *audioArrPtr = (double *)(((char *)arr) + sizeof(ConstantQWorkerArgs));
                 constantQProcess(constantQArgs, audioArrPtr);
         }
 }

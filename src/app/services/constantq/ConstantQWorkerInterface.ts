@@ -25,7 +25,7 @@ export default class ConstantQWorkerInterface {
   static readonly PERCENTAGE_INCREMENTS = 5;
   static readonly NUMBER_OF_MESSAGES = 100 / ConstantQWorkerInterface.PERCENTAGE_INCREMENTS;
 
-  private static readonly WORKER_PATH = 'assets/wasm/constantq.worker.js';
+  private static readonly WORKER_PATH = 'assets/wasm/constantq.worker.intercept.js';
 
   // this is wholly dependent on the size of the struct as determined below and corresponding to ConstantQWorker.cpp:onmessage.
   private static readonly PREFIX_MSG_LEN = 7;
@@ -117,9 +117,7 @@ export default class ConstantQWorkerInterface {
     const inputData = this.createFloat64Arr(buffer, workerArgs);
     let graphMax = 0;
 
-    const worker = new Worker(new URL(ConstantQWorkerInterface.WORKER_PATH, import.meta.url), {
-      type: 'module',
-    });
+    const worker = new Worker(new URL(ConstantQWorkerInterface.WORKER_PATH, import.meta.url));
 
     const workerTerminate = () => worker.terminate();
 
