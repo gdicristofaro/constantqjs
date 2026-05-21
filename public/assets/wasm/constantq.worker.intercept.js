@@ -3,6 +3,8 @@ importScripts('constantq.worker.js');
 
 Module.onRuntimeInitialized = function () {
   self.onmessage = function (e) {
+    // const logMessage = (...args) => self.postMessage({ type: 'logging', args });
+
     console.log('Received message', e);
     const { data } = e; // This is the incoming Float64Array
     const len = data.length;

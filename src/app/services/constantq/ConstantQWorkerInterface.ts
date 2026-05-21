@@ -81,7 +81,7 @@ export default class ConstantQWorkerInterface {
     }
 
     let curGraphMax = graphMax;
-    for (let i = 0; i < sampleStart + sampleLen; i++) {
+    for (let i = 0; i < sampleLen; i++) {
       const subArr = inputData.subarray(inputOffset + i * bins, inputOffset + (1 + i) * bins);
       curGraphMax = subArr.reduce((prev, cur) => Math.max(prev, cur), curGraphMax);
       outputData[sampleStart + i] = Array.from(subArr);
@@ -127,6 +127,11 @@ export default class ConstantQWorkerInterface {
     };
 
     worker.onmessage = evt => {
+      // if ('type' in evt.data && evt.data.type === 'logging') {
+      //   console.log(...evt.data.args);
+      //   return;
+      // }
+
       const { completion, graphMax: newGraphMax } = this.parseMessage(
         evt.data,
         outputData,

@@ -44,7 +44,7 @@ extern "C"
 
                 int retObjSize = sizeof(ConstantQReturnHeaderArgs) + evaluatedlen * sizeof(double);
                 // this should be transferred in the post message.
-                char *retData = new char[retObjSize];
+                vector<char> retData(retObjSize);
 
 #ifdef DEBUG
 
@@ -90,18 +90,19 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
 {
 
         int totalSamples = segmentWorkerArgs.totalSamples;
+        int sampleLen = segmentWorkerArgs.sampleLen;
         int frameInterval = segmentWorkerArgs.frameInterval;
         int startFrame = segmentWorkerArgs.startFrame;
         int sampleStart = segmentWorkerArgs.sampleStart;
         bool isLast = segmentWorkerArgs.isLast;
 
-        if (totalSamples < 1)
+        if (sampleLen < 1)
         {
                 return;
         }
 
-        auto audioSampleSize = ((totalSamples - 1) * frameInterval) + curSession->size();
-        int totLen = startFrame + frameInterval * (totalSamples - 1) + curSession->size();
+        auto audioSampleSize = ((sampleLen - 1) * frameInterval) + curSession->size();
+        int totLen = startFrame + frameInterval * (sampleLen - 1) + curSession->size();
 
 #ifdef DEBUG
         EM_ASM({ console.log('sessionAnalyze: startFrame', $0,
@@ -123,7 +124,7 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
                 EM_ASM({ console.log('audio item', $0, $1); }, i, audioData[i]);
 #endif
 
-        auto evaluated = curSession->analyzeToSingle(audioData, startFrame, frameInterval, totalSamples);
+        auto evaluated = curSession->analyzeToSingle(audioData, startFrame, frameInterval, sampleLen);
 
 #ifdef DEBUG
         for (int i = 0; i < 10; i++)
@@ -133,6 +134,7 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
         ConstantQReturnHeaderArgs retArgs;
         retArgs.bins = curSession->bins();
         retArgs.sampleStart = sampleStart;
+        retArgs.sampleLen = sampleLen;
         retArgs.totalSamples = totalSamples;
 
 #ifdef DEBUG
@@ -172,8 +174,8 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, double *audioArrPtr)
                              'bins', $1,
                              'frameInterval', $2,
                              'progressMessageCount', $3,
-                             'sampleNum', $4,
-                             'audioData size', $5); }, sparseKernelSize, bins, frameInterval, progressMessageCount, sampleNum, audioData.size());
+                             'totalSamples', $4,
+                             'audioData size', $5); }, sparseKernelSize, bins, frameInterval, progressMessageCount, totalSamples, audioData.size());
 #endif
 
         // the last ending frame

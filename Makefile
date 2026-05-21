@@ -7,14 +7,13 @@ INTERFACE_PATH = ../../../src/app/services/constantq/constantq.wasm.interface.d.
 
 # can be run with make DEBUG=1
 ifeq ($(DEBUG), 1)
-    override CFLAGS += -DDEBUG
+    override CXXFLAGS += -DDEBUG
 endif
 
 
 EM_WORKER_FLAGS = \
   -s EXPORTED_FUNCTIONS='["_constantq_worker_message","_malloc","_free"]' \
   -s EXPORTED_RUNTIME_METHODS='["ccall", "HEAPF64"]' \
-  -s MODULARIZE=1 \
   -s ENVIRONMENT='worker' \
   -s ALLOW_MEMORY_GROWTH=1
 
