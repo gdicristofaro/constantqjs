@@ -8,11 +8,11 @@ using namespace std;
 struct ConstantQWorkerArgs
 {
         // done as doubles for consistent input data
-        double fs;
-        double bins;
-        double frameInterval;
-        double progressMessageCount;
-        double audioDataLen;
+        int fs;
+        int bins;
+        int frameInterval;
+        int progressMessageCount;
+        long audioDataLen;
         double minFreq;
         double maxFreq;
         double thresh;
@@ -21,7 +21,7 @@ struct ConstantQWorkerArgs
 struct ConstantQSegmentWorkerArgs
 {
         int sampleLen;
-        int totalSamples;
+        long totalSamples;
         int frameInterval;
         int startFrame;
         int sampleStart;
@@ -31,10 +31,9 @@ struct ConstantQSegmentWorkerArgs
 struct ConstantQReturnHeaderArgs
 {
         // done as doubles for consistent return data with audio data
-        double totalSamples;
-        double bins;
-        double sampleStart;
-        double sampleLen;
+        long totalSamples;
+        int bins;
+        int sampleStart;
 };
 
 extern "C"
@@ -42,45 +41,22 @@ extern "C"
         void constantQPostMessage(ConstantQReturnHeaderArgs *headerArgs, double *evaluated, int evaluatedlen, bool isLast)
         {
 
-                int retObjSize = sizeof(ConstantQReturnHeaderArgs) + evaluatedlen * sizeof(double);
-                // this should be transferred in the post message.
-                vector<char> retData(retObjSize);
-
 #ifdef DEBUG
 
                 EM_ASM({ console.log('header args: bins', $0, 'sampleStart', $1, 'totalSamples', $2); }, headerArgs->bins, headerArgs->sampleStart, headerArgs->totalSamples);
-#endif
-
-                std::memcpy(&retData[0], headerArgs, sizeof(ConstantQReturnHeaderArgs));
-                std::memcpy(&retData[0] + sizeof(ConstantQReturnHeaderArgs), &evaluated[0], sizeof(double) * evaluatedlen);
-
-#ifdef DEBUG
-                EM_ASM({ console.log('constantQPostMessage: retObjSize', $0); }, evaluatedlen);
-
 #endif
 
                 // Pass the pointer and size to EM_ASM
                 EM_ASM({
                         var ptr = $0;
                         var length = $1;
-                        
-                        
-                        // Create a view on the WebAssembly heap memory
-                        var float64View = new Float64Array(Module.HEAPF64.buffer, ptr, length / Float64Array.BYTES_PER_ELEMENT);
-                        
-                        // postMessage the array
-                        // Note: structured cloning a view creates a copy in JS. 
-                        // Use float64View.buffer to transfer underlying ArrayBuffer for zero-copy.
-                        self.postMessage(float64View); }, (void *)(&retData[0]), retObjSize);
 
-                // if (isLast)
-                // {
-                //         emscripten_worker_respond(&retData[0], retObjSize);
-                // }
-                // else
-                // {
-                //         emscripten_worker_respond_provisionally(&retData[0], retObjSize);
-                // }
+                        // Create a view on the WebAssembly heap memory
+                        var float64View = new Float64Array(Module.HEAPF64.buffer, ptr, length);
+
+                        // postMessage the array
+                        // Note: structured cloning a view creates a copy in JS.
+                        self.postMessage({"constantQData" : float64View, "metadata" : {"totalSamples" : $2, "bins" : $3, "sampleStart" : $4}}); }, evaluated, evaluatedlen, headerArgs->totalSamples, headerArgs->bins, headerArgs->sampleStart);
         }
 }
 
@@ -134,18 +110,12 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
         ConstantQReturnHeaderArgs retArgs;
         retArgs.bins = curSession->bins();
         retArgs.sampleStart = sampleStart;
-        retArgs.sampleLen = sampleLen;
         retArgs.totalSamples = totalSamples;
-
-#ifdef DEBUG
-
-        EM_ASM({ console.log('header args: bins', $0, 'sampleStart', $1, 'totalSamples', $2); }, retArgs.bins, retArgs.sampleStart, retArgs.totalSamples);
-#endif
 
         constantQPostMessage(&retArgs, &evaluated[0], evaluated.size(), isLast);
 }
 
-void constantQProcess(ConstantQWorkerArgs *constantQArgs, double *audioArrPtr)
+void constantQProcess(ConstantQWorkerArgs *constantQArgs, const double *audioArrPtr)
 {
 #ifdef DEBUG
         EM_ASM({ console.log('worker args: fs', $0,
@@ -213,10 +183,21 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, double *audioArrPtr)
 extern "C"
 {
         EMSCRIPTEN_KEEPALIVE
-        void constantq_worker_message(const double *arr, int len)
+        void constantq_worker_message(const double *arr, int len, int fs,
+                                      double minFreq, double maxFreq, int bins, double thresh,
+                                      int frameInterval, int progressMessageCount)
         {
-                ConstantQWorkerArgs *constantQArgs = (ConstantQWorkerArgs *)arr;
-                double *audioArrPtr = (double *)(((char *)arr) + sizeof(ConstantQWorkerArgs));
-                constantQProcess(constantQArgs, audioArrPtr);
+
+                ConstantQWorkerArgs constantQArgs;
+                constantQArgs.fs = fs;
+                constantQArgs.minFreq = minFreq;
+                constantQArgs.maxFreq = maxFreq;
+                constantQArgs.bins = bins;
+                constantQArgs.thresh = thresh;
+                constantQArgs.frameInterval = frameInterval;
+                constantQArgs.progressMessageCount = progressMessageCount;
+                constantQArgs.audioDataLen = len;
+
+                constantQProcess(&constantQArgs, arr);
         }
 }

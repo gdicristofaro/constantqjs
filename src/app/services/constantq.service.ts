@@ -4,20 +4,21 @@ import { ConstantQData } from '../model/constantqdata';
 import { DEFAULT_BINS, DEFAULT_THRESH } from '../model/defaults';
 import { Settings } from '../model/settings';
 import { AudioLoadService } from './audio-load.service';
-import ConstantQWorkerInterface, { ConstantQMessage } from './wasm-worker-interface.service';
+import WasmWorkerInterface, { ConstantQMessage } from './wasm-worker-interface.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConstantqService {
   private readonly audioSvc = inject(AudioLoadService);
-  private readonly constantQUtil = new ConstantQWorkerInterface();
+  private readonly constantQUtil = new WasmWorkerInterface();
   readonly constantQData = signal<ConstantQData | undefined>(undefined);
 
   readonly loadingPercentage = signal(0);
   readonly errorMessage = signal<string | null>(null);
 
   private audioLoadSub: Subscription | undefined = undefined;
+  private cancelFunct: undefined | (() => void) = undefined;
 
   constructor() {
     effect(() => {
@@ -50,18 +51,22 @@ export class ConstantqService {
   }
 
   private async onLoad(audioBuffer: AudioBuffer, settings: Settings) {
-    this.loadingPercentage.set(0);
+    this.cancelFunct?.();
     this.audioLoadSub?.unsubscribe();
-    this.audioLoadSub = (
-      await this.constantQUtil.messageProcessing(
-        audioBuffer,
-        settings.minPitch,
-        settings.maxPitch,
-        DEFAULT_BINS,
-        DEFAULT_THRESH,
-        settings.fps,
-      )
-    ).data.subscribe({
+    this.loadingPercentage.set(0);
+    this.constantQData.set(undefined);
+
+    const { cancel, data } = await this.constantQUtil.messageProcessing(
+      audioBuffer,
+      settings.minPitch,
+      settings.maxPitch,
+      DEFAULT_BINS,
+      DEFAULT_THRESH,
+      settings.fps,
+    );
+
+    this.cancelFunct = cancel;
+    this.audioLoadSub = data.subscribe({
       next: message => this.onConstantQMsg(message),
       error: err => this.setError(err),
     });
