@@ -4,7 +4,7 @@ import { ConstantQData } from '../model/constantqdata';
 import { DEFAULT_BINS, DEFAULT_THRESH } from '../model/defaults';
 import { Settings } from '../model/settings';
 import { AudioLoadService } from './audio-load.service';
-import ConstantQWorkerInterface, { ConstantQMessage } from './constantq/ConstantQWorkerInterface';
+import ConstantQWorkerInterface, { ConstantQMessage } from './wasm-worker-interface.service';
 
 @Injectable({
   providedIn: 'root',
