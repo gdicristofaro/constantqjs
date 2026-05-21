@@ -43,7 +43,8 @@ extern "C"
         {
 
                 int retObjSize = sizeof(ConstantQReturnHeaderArgs) + evaluatedlen * sizeof(double);
-                vector<char> retData(retObjSize);
+                // this should be transferred in the post message.
+                char *retData = new char[retObjSize];
 
 #ifdef DEBUG
 
@@ -63,16 +64,14 @@ extern "C"
                         var ptr = $0;
                         var length = $1;
                         
-                        // Calculate the byte offset (64-bit floats are 8 bytes per element)
-                        var offset = ptr >> 3; 
                         
                         // Create a view on the WebAssembly heap memory
-                        var float64View = HEAPF64.subarray(offset, offset + length);
+                        var float64View = new Float64Array(Module.HEAPF64.buffer, ptr, length / Float64Array.BYTES_PER_ELEMENT);
                         
                         // postMessage the array
                         // Note: structured cloning a view creates a copy in JS. 
                         // Use float64View.buffer to transfer underlying ArrayBuffer for zero-copy.
-                        postMessage(float64View, [float64View]); }, (void *)(&retData[0]), retObjSize);
+                        self.postMessage(float64View); }, (void *)(&retData[0]), retObjSize);
 
                 // if (isLast)
                 // {

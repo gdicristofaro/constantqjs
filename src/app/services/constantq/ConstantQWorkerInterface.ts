@@ -82,7 +82,7 @@ export default class ConstantQWorkerInterface {
 
     let curGraphMax = graphMax;
     for (let i = 0; i < sampleStart + sampleLen; i++) {
-      const subArr = inputData.subarray(inputOffset + i * bins, inputOffset + (1 + i * bins));
+      const subArr = inputData.subarray(inputOffset + i * bins, inputOffset + (1 + i) * bins);
       curGraphMax = subArr.reduce((prev, cur) => Math.max(prev, cur), curGraphMax);
       outputData[sampleStart + i] = Array.from(subArr);
     }

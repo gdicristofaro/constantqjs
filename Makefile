@@ -3,19 +3,20 @@ CXXFLAGS = -O3 -std=c++23
 
 OUT_DIR  = public/assets/wasm
 SRC_DIR = src/cppwasm
+INTERFACE_PATH = ../../../src/app/services/constantq/constantq.wasm.interface.d.ts
 
 # can be run with make DEBUG=1
 ifeq ($(DEBUG), 1)
     override CFLAGS += -DDEBUG
 endif
 
+
 EM_WORKER_FLAGS = \
-  -s ALLOW_MEMORY_GROWTH=1 \
-  -s EXIT_RUNTIME=1 \
-  -s EXPORTED_FUNCTIONS='["_constantq_worker_message", "_malloc", "_free"]' \
-  -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+  -s EXPORTED_FUNCTIONS='["_constantq_worker_message","_malloc","_free"]' \
+  -s EXPORTED_RUNTIME_METHODS='["ccall", "HEAPF64"]' \
+  -s MODULARIZE=1 \
   -s ENVIRONMENT='worker' \
-  -s BUILD_AS_WORKER=1 
+  -s ALLOW_MEMORY_GROWTH=1
 
 
   # 1. Get all cpp and hpp files
