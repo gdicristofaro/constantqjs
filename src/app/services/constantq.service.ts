@@ -39,9 +39,11 @@ export class ConstantqService {
   private onConstantQMsg(data: ConstantQMessage) {
     if (data.status === 'Error') {
       this.setError(data.message);
+    } else if (data.status === 'Cancelled') {
+      this.constantQData.set(data.data);
     } else {
       const percComplete = data.status === 'Complete' ? 1 : (data.completion ?? 0);
-      console.log('Loading: ' + percComplete * 100 + '%');
+      console.log('Loading: ' + Math.round(percComplete * 100) + '%');
       this.loadingPercentage.set(percComplete);
       this.constantQData.set(data.data);
     }

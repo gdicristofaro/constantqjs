@@ -13,6 +13,7 @@ export type ConstantQMessage =
   // completion is [0,1] and displays as a percentage
   | { status: 'Loading'; message: string; completion?: number; data: ConstantQData }
   | { status: 'Complete'; data: ConstantQData }
+  | { status: 'Cancelled'; data: ConstantQData }
   | { status: 'Error'; message: string };
 
 export interface ConstantQProcessing {
@@ -28,7 +29,7 @@ export default class ConstantQWorkerInterface {
   private static readonly WORKER_PATH = 'assets/wasm/constantq.worker.intercept.js';
 
   // this is wholly dependent on the size of the struct as determined below and corresponding to ConstantQWorker.cpp:onmessage.
-  private static readonly PREFIX_MSG_LEN = 7;
+  private static readonly PREFIX_MSG_LEN = 8;
 
   private writeMessageHeader(arr: Float64Array, args: ConstantQWorkerArgs) {
     arr[0] = args.fs;
@@ -42,7 +43,7 @@ export default class ConstantQWorkerInterface {
   }
 
   private createFloat64Arr(buffer: AudioBuffer, args: ConstantQWorkerArgs): Float64Array {
-    const prefixLen = 7;
+    const prefixLen = ConstantQWorkerInterface.PREFIX_MSG_LEN;
 
     const len = buffer.length;
     const arr = new Float64Array(prefixLen + len);
@@ -101,10 +102,8 @@ export default class ConstantQWorkerInterface {
   ): Promise<ConstantQProcessing> {
     const subject = new Subject<ConstantQMessage>();
 
-    const outputData: number[][] = [];
-
     const workerArgs: ConstantQWorkerArgs = {
-      fs: fps,
+      fs: buffer.sampleRate,
       bins,
       frameInterval: buffer.sampleRate / fps,
       progressMessageCount: ConstantQWorkerInterface.NUMBER_OF_MESSAGES,
@@ -114,24 +113,40 @@ export default class ConstantQWorkerInterface {
       thresh,
     };
 
-    const inputData = this.createFloat64Arr(buffer, workerArgs);
-    let graphMax = 0;
-
     const worker = new Worker(new URL(ConstantQWorkerInterface.WORKER_PATH, import.meta.url));
 
-    const workerTerminate = () => worker.terminate();
+    worker.onmessage = () => this.onWorkerInit(worker, workerArgs, buffer, subject);
 
-    const workerComplete = () => {
-      workerTerminate();
+    const workerCancel = () => {
+      worker.terminate();
+      subject.next({
+        status: 'Cancelled',
+        data: {
+          constantQData: [],
+          graphMax: 0,
+        },
+      });
       subject.complete();
     };
 
-    worker.onmessage = evt => {
-      // if ('type' in evt.data && evt.data.type === 'logging') {
-      //   console.log(...evt.data.args);
-      //   return;
-      // }
+    return {
+      data: subject,
+      cancel: workerCancel,
+    };
+  }
 
+  private onWorkerInit(
+    worker: Worker,
+    workerArgs: ConstantQWorkerArgs,
+    buffer: AudioBuffer,
+    subject: Subject<ConstantQMessage>,
+  ) {
+    const inputData = this.createFloat64Arr(buffer, workerArgs);
+    let graphMax = 0;
+
+    const outputData: number[][] = [];
+
+    worker.onmessage = (evt: MessageEvent) => {
       const { completion, graphMax: newGraphMax } = this.parseMessage(
         evt.data,
         outputData,
@@ -148,6 +163,8 @@ export default class ConstantQWorkerInterface {
           status: 'Complete',
           data,
         });
+        worker.terminate();
+        subject.complete();
       } else {
         subject.next({
           status: 'Loading',
@@ -167,10 +184,6 @@ export default class ConstantQWorkerInterface {
     };
 
     worker.postMessage(inputData, [inputData.buffer]);
-    return {
-      data: subject,
-      cancel: workerComplete,
-    };
   }
 }
 

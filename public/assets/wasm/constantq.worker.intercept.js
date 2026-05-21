@@ -3,9 +3,6 @@ importScripts('constantq.worker.js');
 
 Module.onRuntimeInitialized = function () {
   self.onmessage = function (e) {
-    // const logMessage = (...args) => self.postMessage({ type: 'logging', args });
-
-    console.log('Received message', e);
     const { data } = e; // This is the incoming Float64Array
     const len = data.length;
     const bytesPerElement = Float64Array.BYTES_PER_ELEMENT;
@@ -30,4 +27,6 @@ Module.onRuntimeInitialized = function () {
     // 6. Transfer the buffer back to the main thread with 0ms copy overhead
     // self.postMessage({ result: finalOutput }, [finalOutput.buffer]);
   };
+
+  self.postMessage({ initialized: true });
 };
