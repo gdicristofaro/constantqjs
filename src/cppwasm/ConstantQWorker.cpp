@@ -147,6 +147,17 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
 
 void constantQProcess(ConstantQWorkerArgs *constantQArgs, double *audioArrPtr)
 {
+#ifdef DEBUG
+        EM_ASM({ console.log('worker args: fs', $0,
+                             'bins', $1,
+                             'frameInterval', $2,
+                             'progressMessageCount', $3,
+                             'audioDataLen', $4,
+                             'minFreq', $5,
+                             'maxFreq', $6,
+                             'thresh', $7); }, constantQArgs->fs, constantQArgs->bins, constantQArgs->frameInterval, constantQArgs->progressMessageCount, constantQArgs->audioDataLen, constantQArgs->minFreq, constantQArgs->maxFreq, constantQArgs->thresh);
+#endif
+
         int fs = (int)constantQArgs->fs;
         double minFreq = constantQArgs->minFreq;
         double maxFreq = constantQArgs->maxFreq;
