@@ -1,5 +1,3 @@
-- cancellation
-
 - better mobile experience
 - show all notes in graph?
 
@@ -13,7 +11,5 @@
 
 - TODOs in code
 - visibility
-
-- build script check
 
 - fix settings

@@ -145,7 +145,7 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, const double *audioArr
         vector<double> audioData(audioArrPtr, audioArrPtr + audioDataLen);
 
         // total number of constantq samplings
-        int totalSamples = floor((audioData.size() - sparseKernelSize) / frameInterval);
+        int totalSamples = floor(audioData.size() / frameInterval);
 
 #ifdef DEBUG
         for (int i = 0; i < min(100, (int)audioData.size()); i += 10)
