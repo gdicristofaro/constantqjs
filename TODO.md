@@ -1,6 +1,3 @@
-- better mobile experience
-- show all notes in graph?
-
 - dark mode
 - unify colors and theming (buttons too)
 

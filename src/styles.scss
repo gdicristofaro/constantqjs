@@ -12,3 +12,9 @@
 .anim-fadein {
   animation: fadeIn 0.3s ease forwards;
 }
+
+@media (max-height: 500px) {
+  .max-h-500px\:hidden {
+    display: none !important;
+  }
+}

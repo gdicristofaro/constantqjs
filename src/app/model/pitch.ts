@@ -111,7 +111,7 @@ export const getFreqRange = (note1: Note, octave1: number, note2: Note, octave2:
   const index1 = bounded(0, PitchData.length - 1, note1 + Math.floor(octave1) * 12);
   const index2 = bounded(0, PitchData.length - 1, note2 + Math.floor(octave2) * 12);
 
-  return PitchData.slice(index1, index2 + 1);
+  return PitchData.slice(index1, index2);
 };
 
 export interface Pitch {

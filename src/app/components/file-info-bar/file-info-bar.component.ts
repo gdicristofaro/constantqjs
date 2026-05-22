@@ -9,7 +9,7 @@ import { AudioLoadService } from '../../services/audio-load.service';
   template: `
     <div
       [class.hidden]="!audioLoadSvc.audioFileData()"
-      class="flex-shrink-0 flex items-center gap-3 px-5 py-1.5 bg-blue-50 border-b border-blue-300 text-[10px]"
+      class="max-h-500px:hidden flex-shrink-0 flex items-center gap-3 px-5 py-1.5 bg-blue-50 border-b border-blue-300 text-[10px]"
     >
       <span class="text-slate-400 tracking-wider">FILE</span>
       <span class="text-blue-600 font-semibold truncate max-w-xs">{{ fileName() }}</span>

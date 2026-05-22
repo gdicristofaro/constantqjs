@@ -90,10 +90,44 @@
   </div>
 
   <!-- Footer -->
-  <div footer class="flex items-center justify-between w-full">
-    <!-- Settings button + popover -->
-    <div class="relative" data-settings-btn>
+  <div footer class="relative w-full">
+    <!-- Settings popover -->
+    <div
+      class="absolute bottom-full left-0 mb-2 w-90 max-w-full bg-white border border-gray-200 rounded-2xl shadow-lg z-10 overflow-hidden"
+      [class.hidden]="!settingsOpen()"
+      data-settings-popover
+    >
+      <!-- Popover header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <p class="text-sm font-medium text-gray-900">Settings</p>
+        <button
+          (click)="closeSettings()"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close settings"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="px-4 py-4 flex flex-col gap-4">
+        <cq-settings [(settings)]="settings"></cq-settings>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between w-full">
       <button
+        data-settings-btn
         (click)="toggleSettings()"
         data-settings-btn
         class="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
@@ -120,62 +154,27 @@
         Settings
       </button>
 
-      <!-- Settings popover -->
-      @if (settingsOpen()) {
-        <div
-          class="absolute bottom-full left-0 mb-2 w-90 bg-white border border-gray-200 rounded-2xl shadow-lg z-10 overflow-hidden"
-          data-settings-popover
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
+        <button
+          (click)="close()"
+          class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
         >
-          <!-- Popover header -->
-          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <p class="text-sm font-medium text-gray-900">Settings</p>
-            <button
-              (click)="closeSettings()"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Close settings"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 6 6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="px-4 py-4 flex flex-col gap-4">
-            <cq-settings (settingsDataUpdate)="settings.set($event)"></cq-settings>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Actions -->
-    <div class="flex items-center gap-2">
-      <button
-        (click)="close()"
-        class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-      >
-        Cancel
-      </button>
-      <button
-        (click)="upload()"
-        [disabled]="!canUpload()"
-        [class]="
-          (canUpload()
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
-            : 'bg-gray-100 text-gray-400 cursor-not-allowed') +
-          ' px-4 py-2 text-sm font-medium rounded-xl transition-colors'
-        "
-      >
-        Upload
-      </button>
+          Cancel
+        </button>
+        <button
+          (click)="upload()"
+          [disabled]="!canUpload()"
+          [class]="
+            (canUpload()
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed') +
+            ' px-4 py-2 text-sm font-medium rounded-xl transition-colors'
+          "
+        >
+          Upload
+        </button>
+      </div>
     </div>
   </div>
 </cq-modal>

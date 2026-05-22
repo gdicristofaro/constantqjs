@@ -4,7 +4,9 @@ import {
   computed,
   effect,
   ElementRef,
+  HostListener,
   inject,
+  signal,
   untracked,
   viewChild,
 } from '@angular/core';
@@ -21,8 +23,10 @@ import { ConstantqService } from '../../services/constantq.service';
   selector: 'cq-audio-visualizer',
   template: `
     <div class="absolute inset-0 w-full h-full p-5 flex items-center">
-      <div class="relative w-full h-full">
-        <canvas #chartElement></canvas>
+      <div class="overflow-x-auto h-full" [style.min-width]="'calc(' + containerWidth() + ')'">
+        <div class="relative h-full" [style.width]="canvasWidth()">
+          <canvas #chartElement></canvas>
+        </div>
       </div>
     </div>
   `,
@@ -31,6 +35,8 @@ export class AudioVisualizerComponent implements AfterViewInit {
   chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
 
   private static readonly LINE_COLOR = undefined;
+  private static readonly REM_PER_LABEL = 0.75; // Estimated width per label
+
   private readonly audioSvc = inject(AudioPlaybackService);
   private readonly audioLoadSvc = inject(AudioLoadService);
 
@@ -43,6 +49,22 @@ export class AudioVisualizerComponent implements AfterViewInit {
   readonly title = computed(() => this.audioFileData().title);
   readonly pitches = computed(() => this.audioFileData().noteLetters);
   readonly max = computed(() => this.constantQSvc.constantQData()?.graphMax ?? 0);
+
+  private getContainerWidth(windowWidthPx: number) {
+    return `${windowWidthPx}px - (var(--spacing) * 5)`;
+  }
+
+  readonly containerWidth = signal(this.getContainerWidth(window.innerWidth));
+
+  readonly canvasWidth = computed(() => {
+    const labelCount = this.pitches()?.length ?? 0;
+    return `max(${this.containerWidth()}, ${labelCount * AudioVisualizerComponent.REM_PER_LABEL}rem)`;
+  });
+
+  @HostListener('window:resize')
+  onResize() {
+    this.containerWidth.set(this.getContainerWidth(window.innerWidth));
+  }
 
   // the data to display on the chart
   readonly pitchData = computed<number[]>(() => {
@@ -98,7 +120,6 @@ export class AudioVisualizerComponent implements AfterViewInit {
     this.chart = new Chart(ctx, {
       type: 'line',
       options: {
-        responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
@@ -109,6 +130,13 @@ export class AudioVisualizerComponent implements AfterViewInit {
           y: {
             min: 0,
             max: this.max() ?? 1,
+          },
+          x: {
+            ticks: {
+              autoSkip: false, // Disables automatic label removal
+              maxRotation: 90, // Optional: Rotate labels to prevent overlap
+              minRotation: 45, // Optional: Ensure labels remain readable
+            },
           },
         },
       },
