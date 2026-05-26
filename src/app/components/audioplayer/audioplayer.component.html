@@ -1,7 +1,7 @@
 <!-- Progress bar row -->
 <div class="flex items-center gap-3 mb-2">
   <span class="tabular text-[11px] w-12">
-    <span class="text-blue-500 font-medium">{{ curPosition() | playtime }}</span>
+    <span class="text-brand-500 font-medium">{{ curPosition() | playtime }}</span>
   </span>
 
   <div class="flex-1 h-1.5 rounded-full relative">
@@ -18,46 +18,40 @@
       />
     </div>
 
-    <div class="z-1 rounded-4px pointer-events-none absolute inset-0 bg-slate-200 w-full"></div>
+    <div class="z-1 rounded-4px pointer-events-none absolute inset-0 bg-fg-200 w-full"></div>
 
     <!-- Processed region (sky blue gradient) -->
     <div
       [style.width]="loadedPerc() * 100 + '%'"
-      class="z-2 rounded-4px duration-400 ease-linear transition-width pointer-events-none absolute inset-0 bg-gradient-to-r from-sky-50 to-sky-300"
+      class="z-2 rounded-4px duration-400 ease-linear transition-width pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-50 to-accent-300"
     ></div>
     <!-- Played region (blue gradient) -->
     <div
       [style.width]="curPositionPerc() * 100 + '%'"
-      class="z-3 rounded-4px pointer-events-none inset-0 absolute bg-blue-700"
+      class="z-3 rounded-4px pointer-events-none inset-0 absolute bg-brand-700"
     ></div>
     <!-- Processing frontier tick -->
-
     <div
       [style.left]="loadedPerc() * 100 + '%'"
-      class="z-9 absolute pointer-events-none duration-400 ease-linear transition-left pointer-events-none abolute bar-tick bg-sky-500 shadow-[0_0_5px] shadow-sky-500"
+      class="z-9 absolute pointer-events-none duration-400 ease-linear transition-left pointer-events-none abolute bar-tick bg-accent-500 shadow-[0_0_5px] shadow-accent-500"
     ></div>
-    <!-- Playhead thumb -->
-    <!-- <div
-      [style.left]="curPositionPerc() * 100 + '%'"
-      class="bar-thumb border-2 duration-50 transition-left border-white pointer-events-none absolute bg-blue-700 shadow-md"
-    ></div> -->
   </div>
 
-  <span class="tabular text-[11px] text-slate-400 w-12 text-right">{{
+  <span class="tabular text-[11px] text-fg-400 w-12 text-right">{{
     duration() ?? 0 | playtime
   }}</span>
 </div>
 
 <!-- Legend -->
 <div
-  class="max-h-500px:hidden flex items-center justify-center gap-6 text-[9px] tracking-widest text-slate-400 uppercase mb-2"
+  class="max-h-500px:hidden flex items-center justify-center gap-6 text-[9px] tracking-widest text-fg-400 uppercase mb-2"
 >
   <div class="flex items-center gap-1.5">
-    <div class="w-5 h-1 rounded-full bg-gradient-to-r from-sky-50 to-sky-300"></div>
+    <div class="w-5 h-1 rounded-full bg-gradient-to-r from-accent-50 to-accent-300"></div>
     <span>Processed</span>
   </div>
   <div class="flex items-center gap-1.5">
-    <div class="w-5 h-1 rounded-full bg-blue-700"></div>
+    <div class="w-5 h-1 rounded-full bg-brand-700"></div>
     <span>Played</span>
   </div>
 </div>
@@ -68,7 +62,7 @@
   <button
     (click)="setCurPosition(0)"
     title="Rewind to start"
-    class="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-blue-100 hover:border-blue-200 hover:text-blue-500 transition-colors cursor-pointer"
+    class="flex items-center justify-center w-9 h-9 rounded-lg border border-fg-200 bg-background text-fg-400 hover:bg-brand-100 hover:border-brand-200 hover:text-brand-500 transition-colors cursor-pointer"
   >
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <path d="M2 3h1.5v10H2V3zM4.5 8l8-5v10l-8-5z" />
@@ -79,7 +73,7 @@
   <button
     (click)="togglePlay()"
     title="Play / Pause"
-    class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-700 text-white shadow-md hover:bg-blue-800 active:scale-95 transition-all cursor-pointer"
+    class="flex items-center justify-center w-12 h-12 rounded-full bg-brand-700 text-background shadow-md hover:bg-brand-800 active:scale-95 transition-all cursor-pointer"
   >
     @if (isPlaying()) {
       <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">

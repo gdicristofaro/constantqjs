@@ -1,14 +1,14 @@
 <form [formGroup]="settingsForm">
   <div class="grid grid-cols-2 gap-4">
     <div class="col-span-2 sm:col-span-1">
-      <label for="settingsMinPitch" class="block text-xs font-medium text-gray-600 mb-1"
+      <label for="settingsMinPitch" class="block text-xs font-medium text-secondary-600 mb-1"
         >Lowest Pitch</label
       >
       <select
         id="settingsMinPitch"
         name="settingsMinPitch"
         formControlName="settingsMinPitch"
-        class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+        class="w-full rounded-md border border-secondary-300 bg-background px-2 py-1.5 text-sm outline-none focus:border-brand-500"
       >
         @for (pitch of minPitches; track pitch.frequency) {
           <option
@@ -29,11 +29,11 @@
       }
     </div>
     <div class="col-span-2 sm:col-span-1">
-      <label for="settingsMaxPitch" class="block text-xs font-medium text-gray-600 mb-1"
+      <label for="settingsMaxPitch" class="block text-xs font-medium text-secondary-600 mb-1"
         >Highest Pitch</label
       >
       <select
-        class="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+        class="w-full rounded-md border border-secondary-300 bg-background px-2 py-1.5 text-sm outline-none focus:border-brand-500"
         id="settingsMaxPitch"
         name="settingsMaxPitch"
         formControlName="settingsMaxPitch"
@@ -58,7 +58,7 @@
     </div>
 
     <div class="col-span-2">
-      <label for="settingsFps" class="block text-xs font-medium text-gray-600 mb-1"
+      <label for="settingsFps" class="block text-xs font-medium text-secondary-600 mb-1"
         >Samples per second (1-32)</label
       >
       <input
@@ -69,7 +69,7 @@
         min="1"
         max="32"
         value="16"
-        class="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+        class="w-full rounded-md border border-secondary-300 bg-background px-3 py-1.5 text-sm outline-none focus:border-brand-500"
       />
       @if (
         settingsForm.controls['settingsFps'].invalid && settingsForm.controls['settingsFps'].touched

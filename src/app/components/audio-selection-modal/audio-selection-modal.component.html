@@ -4,17 +4,16 @@
   <span subtitle>Choose a source to get started</span>
   <div body>
     <!-- Tabs -->
-    <div class="flex border-b border-gray-100">
+    <div class="flex border-b border-secondary-100">
       @for (tab of tabs; track tab.id) {
         <button
           (click)="setTab(tab.id)"
-          class="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors"
-          [class.border-blue-600]="activeTab() === tab.id"
-          [class.text-blue-600]="activeTab() === tab.id"
-          [class.border-transparent]="activeTab() !== tab.id"
-          [class.text-gray-400]="activeTab() !== tab.id"
-          [class.cursor-pointer]="activeTab() !== tab.id"
-          [class.hover:text-gray-600]="activeTab() !== tab.id"
+          [class]="
+            'flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors' +
+            (activeTab() === tab.id
+              ? ' border-brand-600 text-brand-600'
+              : ' border-transparent text-secondary-400 cursor-pointer hover:text-secondary-600')
+          "
         >
           <!-- Tab icons -->
           @if (tab.id === 'recommended') {
@@ -93,16 +92,16 @@
   <div footer class="relative w-full">
     <!-- Settings popover -->
     <div
-      class="absolute bottom-full left-0 mb-2 w-90 max-w-full bg-white border border-gray-200 rounded-2xl shadow-lg z-10 overflow-hidden"
+      class="absolute bottom-full left-0 mb-2 w-90 max-w-full bg-background border border-secondary-200 rounded-2xl shadow-lg z-10 overflow-hidden"
       [class.hidden]="!settingsOpen()"
       data-settings-popover
     >
       <!-- Popover header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <p class="text-sm font-medium text-gray-900">Settings</p>
+      <div class="flex items-center justify-between px-4 py-3 border-b border-secondary-100">
+        <p class="text-sm font-medium text-secondary-900">Settings</p>
         <button
           (click)="closeSettings()"
-          class="text-gray-400 hover:text-gray-600 transition-colors"
+          class="text-secondary-400 hover:text-secondary-600 transition-colors"
           aria-label="Close settings"
         >
           <svg
@@ -130,9 +129,9 @@
         data-settings-btn
         (click)="toggleSettings()"
         data-settings-btn
-        class="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors"
-        [class.bg-gray-50]="settingsOpen()"
-        [class.text-gray-700]="settingsOpen()"
+        class="flex items-center gap-1.5 px-3 py-2 text-sm text-secondary-500 hover:text-secondary-700 border border-secondary-200 hover:bg-secondary-50 rounded-xl transition-colors"
+        [class.bg-secondary-50]="settingsOpen()"
+        [class.text-secondary-700]="settingsOpen()"
         aria-label="Toggle settings"
       >
         <!-- Hero: cog-6-tooth -->
@@ -158,7 +157,7 @@
       <div class="flex items-center gap-2">
         <button
           (click)="close()"
-          class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+          class="px-4 py-2 text-sm text-secondary-500 hover:text-secondary-700 hover:bg-secondary-100 rounded-xl transition-colors"
         >
           Cancel
         </button>
@@ -167,8 +166,8 @@
           [disabled]="!canUpload()"
           [class]="
             (canUpload()
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed') +
+              ? 'bg-brand-600 text-background hover:bg-brand-700'
+              : 'bg-secondary-100 text-secondary-400 cursor-not-allowed') +
             ' px-4 py-2 text-sm font-medium rounded-xl transition-colors'
           "
         >

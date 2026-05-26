@@ -16,7 +16,6 @@ import { ConstantqService } from './services/constantq.service';
 @Component({
   selector: 'cq-app',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
   imports: [
     AudioPlayerComponent,
     AudioVisualizerComponent,

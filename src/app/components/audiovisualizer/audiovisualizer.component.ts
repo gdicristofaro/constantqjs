@@ -64,6 +64,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
   @HostListener('window:resize')
   onResize() {
     this.containerWidth.set(this.getContainerWidth(window.innerWidth));
+    this.reloadChart();
   }
 
   // the data to display on the chart

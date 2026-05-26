@@ -12,10 +12,10 @@ import { ModalComponent } from '../modal/modal.component';
 
       <div body class="flex flex-col items-center w-full gap-5 p-5">
         <div
-          class="anim-spin w-12 h-12 rounded-full border-4 border-slate-200 border-t-blue-400"
+          class="anim-spin w-12 h-12 rounded-full border-4 border-fg-200 border-t-brand-400"
         ></div>
         <div class="text-center w-full">
-          <p class="font-display font-bold text-xs mb-1 tracking-widest uppercase text-blue-500">
+          <p class="font-display font-bold text-xs mb-1 tracking-widest uppercase text-brand-500">
             Loading Audio
           </p>
         </div>
@@ -27,10 +27,10 @@ import { ModalComponent } from '../modal/modal.component';
             <span class="font-medium">Error occured while loading:</span> {{ loadingData().error }}
           </div>
         } @else {
-          <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mx-4 mb-4">
+          <div class="w-full h-1.5 rounded-full bg-fg-100 overflow-hidden mx-4 mb-4">
             <div
               [style.width]="loadingData().percentLoaded + '%'"
-              class="h-full bg-blue-400 rounded-full transition-all duration-300"
+              class="h-full bg-brand-400 rounded-full transition-all duration-300"
             ></div>
           </div>
         }
@@ -39,7 +39,7 @@ import { ModalComponent } from '../modal/modal.component';
         <div footer class="flex items-center justify-end w-full">
           <button
             (click)="audioLoadSvc.clearError()"
-            class="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 text-sm font-medium rounded-xl transition-colors"
+            class="bg-brand-600 text-color-text-inverted hover:bg-brand-700 px-4 py-2 text-sm font-medium rounded-xl transition-colors"
           >
             Ok
           </button>

@@ -39,17 +39,20 @@ import { Component, input, model } from '@angular/core';
     >
       <div
         [class]="
-          modalClasses() + ' flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl'
+          modalClasses() +
+          ' flex w-full flex-col overflow-hidden rounded-2xl bg-background shadow-2xl'
         "
         (click)="$event.stopPropagation()"
         (keypress.enter)="($event)"
         tabindex="0"
       >
-        <div class="sticky top-0 z-10 border-b border-gray-100 bg-white px-6 py-4">
+        <div class="sticky top-0 z-10 border-b border-secondary-100 bg-background px-6 py-4">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-base font-semibold text-gray-900"><ng-content select="[title]" /></h2>
-              <p class="text-sm text-gray-500 mt-0.5"><ng-content select="[subtitle]" /></p>
+              <h2 class="text-base font-semibold text-secondary-900">
+                <ng-content select="[title]" />
+              </h2>
+              <p class="text-sm text-secondary-500 mt-0.5"><ng-content select="[subtitle]" /></p>
             </div>
             @if (closeable()) {
               <button
@@ -85,7 +88,7 @@ import { Component, input, model } from '@angular/core';
         </div>
 
         <div
-          class="footer sticky bottom-0 z-10 border-t border-gray-100 bg-gray-50 px-6 py-4 flex justify-end gap-3"
+          class="footer sticky bottom-0 z-10 border-t border-secondary-100 bg-secondary-50 px-6 py-4 flex justify-end gap-3"
         >
           <ng-content select="[footer]" />
         </div>
