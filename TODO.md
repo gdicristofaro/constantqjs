@@ -1,7 +1,6 @@
 - dark mode
-- unify colors and theming (buttons too)
 - errors on load
-- '-['
+- scroll spacing for visualizer
 
 - scrolling dialogs
 - tests

@@ -8,8 +8,8 @@ import { ConstantqService } from '../../services/constantq.service';
   template: `
     <span
       [class]="
-        (state().msg === 'Loaded' ? 'text-brand-light' : 'text-body-subtle') +
-        ' inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-neutral-secondary border border-default'
+        (state().msg === 'Loaded' ? 'text-brand-light' : 'text-body-subtler') +
+        ' inline-block align-top px-2 py-0.5 transition-colors rounded text-xxs font-bold uppercase bg-neutral-secondary border border-default'
       "
     >
       {{ state().msg }}
@@ -17,7 +17,7 @@ import { ConstantqService } from '../../services/constantq.service';
 
     <span
       [class.invisible]="typeof state().pct !== 'number'"
-      class="tabular text-[11px] text-body w-6 text-right"
+      class="tabular text-xxs text-body w-6 text-right"
       >{{ state().pct }}%</span
     >
   `,

@@ -1,6 +1,6 @@
 <!-- Progress bar row -->
 <div class="flex items-center gap-3 mb-2">
-  <span class="tabular text-[11px] w-12">
+  <span class="tabular text-xxs w-12">
     <span class="text-brand font-medium">{{ curPosition() | playtime }}</span>
   </span>
 
@@ -37,14 +37,12 @@
     ></div>
   </div>
 
-  <span class="tabular text-[11px] text-body w-12 text-right">{{
-    duration() ?? 0 | playtime
-  }}</span>
+  <span class="tabular text-xxs text-body w-12 text-right">{{ duration() ?? 0 | playtime }}</span>
 </div>
 
 <!-- Legend -->
 <div
-  class="max-h-500px:hidden flex items-center justify-center gap-6 text-[9px] tracking-widest text-body uppercase mb-2"
+  class="max-h-500px:hidden flex items-center justify-center gap-6 text-xxs tracking-widest text-body uppercase mb-2"
 >
   <div class="flex items-center gap-1.5">
     <div class="w-5 h-1 rounded-full bg-gradient-to-r from-accent-softer to-accent"></div>

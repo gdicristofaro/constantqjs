@@ -11,7 +11,7 @@
           [class]="
             'flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors' +
             (activeTab() === tab.id
-              ? ' border-brand-medium text-brand-medium'
+              ? ' border-brand text-brand'
               : ' border-transparent text-body-subtle cursor-pointer hover:text-body')
           "
         >
@@ -169,7 +169,7 @@
           [disabled]="!canUpload()"
           [class]="
             (canUpload()
-              ? 'bg-brand-medium text-neutral-primary hover:bg-brand-strong cursor-pointer'
+              ? 'bg-brand text-neutral-primary hover:bg-brand-strong cursor-pointer'
               : 'bg-disabled-softer text-disabled cursor-not-allowed') +
             ' px-4 py-2 text-sm font-medium rounded-xl transition-colors'
           "

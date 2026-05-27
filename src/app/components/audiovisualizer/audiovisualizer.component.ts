@@ -22,8 +22,8 @@ import { ConstantqService } from '../../services/constantq.service';
 @Component({
   selector: 'cq-audio-visualizer',
   template: `
-    <div class="absolute inset-0 w-full h-full p-5 flex items-center">
-      <div class="overflow-x-auto h-full" [style.min-width]="'calc(' + containerWidth() + ')'">
+    <div class="absolute inset-3 flex items-center">
+      <div #container class="overflow-x-auto w-full h-full">
         <div class="relative h-full" [style.width]="canvasWidth()">
           <canvas #chartElement></canvas>
         </div>
@@ -32,7 +32,8 @@ import { ConstantqService } from '../../services/constantq.service';
   `,
 })
 export class AudioVisualizerComponent implements AfterViewInit {
-  chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
+  protected readonly chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
+  protected readonly container = viewChild<ElementRef<HTMLDivElement>>('container');
 
   private static readonly LINE_COLOR = undefined;
   private static readonly REM_PER_LABEL = 0.75; // Estimated width per label

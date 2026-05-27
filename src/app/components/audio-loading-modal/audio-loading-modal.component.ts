@@ -39,7 +39,7 @@ import { ModalComponent } from '../modal/modal.component';
         <div footer class="flex items-center justify-end w-full">
           <button
             (click)="audioLoadSvc.clearError()"
-            class="bg-brand-medium text-neutral-primary hover:bg-brand-strong px-4 py-2 text-sm font-medium rounded-xl transition-colors"
+            class="bg-brand text-neutral-primary hover:bg-brand-strong px-4 py-2 text-sm font-medium rounded-xl transition-colors"
           >
             Ok
           </button>
