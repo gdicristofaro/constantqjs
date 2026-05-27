@@ -11,26 +11,26 @@ import { ModalComponent } from '../modal/modal.component';
       <span subtitle>{{ loadingData().title }}</span>
 
       <div body class="flex flex-col items-center w-full gap-5 p-5">
-        <div
-          class="anim-spin w-12 h-12 rounded-full border-4 border-fg-200 border-t-brand-400"
-        ></div>
+        <div class="anim-spin w-12 h-12 rounded-full border-4 border-default border-t-brand"></div>
         <div class="text-center w-full">
-          <p class="font-display font-bold text-xs mb-1 tracking-widest uppercase text-brand-500">
+          <p class="font-display font-bold text-xs mb-1 tracking-widest uppercase text-brand">
             Loading Audio
           </p>
         </div>
         @if (loadingData().error) {
           <div
-            class="bg-red-100 border border-red-400 text-sm text-red-700 px-4 py-3 rounded-md relative w-full"
+            class="bg-danger-soft border border-danger-subtle text-sm text-fg-danger-strong px-4 py-3 rounded-md relative w-full"
             role="alert"
           >
             <span class="font-medium">Error occured while loading:</span> {{ loadingData().error }}
           </div>
         } @else {
-          <div class="w-full h-1.5 rounded-full bg-fg-100 overflow-hidden mx-4 mb-4">
+          <div
+            class="w-full h-1.5 rounded-full bg-neutral-secondary-medium overflow-hidden mx-4 mb-4"
+          >
             <div
               [style.width]="loadingData().percentLoaded + '%'"
-              class="h-full bg-brand-400 rounded-full transition-all duration-300"
+              class="h-full bg-brand rounded-full transition-all duration-300"
             ></div>
           </div>
         }
@@ -39,7 +39,7 @@ import { ModalComponent } from '../modal/modal.component';
         <div footer class="flex items-center justify-end w-full">
           <button
             (click)="audioLoadSvc.clearError()"
-            class="bg-brand-600 text-color-text-inverted hover:bg-brand-700 px-4 py-2 text-sm font-medium rounded-xl transition-colors"
+            class="bg-brand-medium text-neutral-primary hover:bg-brand-strong px-4 py-2 text-sm font-medium rounded-xl transition-colors"
           >
             Ok
           </button>

@@ -1,31 +1,14 @@
 <cq-audio-selection-modal [(open)]="modalOpen" (uploadRequest)="handleUploadRequest($event)" />
 <cq-audio-loading-modal />
 
-<div class="h-dvh w-full m-0 p-0 flex flex-col bg-background font-mono text-fg-800">
+<div class="h-dvh w-full m-0 p-0 flex flex-col bg-background font-mono text-heading">
   <header
-    class="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-background border-b border-fg-200 shadow-sm"
+    class="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-background border-b border-default shadow-sm"
   >
     <div class="flex items-center gap-3">
-      <!-- <svg
-        width="28"
-        height="28"
-        viewBox="0 0 28 28"
-        fill="none"
-        class="flex-shrink-0 hidden md:block"
-      >
-        <rect width="28" height="28" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
-        <path
-          d="M6 20 Q10 8 14 14 Q18 20 22 8"
-          stroke="#2563eb"
-          stroke-width="1.8"
-          fill="none"
-          stroke-linecap="round"
-        />
-        <circle cx="14" cy="14" r="1.5" fill="#0ea5e9" />
-      </svg> -->
       <div>
-        <h1 class="font-display font-bold text-sm tracking-widest uppercase text-fg-800">
-          ConstantQ<span class="text-brand-700">.js</span>
+        <h1 class="font-display font-bold text-sm tracking-widest uppercase text-heading">
+          ConstantQ<span class="text-brand">.js</span>
         </h1>
       </div>
     </div>
@@ -35,7 +18,7 @@
 
       <button
         (click)="modalOpen.set(true)"
-        class="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg border border-brand-400 bg-brand-100 text-brand-700 text-[11px] tracking-wider hover:bg-brand-200 hover:border-brand-500 transition-colors cursor-pointer"
+        class="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg border border-brand-light bg-brand-soft text-brand text-[11px] tracking-wider hover:bg-brand-subtle hover:border-brand-strong hover:text-brand-strong transition-colors cursor-pointer"
       >
         <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
           <path
@@ -59,7 +42,7 @@
       class="absolute inset-0 flex flex-col items-center justify-center"
     >
       <div
-        class="flex flex-col items-center justify-center gap-3 p-6 text-fg-300 cursor-pointer"
+        class="flex flex-col items-center justify-center gap-3 p-6 text-body-subtle cursor-pointer"
         (click)="modalOpen.set(true)"
         (keypress.enter)="modalOpen.set(true)"
         (keypress.space)="modalOpen.set(true)"
@@ -92,11 +75,7 @@
     <cq-audio-visualizer [class.hidden]="!hasAudioFileData()" />
   </main>
 
-  <div
-    class="flex-shrink-0 h-px bg-gradient-to-r from-transparent via-accent-mid to-transparent"
-  ></div>
-
-  <footer class="flex-shrink-0 flex flex-col gap-3 px-5 py-4 bg-background border-t border-fg-200">
+  <footer class="flex-shrink-0 flex flex-col gap-3 px-5 py-4 bg-background border-t border-default">
     @if (showControls()) {
       <cq-audio-player />
     }

@@ -4,15 +4,15 @@
   <span subtitle>Choose a source to get started</span>
   <div body>
     <!-- Tabs -->
-    <div class="flex border-b border-secondary-100">
+    <div class="flex border-b border-default-soft">
       @for (tab of tabs; track tab.id) {
         <button
           (click)="setTab(tab.id)"
           [class]="
             'flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors' +
             (activeTab() === tab.id
-              ? ' border-brand-600 text-brand-600'
-              : ' border-transparent text-secondary-400 cursor-pointer hover:text-secondary-600')
+              ? ' border-brand-medium text-brand-medium'
+              : ' border-transparent text-body-subtle cursor-pointer hover:text-body')
           "
         >
           <!-- Tab icons -->
@@ -92,16 +92,16 @@
   <div footer class="relative w-full">
     <!-- Settings popover -->
     <div
-      class="absolute bottom-full left-0 mb-2 w-90 max-w-full bg-background border border-secondary-200 rounded-2xl shadow-lg z-10 overflow-hidden"
+      class="absolute bottom-full left-0 mb-2 w-90 max-w-full bg-neutral-primary border border-default rounded-2xl shadow-lg z-10 overflow-hidden"
       [class.hidden]="!settingsOpen()"
       data-settings-popover
     >
       <!-- Popover header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-secondary-100">
-        <p class="text-sm font-medium text-secondary-900">Settings</p>
+      <div class="flex items-center justify-between px-4 py-3 border-b border-default">
+        <p class="text-sm font-medium text-heading">Settings</p>
         <button
           (click)="closeSettings()"
-          class="text-secondary-400 hover:text-secondary-600 transition-colors"
+          class="cursor-pointer text-body-subtle hover:text-body transition-colors"
           aria-label="Close settings"
         >
           <svg
@@ -129,9 +129,12 @@
         data-settings-btn
         (click)="toggleSettings()"
         data-settings-btn
-        class="flex items-center gap-1.5 px-3 py-2 text-sm text-secondary-500 hover:text-secondary-700 border border-secondary-200 hover:bg-secondary-50 rounded-xl transition-colors"
-        [class.bg-secondary-50]="settingsOpen()"
-        [class.text-secondary-700]="settingsOpen()"
+        [class]="
+          'flex items-center gap-1.5 px-3 py-2 text-sm  border border-default rounded-xl transition-colors cursor-pointer ' +
+          (settingsOpen()
+            ? 'text-body-strong bg-neutral-secondary '
+            : 'text-body-subtle hover:text-body-strong hover:bg-neutral-secondary ')
+        "
         aria-label="Toggle settings"
       >
         <!-- Hero: cog-6-tooth -->
@@ -157,7 +160,7 @@
       <div class="flex items-center gap-2">
         <button
           (click)="close()"
-          class="px-4 py-2 text-sm text-secondary-500 hover:text-secondary-700 hover:bg-secondary-100 rounded-xl transition-colors"
+          class="px-4 py-2 text-sm text-body hover:text-body-strong hover:bg-default-soft rounded-xl transition-colors cursor-pointer"
         >
           Cancel
         </button>
@@ -166,8 +169,8 @@
           [disabled]="!canUpload()"
           [class]="
             (canUpload()
-              ? 'bg-brand-600 text-background hover:bg-brand-700'
-              : 'bg-secondary-100 text-secondary-400 cursor-not-allowed') +
+              ? 'bg-brand-medium text-neutral-primary hover:bg-brand-strong cursor-pointer'
+              : 'bg-disabled-softer text-disabled cursor-not-allowed') +
             ' px-4 py-2 text-sm font-medium rounded-xl transition-colors'
           "
         >

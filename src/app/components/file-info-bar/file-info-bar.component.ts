@@ -9,16 +9,16 @@ import { AudioLoadService } from '../../services/audio-load.service';
   template: `
     <div
       [class.hidden]="!audioLoadSvc.audioFileData()"
-      class="max-h-500px:hidden flex-shrink-0 flex items-center gap-3 px-5 py-1.5 bg-brand-50 border-b border-brand-300 text-[10px]"
+      class="max-h-500px:hidden flex-shrink-0 flex items-center gap-3 px-5 py-1.5 bg-brand-softer border-b border-brand-subtle text-[10px]"
     >
-      <span class="text-fg-400 tracking-wider">FILE</span>
-      <span class="text-brand-600 font-semibold truncate max-w-xs">{{ fileName() }}</span>
-      <span class="text-fg-300">|</span>
-      <span class="text-fg-500">{{ fileDuration() }}</span>
-      <span class="text-fg-300">|</span>
-      <span class="text-fg-500">{{ fileSampleRate() }}</span>
-      <span class="text-fg-300">|</span>
-      <span class="text-fg-500">{{ fileBytes() | megabytes }}</span>
+      <span class="text-body-subtle tracking-wider">FILE</span>
+      <span class="text-brand font-bold truncate max-w-xs">{{ fileName() }}</span>
+      <span class="text-body-subtle">|</span>
+      <span class="text-body-subtle">{{ fileDuration() }}</span>
+      <span class="text-body-subtle">|</span>
+      <span class="text-body-subtle">{{ fileSampleRate() }}</span>
+      <span class="text-body-subtle">|</span>
+      <span class="text-body-subtle">{{ fileBytes() | megabytes }}</span>
     </div>
   `,
 })
