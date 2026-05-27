@@ -18,17 +18,41 @@
   // based on based on https://flowbite.com/docs/customize/variables/
   /* used for brand colors */
   --color-brand-softer: light-dark(var(--color-blue-50), var(--color-slate-900));
-  --color-brand-soft: light-dark(var(--color-blue-100), var(--color-slate-800));
-  --color-brand-subtle: light-dark(var(--color-blue-200), var(--color-blue-800));
+  --lightmode-color-brand-soft: var(--color-blue-100);
+  --darkmode-color-brand-soft: var(--color-slate-800);
+  --color-brand-soft: light-dark(
+    var(--lightmode-color-brand-soft),
+    var(--darkmode-color-brand-soft)
+  );
+  --lightmode-color-brand-subtle: var(--color-blue-200);
+  --darkmode-color-brand-subtle: var(--color-blue-800);
+  --color-brand-subtle: light-dark(
+    var(--lightmode-color-brand-subtle),
+    var(--darkmode-color-brand-subtle)
+  );
   --color-brand-light: light-dark(var(--color-blue-500), var(--color-blue-600));
-  --color-brand: light-dark(var(--color-blue-600), var(--color-blue-400));
-  --color-brand-medium: light-dark(var(--color-blue-700), var(--color-blue-300));
+  --lightmode-color-brand: var(--color-blue-600);
+  --darkmode-color-brand: var(--color-blue-400);
+  --color-brand: light-dark(var(--lightmode-color-brand), var(--darkmode-color-brand));
+  --lightmode-color-brand-medium: var(--color-blue-700);
+  --darkmode-color-brand-medium: var(--color-blue-300);
+  --color-brand-medium: light-dark(
+    var(--lightmode-color-brand-medium),
+    var(--darkmode-color-brand-medium)
+  );
   --color-brand-strong: light-dark(var(--color-blue-800), var(--color-blue-300));
 
   --color-heading: light-dark(var(--color-slate-900), var(--color-slate-50));
   --color-body-strong: light-dark(var(--color-slate-800), var(--color-slate-100));
-  --color-body: light-dark(var(--color-slate-600), var(--color-slate-200));
-  --color-body-subtle: light-dark(var(--color-slate-500), var(--color-slate-300));
+  --lightmode-color-body: var(--color-slate-600);
+  --darkmode-color-body: var(--color-slate-200);
+  --color-body: light-dark(var(--lightmode-color-body), var(--darkmode-color-body));
+  --lightmode-color-body-subtle: var(--color-slate-500);
+  --darkmode-color-body-subtle: var(--color-slate-300);
+  --color-body-subtle: light-dark(
+    var(--lightmode-color-body-subtle),
+    var(--darkmode-color-body-subtle)
+  );
   --color-body-subtler: light-dark(var(--color-slate-400), var(--color-slate-400));
 
   --color-disabled-strong: light-dark(var(--color-gray-600), var(--color-gray-300));
@@ -39,7 +63,12 @@
 
   //   /* used for neutral colors */
   --color-neutral-primary-soft: light-dark(var(--color-white), var(--color-slate-900));
-  --color-neutral-primary: light-dark(var(--color-white), var(--color-slate-900));
+  --lightmode-color-neutral-primary: var(--color-white);
+  --darkmode-color-neutral-primary: var(--color-slate-900);
+  --color-neutral-primary: light-dark(
+    var(--lightmode-color-neutral-primary),
+    var(--darkmode-color-neutral-primary)
+  );
   --color-neutral-primary-medium: light-dark(var(--color-white), var(--color-slate-900));
   --color-neutral-primary-strong: light-dark(var(--color-white), var(--color-slate-900));
 
@@ -49,8 +78,15 @@
   --color-neutral-secondary-strong: light-dark(var(--color-gray-50), var(--color-gray-900));
 
   // for borders
-  --color-default: light-dark(var(--color-gray-200), var(--color-gray-700));
-  --color-default-soft: light-dark(var(--color-gray-100), var(--color-gray-800));
+  --lightmode-color-default: var(--color-gray-200);
+  --darkmode-color-default: var(--color-gray-700);
+  --color-default: light-dark(var(--lightmode-color-default), var(--darkmode-color-default));
+  --lightmode-color-default-soft: var(--color-gray-100);
+  --darkmode-color-default-soft: var(--color-gray-800);
+  --color-default-soft: light-dark(
+    var(--lightmode-color-default-soft),
+    var(--darkmode-color-default-soft)
+  );
   --color-default-softer: light-dark(var(--color-gray-50), var(--color-gray-900));
   --color-default-medium: light-dark(var(--color-gray-300), var(--color-gray-600));
   --color-default-strong: light-dark(var(--color-gray-400), var(--color-gray-500));

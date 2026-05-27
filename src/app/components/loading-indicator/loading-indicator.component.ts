@@ -9,7 +9,7 @@ import { ConstantqService } from '../../services/constantq.service';
     <span
       [class]="
         (state().msg === 'Loaded' ? 'text-brand-medium' : 'text-body-subtle') +
-        ' inline-block align-top px-2 py-0.5 transition-colors rounded text-xxs font-semibold uppercase bg-neutral-secondary border border-default'
+        ' inline-block align-top px-2 py-1 transition-colors rounded leading-none text-xxs font-semibold uppercase bg-neutral-secondary border border-default'
       "
     >
       {{ state().msg }}

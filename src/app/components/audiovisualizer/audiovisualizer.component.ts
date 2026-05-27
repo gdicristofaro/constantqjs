@@ -6,6 +6,8 @@ import {
   ElementRef,
   HostListener,
   inject,
+  input,
+  OnDestroy,
   signal,
   untracked,
   viewChild,
@@ -30,14 +32,17 @@ import { ConstantqService } from '../../services/constantq.service';
       </div>
     </div>
   `,
+  host: {
+    '[class.hidden]': '!show()',
+  },
 })
-export class AudioVisualizerComponent implements AfterViewInit {
+export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
   protected readonly chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
   protected readonly container = viewChild<ElementRef<HTMLDivElement>>('container');
 
-  private static readonly LINE_COLOR = undefined;
   private static readonly REM_PER_LABEL = 0.75; // Estimated width per label
 
+  readonly show = input.required<boolean>();
   private readonly audioSvc = inject(AudioPlaybackService);
   private readonly audioLoadSvc = inject(AudioLoadService);
 
@@ -50,12 +55,14 @@ export class AudioVisualizerComponent implements AfterViewInit {
   readonly title = computed(() => this.audioFileData().title);
   readonly pitches = computed(() => this.audioFileData().noteLetters);
   readonly max = computed(() => this.constantQSvc.constantQData()?.graphMax ?? 0);
+  private colorModeChangeListener?: any;
 
-  private getContainerWidth(windowWidthPx: number) {
-    return `${windowWidthPx}px - (var(--spacing) * 5)`;
+  private getContainerWidth() {
+    // equivalent to full screen width minus the insets (3)
+    return `${window.innerWidth}px - (var(--spacing) * 6)`;
   }
 
-  readonly containerWidth = signal(this.getContainerWidth(window.innerWidth));
+  readonly containerWidth = signal(this.getContainerWidth());
 
   readonly canvasWidth = computed(() => {
     const labelCount = this.pitches()?.length ?? 0;
@@ -64,7 +71,7 @@ export class AudioVisualizerComponent implements AfterViewInit {
 
   @HostListener('window:resize')
   onResize() {
-    this.containerWidth.set(this.getContainerWidth(window.innerWidth));
+    this.containerWidth.set(this.getContainerWidth());
     this.reloadChart();
   }
 
@@ -79,6 +86,18 @@ export class AudioVisualizerComponent implements AfterViewInit {
   });
 
   private chart: Chart<'line', number[], string> | undefined = undefined;
+
+  /**
+   * Reads a theme color resolved for the current color scheme.
+   * Uses the --lightmode-* / --darkmode-* sub-variables defined in theme.scss
+   * so Chart.js receives a concrete color value rather than a light-dark() expression.
+   */
+  private getThemeColor(varName: string, colorScheme: 'dark' | 'light'): string {
+    const prefix = colorScheme === 'dark' ? '--darkmode' : '--lightmode';
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(`${prefix}-${varName}`)
+      .trim();
+  }
 
   constructor() {
     effect(() => {
@@ -104,7 +123,17 @@ export class AudioVisualizerComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+    this.colorModeChangeListener = darkModePreference.addEventListener('change', e =>
+      this.reloadChart(),
+    );
+
+    this.containerWidth.set(this.getContainerWidth());
     this.reloadChart();
+  }
+
+  ngOnDestroy(): void {
+    this.colorModeChangeListener?.remove();
   }
 
   reloadChart() {
@@ -119,6 +148,16 @@ export class AudioVisualizerComponent implements AfterViewInit {
     const pitches = this.pitches();
     const pitchData = this.pitchData();
 
+    // Read theme colors at render time so light/dark mode is respected
+    const colorScheme: 'dark' | 'light' = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+    const lineColor = this.getThemeColor('color-brand-medium', colorScheme);
+    const fillColor = this.getThemeColor('color-brand-soft', colorScheme);
+    const textColor = this.getThemeColor('color-body-subtle', colorScheme);
+    const gridColor = this.getThemeColor('color-default', colorScheme);
+    const neutralColor = this.getThemeColor('color-neutral-primary', colorScheme);
+
     this.chart = new Chart(ctx, {
       type: 'line',
       options: {
@@ -132,40 +171,43 @@ export class AudioVisualizerComponent implements AfterViewInit {
           y: {
             min: 0,
             max: this.max() ?? 1,
+            ticks: {
+              color: textColor,
+            },
+            grid: {
+              color: gridColor,
+            },
           },
           x: {
             ticks: {
               autoSkip: false, // Disables automatic label removal
               maxRotation: 90, // Optional: Rotate labels to prevent overlap
               minRotation: 45, // Optional: Ensure labels remain readable
+              color: textColor,
+            },
+            grid: {
+              color: context => {
+                return context.index % 2 === 0 ? gridColor : 'transparent';
+              },
             },
           },
         },
       },
       data: {
         labels: pitches,
-        datasets: [{ borderColor: AudioVisualizerComponent.LINE_COLOR, data: pitchData }],
+        datasets: [
+          {
+            data: pitchData,
+            borderColor: lineColor,
+            backgroundColor: fillColor,
+            pointBackgroundColor: lineColor,
+            pointBorderColor: neutralColor,
+            pointHoverBackgroundColor: neutralColor,
+            pointHoverBorderColor: lineColor,
+            fill: true,
+          },
+        ],
       },
     });
-
-    // TODO fix these
-    // this.chart.datasets = this.chartData;
-    // this.chart.labels = this.pitches();
-    // this.chart.colors = this.lineChartColors;
-    // this.chart.legend = this.lineChartLegend;
-    // this.chart.chartType = this.lineChartType;
   }
-
-  // // the colors for the chart
-  // lineChartColors: Color[] = [
-  //   {
-  //     // grey
-  //     backgroundColor: 'rgba(148,159,177,0.2)',
-  //     borderColor: 'rgba(148,159,177,1)',
-  //     pointBackgroundColor: 'rgba(148,159,177,1)',
-  //     pointBorderColor: '#fff',
-  //     pointHoverBackgroundColor: '#fff',
-  //     pointHoverBorderColor: 'rgba(148,159,177,0.8)',
-  //   },
-  // ];
 }
