@@ -25,9 +25,7 @@ import { ModalComponent } from '../modal/modal.component';
             <span class="font-medium">Error occured while loading:</span> {{ loadingData().error }}
           </div>
         } @else {
-          <div
-            class="w-full h-1.5 rounded-full bg-neutral-secondary-medium overflow-hidden mx-4 mb-4"
-          >
+          <div class="w-full h-1.5 rounded-full bg-default overflow-hidden mx-4 mb-4">
             <div
               [style.width]="loadingData().percentLoaded + '%'"
               class="h-full bg-brand rounded-full transition-all duration-300"

@@ -66,7 +66,7 @@ export class AudioSelectionModalComponent {
 
   // --- Computed ---
   canUpload = computed(() => {
-    return Boolean(this.selectedFile().audioFile);
+    return Boolean(this.selectedFile().audioFile) && this.settings().valid;
   });
 
   // --- Actions ---

@@ -1,14 +1,14 @@
 <cq-audio-selection-modal [(open)]="modalOpen" (uploadRequest)="handleUploadRequest($event)" />
 <cq-audio-loading-modal />
 
-<div class="h-dvh w-full m-0 p-0 flex flex-col bg-background font-mono text-heading">
+<div class="h-dvh w-full m-0 p-0 flex flex-col bg-background text-heading">
   <header
     class="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-background border-b border-default shadow-sm"
   >
     <div class="flex items-center gap-3">
       <div>
-        <h1 class="font-display font-bold text-sm tracking-widest uppercase text-heading">
-          ConstantQ<span class="text-brand">.js</span>
+        <h1 class="font-mono font-display font-bold text-sm tracking-widest uppercase text-heading">
+          ConstantQ<span class="text-brand-medium">.js</span>
         </h1>
       </div>
     </div>
@@ -18,7 +18,7 @@
 
       <button
         (click)="modalOpen.set(true)"
-        class="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg border border-brand-light bg-brand-soft text-brand text-xxs tracking-wider hover:bg-brand-subtle hover:border-brand-strong hover:text-brand-strong transition-colors cursor-pointer"
+        class="inline-flex items-center gap-1.5 bg-brand text-neutral-primary hover:bg-brand-strong cursor-pointer px-4 py-2 text-xs font-medium rounded-xl transition-colors"
       >
         <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
           <path
@@ -29,7 +29,7 @@
             stroke-linejoin="round"
           />
         </svg>
-        LOAD FILE
+        Load File
       </button>
     </div>
   </header>

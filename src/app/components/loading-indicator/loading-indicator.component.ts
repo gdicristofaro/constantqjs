@@ -8,8 +8,8 @@ import { ConstantqService } from '../../services/constantq.service';
   template: `
     <span
       [class]="
-        (state().msg === 'Loaded' ? 'text-brand-light' : 'text-body-subtler') +
-        ' inline-block align-top px-2 py-0.5 transition-colors rounded text-xxs font-bold uppercase bg-neutral-secondary border border-default'
+        (state().msg === 'Loaded' ? 'text-brand-medium' : 'text-body-subtle') +
+        ' inline-block align-top px-2 py-0.5 transition-colors rounded text-xxs font-semibold uppercase bg-neutral-secondary border border-default'
       "
     >
       {{ state().msg }}

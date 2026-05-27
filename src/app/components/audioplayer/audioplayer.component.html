@@ -1,7 +1,7 @@
 <!-- Progress bar row -->
 <div class="flex items-center gap-3 mb-2">
   <span class="tabular text-xxs w-12">
-    <span class="text-brand font-medium">{{ curPosition() | playtime }}</span>
+    <span class="text-brand-medium font-medium">{{ curPosition() | playtime }}</span>
   </span>
 
   <div class="flex-1 h-1.5 rounded-full relative">
@@ -60,7 +60,7 @@
   <button
     (click)="setCurPosition(0)"
     title="Rewind to start"
-    class="flex items-center justify-center w-9 h-9 rounded-lg border border-default bg-neutral-primary text-body-subtler hover:bg-brand-soft hover:border-brand-subtle hover:text-brand-light transition-colors cursor-pointer"
+    class="flex items-center justify-center w-9 h-9 rounded-lg border border-default bg-neutral-primary text-body-subtler hover:bg-brand-soft hover:border-brand-light hover:text-brand transition-colors cursor-pointer"
   >
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <path d="M2 3h1.5v10H2V3zM4.5 8l8-5v10l-8-5z" />
