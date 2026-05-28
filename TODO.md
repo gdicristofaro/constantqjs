@@ -1,5 +1,5 @@
-- errors on load
 - scrolling dialogs
+- manual test
 - tests
 - commenting
 - favicon

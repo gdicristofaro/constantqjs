@@ -24,15 +24,21 @@ export class FileSelectorComponent {
    * @param file  the file array (should just be one item), the selected audio file
    */
   private onFilesAdded(event: Event) {
+    let files;
     if (event?.target && 'files' in event.target && event.target.files instanceof FileList) {
-      const files: FileList = event.target.files;
-      if (files && files[0]) {
-        const file = files[0];
-        this.selectedFile.set({
-          audioFile: { file, filename: file.name, size: file.size },
-          type: 'file',
-        });
-      }
+      files = event.target.files;
+    } else if ((event as DragEvent)?.dataTransfer?.files instanceof FileList) {
+      files = (event as DragEvent)?.dataTransfer?.files;
+    } else {
+      files = undefined;
+    }
+
+    if (files && files[0]) {
+      const file = files[0];
+      this.selectedFile.set({
+        audioFile: { file, filename: file.name, size: file.size },
+        type: 'file',
+      });
     }
   }
 

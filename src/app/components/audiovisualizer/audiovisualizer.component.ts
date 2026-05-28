@@ -55,6 +55,9 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
   readonly title = computed(() => this.audioFileData().title);
   readonly pitches = computed(() => this.audioFileData().noteLetters);
   readonly max = computed(() => this.constantQSvc.constantQData()?.graphMax ?? 0);
+
+  private readonly darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private colorModeChangeListener?: any;
 
   private getContainerWidth() {
@@ -123,17 +126,16 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
-    this.colorModeChangeListener = darkModePreference.addEventListener('change', e =>
-      this.reloadChart(),
-    );
-
+    this.colorModeChangeListener = () => this.reloadChart();
+    this.darkModePreference.addEventListener('change', this.colorModeChangeListener);
     this.containerWidth.set(this.getContainerWidth());
     this.reloadChart();
   }
 
   ngOnDestroy(): void {
-    this.colorModeChangeListener?.remove();
+    if (this.darkModePreference && this.colorModeChangeListener) {
+      this.darkModePreference.removeEventListener('change', this.colorModeChangeListener);
+    }
   }
 
   reloadChart() {

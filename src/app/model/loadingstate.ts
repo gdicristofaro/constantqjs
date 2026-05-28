@@ -4,4 +4,4 @@ export type LoadingState =
   | { state: 'idle' }
   | { state: 'loading'; title: string; progress: number }
   | { state: 'loaded'; result: AudioFileData }
-  | { state: 'error'; title: string; error: {} };
+  | { state: 'error'; title: string; error: string };

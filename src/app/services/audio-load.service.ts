@@ -49,7 +49,13 @@ export class AudioLoadService {
               if (event.body) {
                 return { state: 'loaded', result: event.body };
               } else {
-                return { state: 'error', error: 'Unable to load data' };
+                return {
+                  state: 'error',
+                  error: this.processError(
+                    { message: 'Unable to load data', errorData: event },
+                    'while loading ' + url,
+                  ),
+                };
               }
             default:
               return { state: 'loading', progress: 0 };
@@ -78,7 +84,13 @@ export class AudioLoadService {
       };
 
       reader.onerror = err => {
-        observer.error({ state: 'error', error: err });
+        observer.error({
+          state: 'error',
+          error: this.processError(
+            { message: 'An error occurred while loading file: ' + file.name, errorData: err },
+            'while loading ' + file.name,
+          ),
+        });
       };
 
       reader.readAsArrayBuffer(file);
@@ -86,6 +98,36 @@ export class AudioLoadService {
       // Cleanup logic if the observable is unsubscribed
       return () => reader.abort();
     });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  processError(err: any, action: string): string {
+    let errorMessage: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let errorData: any;
+    if (!err) {
+      errorMessage = 'An error occurred';
+      errorData = undefined;
+    } else if (typeof err === 'string') {
+      errorMessage = err;
+      errorData = undefined;
+    } else if ('message' in err && typeof err.message === 'string') {
+      errorMessage = err.message;
+      errorData = err;
+    } else if ('error' in err && typeof err.error === 'string') {
+      errorMessage = err.error;
+      errorData = err;
+    } else {
+      errorMessage = 'An error occurred';
+      errorData = undefined;
+    }
+
+    if (errorData) {
+      console.error(`${errorMessage} ${action}`, errorData);
+    } else {
+      console.error(`${errorMessage} ${action}`);
+    }
+    return errorMessage;
   }
 
   private async arrayToDecodeData(
@@ -141,7 +183,14 @@ export class AudioLoadService {
                 const result = this.getAudioFileData(audio, size, title, settings);
                 return { state: 'loaded', result };
               }),
-              catchError((error): Observable<LoadingState> => of({ state: 'error', error, title })),
+              catchError(
+                (error): Observable<LoadingState> =>
+                  of({
+                    state: 'error',
+                    error: this.processError(error, 'while loading and decoding ' + title),
+                    title,
+                  }),
+              ),
             );
         }
       }),
@@ -172,7 +221,11 @@ export class AudioLoadService {
           res(null);
         },
         error: error => {
-          this._loadingState.set({ state: 'error', error, title });
+          this._loadingState.set({
+            state: 'error',
+            error: this.processError(error, 'while loading audio file: ' + file.filename),
+            title,
+          });
           rej(error);
         },
       });
@@ -183,4 +236,4 @@ export class AudioLoadService {
 type LoadingProgress =
   | { state: 'loading'; progress: number }
   | { state: 'loaded'; result: ArrayBuffer }
-  | { state: 'error'; error: {} };
+  | { state: 'error'; error: string };
