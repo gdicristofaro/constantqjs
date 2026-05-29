@@ -1,4 +1,3 @@
-- scrolling dialogs
 - manual test
 - tests
 - commenting
