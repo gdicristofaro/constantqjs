@@ -1,5 +1,4 @@
 - manual test
 - tests
 - commenting
-- favicon
 - integrate vexflow?
