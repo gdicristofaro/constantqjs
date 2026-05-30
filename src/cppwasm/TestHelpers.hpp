@@ -1,0 +1,27 @@
+#pragma once
+
+#include <vector>
+#include <complex>
+#include <cmath>
+#include "SparseKernel.hpp"
+
+using namespace std;
+
+constexpr double EPSILON = 0.00000001;
+
+inline void insertSin(vector<complex<double>> &buff, int fps, double maxAmplitude, double freq)
+{
+    auto sz = buff.size();
+    for (int x = 0; x < sz; x++)
+        buff[x] += maxAmplitude * sin(M_PI * x * 2 * freq / fps);
+}
+
+inline vector<complex<double>> generateSin(int size, int freq)
+{
+    vector<complex<double>> toGen(size, 0);
+    insertSin(toGen, size, 10, freq);
+    return toGen;
+}
+
+// Declaration for the complex expected kernel builder used by tests.
+constantq::SparseKernel testSparseKernel();

@@ -4,7 +4,7 @@
 #include "SparseKernel.hpp"
 #include "ConstantQSession.hpp"
 #include <cmath>
-// #include <emscripten/bind.h>
+#include <cstring>
 
 using namespace std;
 

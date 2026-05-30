@@ -14,7 +14,13 @@
     "gh-pages-build": "ng build --base-href /constantqjs/",
     "predeploy": "npm run gh-pages-build && touch dist/constantqjs/browser/.nojekyll",
     "deploy": "gh-pages -d dist/constantqjs/browser -t",
-    "buildwasm": "make clean && make"
+    "cmake:configure-wasm": "mkdir -p build-wasm && cd build-wasm && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Emscripten.cmake -DBUILD_TESTS=OFF ..",
+    "cmake:build-wasm": "cd build-wasm && cmake --build . --config Release",
+    "cmake:configure-tests": "mkdir -p build-tests && cd build-tests && cmake -DBUILD_WASM=OFF -DBUILD_TESTS=ON ..",
+    "cmake:build-tests": "npm run cmake:configure-tests && cd build-tests && cmake --build .",
+    "cmake:test": "npm run cmake:build-tests && cd build-tests && ctest --output-on-failure",
+    "cmake:buildwasm": "npm run cmake:configure-wasm && npm run cmake:build-wasm",
+    "cmake:clean": "rm -rf build-wasm build-tests"
   },
   "private": true,
   "dependencies": {

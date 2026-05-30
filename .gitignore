@@ -37,6 +37,10 @@ yarn-error.log
 testem.log
 /typings
 
+# CMake build artifacts
+/build-wasm/
+/build-tests/
+
 # System files
 .DS_Store
 Thumbs.db
