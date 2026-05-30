@@ -7,8 +7,6 @@
 
 using namespace std;
 
-constexpr double EPSILON = 0.00000001;
-
 inline void insertSin(vector<complex<double>> &buff, int fps, double maxAmplitude, double freq)
 {
     auto sz = buff.size();

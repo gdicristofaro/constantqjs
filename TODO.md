@@ -1,4 +1,5 @@
 - manual test
 - tests
+  - check BUILD_WITH_CMAKE
 - commenting
 - integrate vexflow?

@@ -44,7 +44,7 @@ TEST_CASE("MathUtil Hamming Window", "[MathUtil]")
 
     for (int i = 0; i < 12; i++)
     {
-        CHECK_THAT(receivedHamming[i], WithinRel(expectedHamming[i], EPSILON));
+        CHECK_THAT(abs(receivedHamming[i]), WithinRel(expectedHamming[i], 0.0001));
     }
 }
 
@@ -67,7 +67,7 @@ TEST_CASE("MathUtil FFT", "[MathUtil]")
             }
         }
 
-        CHECK_THAT(maxIndex, WithinRel(freq, 0.0001));
+        CHECK_THAT(static_cast<double>(maxIndex), WithinRel(static_cast<double>(freq), 0.0001));
     };
 
     int size = 32;

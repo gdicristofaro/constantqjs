@@ -12,7 +12,11 @@ Audio file data is imported utilizing the Web Audio API. Then the audio data is 
 
 ## Setup and install
 
-The project can be built with `npm install` and ran with `npm start`. The compiled web assembly is included, however the web assembly code can be built from the C++ code using `npm buildwasm`. Building the web assembly from the C++ code will require the [emscripten SDK](https://github.com/emscripten-core/emsdk).
+The project can be built with `npm install` and ran with `npm start`. The compiled web assembly is included, however the web assembly code can be built from the C++ code using `npm buildwasm`. Building the web assembly from the C++ code will require the [emscripten SDK](https://github.com/emscripten-core/emsdk) and [CMAKE](https://cmake.org/).
+
+## Tests
+
+Tests for the C++ code can be run with `npm run cmake:test`
 
 ## Music
 

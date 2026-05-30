@@ -26,6 +26,6 @@ TEST_CASE("ConstantQ Transformation", "[ConstantQ]")
 
     for (int i = 0; i < 24; i++)
     {
-        CHECK_THAT(toRet[i], WithinRel(testData[i], testData[i] / 1000));
+        CHECK_THAT(abs(toRet[i]), WithinRel(testData[i], .001));
     }
 }

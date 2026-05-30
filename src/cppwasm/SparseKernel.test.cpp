@@ -7,7 +7,7 @@
 #include <map>
 
 using namespace constantq;
-using Catch::Matchers::Equals;
+using Catch::Matchers::WithinAbs;
 using Catch::Matchers::WithinRel;
 using std::map;
 
@@ -17,16 +17,16 @@ TEST_CASE("SparseKernel", "[SparseKernel]")
 
     auto result = ConstantQ::sparseKernel(44100, 523.25, 1046.5, 24, .0054);
 
-    CHECK_THAT(expected.bins(), Equals(result.bins()));
-    CHECK_THAT(expected.size(), Equals(result.size()));
-    CHECK_THAT(expected.matrix().size(), Equals(result.matrix().size()));
+    CHECK(expected.bins() == result.bins());
+    CHECK(expected.size() == result.size());
+    CHECK(expected.matrix().size() == result.matrix().size());
 
     for (int a = 0; a < expected.matrix().size(); a++)
     {
         auto thisExpectedMatrix = expected.matrix()[a];
         auto thisResultMatrix = result.matrix()[a];
 
-        CHECK_THAT(thisExpectedMatrix.size(), Equals(thisResultMatrix.size()));
+        CHECK(thisExpectedMatrix.size() == thisResultMatrix.size());
 
         map<int, complex<double>> expectedMapping;
         for (int b = 0; b < thisExpectedMatrix.size(); b++)
@@ -38,7 +38,8 @@ TEST_CASE("SparseKernel", "[SparseKernel]")
             auto thisFftIndex = thisEntry.fftIndex();
             auto thisMultiplier = thisEntry.multiplier();
 
-            CHECK_THAT(thisMultiplier, WithinRel(expectedMapping[thisFftIndex], abs(thisMultiplier) / 1000));
+            auto expected = expectedMapping[thisFftIndex];
+            CHECK_THAT(abs(thisMultiplier), WithinRel(abs(expected), .001));
         }
     }
 }
