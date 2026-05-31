@@ -48,8 +48,6 @@ export default class WasmWorkerInterface {
     outputData: number[][],
     graphMax: number,
   ): { completion: number; graphMax: number } {
-    const inputOffset = 4;
-
     const {
       metadata: { totalSamples, bins, sampleStart },
       constantQData,
@@ -63,7 +61,7 @@ export default class WasmWorkerInterface {
 
     let curGraphMax = graphMax;
     for (let i = 0; i < sampleLen; i++) {
-      const subArr = constantQData.subarray(inputOffset + i * bins, inputOffset + (1 + i) * bins);
+      const subArr = constantQData.subarray(i * bins, (1 + i) * bins);
       curGraphMax = subArr.reduce((prev, cur) => Math.max(prev, cur), curGraphMax);
       outputData[sampleStart + i] = Array.from(subArr);
     }
@@ -92,7 +90,8 @@ export default class WasmWorkerInterface {
       thresh,
     };
 
-    const worker = new Worker(new URL(WasmWorkerInterface.WORKER_PATH, import.meta.url));
+    const workerUrl = new URL(WasmWorkerInterface.WORKER_PATH, document.baseURI);
+    const worker = new Worker(workerUrl);
 
     worker.onmessage = () => this.onWorkerInit(worker, workerArgs, buffer, subject);
 
