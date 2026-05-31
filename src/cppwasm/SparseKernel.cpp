@@ -9,10 +9,10 @@ using namespace std;
 namespace constantq
 {
     vector<vector<KernelEntry>> SparseKernel::matrix() const { return _matrix; }
-    int SparseKernel::size() { return _size; }
-    int SparseKernel::bins() { return _bins; }
+    size_t SparseKernel::size() { return _size; }
+    size_t SparseKernel::bins() { return _bins; }
 
-    SparseKernel::SparseKernel(vector<vector<KernelEntry>> matrix, int size, int bins) : _matrix(matrix)
+    SparseKernel::SparseKernel(vector<vector<KernelEntry>> matrix, size_t size, size_t bins) : _matrix(matrix)
     {
         _size = size;
         _bins = bins;

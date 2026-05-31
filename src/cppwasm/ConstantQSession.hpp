@@ -20,7 +20,7 @@ namespace constantq
         std::vector<double> analyzeSnapshot(std::vector<double> data,
                                             std::vector<std::complex<double>> bufferInput,
                                             std::vector<std::complex<double>> bufferOutput,
-                                            int startIndex, int len);
+                                            size_t startIndex, size_t len);
 
     public:
         /**
@@ -30,11 +30,11 @@ namespace constantq
          * @param bins      bins per octave
          * @param thresh    minimum threshold to be encapsulated for determining bin amplitude in final analysis
          */
-        ConstantQSession(int fs, double minFreq, double maxFreq, int bins, double thresh);
+        ConstantQSession(size_t fs, double minFreq, double maxFreq, size_t bins, double thresh);
 
-        int bins();
+        size_t bins();
 
-        int size();
+        size_t size();
 
         /**
          * threaded analysis using sparse kernel
@@ -46,7 +46,7 @@ namespace constantq
          */
         std::vector<std::vector<double>> analyze(
             std::vector<double> data,
-            int startFrame, int frameInterval, int totalAnalyses);
+            size_t startFrame, size_t frameInterval, size_t totalAnalyses);
 
         /**
          * analyzes to a single vector where item i = bin + analysis * total bins
@@ -57,6 +57,6 @@ namespace constantq
          * @return              the vector of vectors of form [sample number][bin number]
          */
         std::vector<double> analyzeToSingle(std::vector<double> data,
-                                            int startFrame, int frameInterval, int totalAnalyses);
+                                            size_t startFrame, size_t frameInterval, size_t totalAnalyses);
     };
 }

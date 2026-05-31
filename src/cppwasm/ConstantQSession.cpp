@@ -10,31 +10,30 @@ using namespace std;
 
 namespace constantq
 {
-    ConstantQSession::ConstantQSession(int fs, double minFreq, double maxFreq,
-                                       int bins, double thresh) : _cachedKernel(ConstantQ::sparseKernel(fs, minFreq, maxFreq, bins, thresh)) {}
+    ConstantQSession::ConstantQSession(size_t fs, double minFreq, double maxFreq,
+                                       size_t bins, double thresh) : _cachedKernel(ConstantQ::sparseKernel(fs, minFreq, maxFreq, bins, thresh)) {}
 
-    int ConstantQSession::bins() { return _cachedKernel.bins(); }
+    size_t ConstantQSession::bins() { return _cachedKernel.bins(); }
 
-    int ConstantQSession::size() { return _cachedKernel.size(); }
+    size_t ConstantQSession::size() { return _cachedKernel.size(); }
 
     vector<double> ConstantQSession::analyzeSnapshot(vector<double> data,
                                                      vector<complex<double>> bufferInput,
                                                      vector<complex<double>> bufferOutput,
-                                                     int startIndex, int len)
+                                                     size_t startIndex, size_t len)
     {
 
         vector<double> toRet(_cachedKernel.bins());
 
         // verify that length to parse from data is the sparse kernel's size
         assert(len >= _cachedKernel.size());
-        assert(startIndex >= 0);
         assert(startIndex + len <= data.size());
 
-        for (int i = 0; i < len; i++)
+        for (size_t i = 0; i < len; i++)
             bufferInput[i] = data[startIndex + i];
 
         ConstantQ::constantQ(bufferInput, bufferOutput, _cachedKernel);
-        for (int i = 0; i < bufferOutput.size(); i++)
+        for (size_t i = 0; i < bufferOutput.size(); i++)
         {
             toRet[i] = (double)(abs(bufferOutput[i]));
         }
@@ -43,10 +42,8 @@ namespace constantq
     }
 
     vector<vector<double>> ConstantQSession::analyze(vector<double> data,
-                                                     int startFrame, int frameInterval, int totalAnalyses)
+                                                     size_t startFrame, size_t frameInterval, size_t totalAnalyses)
     {
-
-        assert(startFrame >= 0);
         assert(data.size() >= startFrame + frameInterval * totalAnalyses);
 
         // buffers to minimize memory allocation and deallocation
@@ -57,7 +54,7 @@ namespace constantq
         vector<vector<double>> toRet(totalAnalyses);
 
         auto kernelLen = _cachedKernel.size();
-        for (int i = 0; i < totalAnalyses; i++)
+        for (size_t i = 0; i < totalAnalyses; i++)
         {
             toRet[i] = analyzeSnapshot(data, bufferInput, bufferOutput,
                                        startFrame + frameInterval * i, kernelLen);
@@ -67,7 +64,7 @@ namespace constantq
     }
 
     vector<double> ConstantQSession::analyzeToSingle(vector<double> data,
-                                                     int startFrame, int frameInterval, int totalAnalyses)
+                                                     size_t startFrame, size_t frameInterval, size_t totalAnalyses)
     {
 
         assert(startFrame >= 0);
@@ -83,7 +80,7 @@ namespace constantq
         // the vector of vectors to return
         vector<double> toRet(totalAnalyses * _cachedKernel.bins());
 
-        for (int i = 0; i < totalAnalyses; i++)
+        for (size_t i = 0; i < totalAnalyses; i++)
         {
             auto thisSnapshot = analyzeSnapshot(data, bufferInput, bufferOutput,
                                                 startFrame + frameInterval * i, kernelLen);

@@ -8,11 +8,11 @@ using namespace std;
 struct ConstantQWorkerArgs
 {
         // done as doubles for consistent input data
-        int fs;
-        int bins;
-        int frameInterval;
-        int progressMessageCount;
-        long audioDataLen;
+        size_t fs;
+        size_t bins;
+        size_t frameInterval;
+        size_t progressMessageCount;
+        size_t audioDataLen;
         double minFreq;
         double maxFreq;
         double thresh;
@@ -20,25 +20,25 @@ struct ConstantQWorkerArgs
 
 struct ConstantQSegmentWorkerArgs
 {
-        int sampleLen;
+        size_t sampleLen;
         long totalSamples;
-        int frameInterval;
-        int startFrame;
-        int sampleStart;
+        size_t frameInterval;
+        size_t startFrame;
+        size_t sampleStart;
         bool isLast;
 };
 
 struct ConstantQReturnHeaderArgs
 {
         // done as doubles for consistent return data with audio data
-        long totalSamples;
-        int bins;
-        int sampleStart;
+        size_t totalSamples;
+        size_t bins;
+        size_t sampleStart;
 };
 
 extern "C"
 {
-        void constantQPostMessage(ConstantQReturnHeaderArgs *headerArgs, double *evaluated, int evaluatedlen, bool isLast)
+        void constantQPostMessage(ConstantQReturnHeaderArgs *headerArgs, double *evaluated, size_t evaluatedlen, bool isLast)
         {
 
 #ifdef DEBUG
@@ -65,11 +65,11 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
                              double *audioArrPtr)
 {
 
-        int totalSamples = segmentWorkerArgs.totalSamples;
-        int sampleLen = segmentWorkerArgs.sampleLen;
-        int frameInterval = segmentWorkerArgs.frameInterval;
-        int startFrame = segmentWorkerArgs.startFrame;
-        int sampleStart = segmentWorkerArgs.sampleStart;
+        size_t totalSamples = segmentWorkerArgs.totalSamples;
+        size_t sampleLen = segmentWorkerArgs.sampleLen;
+        size_t frameInterval = segmentWorkerArgs.frameInterval;
+        size_t startFrame = segmentWorkerArgs.startFrame;
+        size_t sampleStart = segmentWorkerArgs.sampleStart;
         bool isLast = segmentWorkerArgs.isLast;
 
         if (sampleLen < 1)
@@ -78,7 +78,7 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
         }
 
         auto audioSampleSize = ((sampleLen - 1) * frameInterval) + curSession->size();
-        int totLen = startFrame + frameInterval * (sampleLen - 1) + curSession->size();
+        size_t totLen = startFrame + frameInterval * (sampleLen - 1) + curSession->size();
 
 #ifdef DEBUG
         EM_ASM({ console.log('sessionAnalyze: startFrame', $0,
@@ -96,7 +96,7 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
         vector<double> audioData(audioArrPtr, audioArrPtr + audioSampleSize);
 
 #ifdef DEBUG
-        for (int i = 0; i < min(100, (int)audioData.size()); i += 10)
+        for (size_t i = 0; i < min(100, audioData.size()); i += 10)
                 EM_ASM({ console.log('audio item', $0, $1); }, i, audioData[i]);
 #endif
 
@@ -128,27 +128,27 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, const double *audioArr
                              'thresh', $7); }, constantQArgs->fs, constantQArgs->bins, constantQArgs->frameInterval, constantQArgs->progressMessageCount, constantQArgs->audioDataLen, constantQArgs->minFreq, constantQArgs->maxFreq, constantQArgs->thresh);
 #endif
 
-        int fs = (int)constantQArgs->fs;
-        double minFreq = constantQArgs->minFreq;
-        double maxFreq = constantQArgs->maxFreq;
-        int bins = (int)constantQArgs->bins;
-        double thresh = constantQArgs->thresh;
-        int frameInterval = (int)constantQArgs->frameInterval;
-        int progressMessageCount = (int)constantQArgs->progressMessageCount;
-        int audioDataLen = (int)constantQArgs->audioDataLen;
+        auto fs = constantQArgs->fs;
+        auto minFreq = constantQArgs->minFreq;
+        auto maxFreq = constantQArgs->maxFreq;
+        auto bins = constantQArgs->bins;
+        auto thresh = constantQArgs->thresh;
+        auto frameInterval = constantQArgs->frameInterval;
+        auto progressMessageCount = constantQArgs->progressMessageCount;
+        auto audioDataLen = constantQArgs->audioDataLen;
 
         // create new ConstantQSession
         constantq::ConstantQSession curSession = constantq::ConstantQSession(fs, minFreq, maxFreq, bins, thresh);
 
-        int sparseKernelSize = curSession.size();
+        auto sparseKernelSize = curSession.size();
 
         vector<double> audioData(audioArrPtr, audioArrPtr + audioDataLen);
 
         // total number of constantq samplings
-        int totalSamples = floor(audioData.size() / frameInterval);
+        size_t totalSamples = floor(audioData.size() / frameInterval);
 
 #ifdef DEBUG
-        for (int i = 0; i < min(100, (int)audioData.size()); i += 10)
+        for (size_t i = 0; i < min(100, audioData.size()); i += 10)
                 EM_ASM({console.log("sparse kernel audio data at ", $0, $1)}, i, audioData[i]);
 
         EM_ASM({ console.log('sparsekernel: sparseKernelSize', $0,
@@ -160,11 +160,11 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, const double *audioArr
 #endif
 
         // the last ending frame
-        int sampleStart = 0;
-        for (int w = 0; w < progressMessageCount; w++)
+        size_t sampleStart = 0;
+        for (size_t w = 0; w < progressMessageCount; w++)
         {
-                int endingSample = ceil(((((double)w) + 1) / progressMessageCount) * totalSamples);
-                int sampleLen = endingSample - sampleStart;
+                size_t endingSample = ceil(((((double)w) + 1) / progressMessageCount) * totalSamples);
+                size_t sampleLen = endingSample - sampleStart;
 
                 ConstantQSegmentWorkerArgs segmentWorkerArgs;
                 segmentWorkerArgs.sampleLen = sampleLen;
@@ -183,9 +183,9 @@ void constantQProcess(ConstantQWorkerArgs *constantQArgs, const double *audioArr
 extern "C"
 {
         EMSCRIPTEN_KEEPALIVE
-        void constantq_worker_message(const double *arr, int len, int fs,
-                                      double minFreq, double maxFreq, int bins, double thresh,
-                                      int frameInterval, int progressMessageCount)
+        void constantq_worker_message(const double *arr, size_t len, size_t fs,
+                                      double minFreq, double maxFreq, size_t bins, double thresh,
+                                      size_t frameInterval, size_t progressMessageCount)
         {
 
                 ConstantQWorkerArgs constantQArgs;

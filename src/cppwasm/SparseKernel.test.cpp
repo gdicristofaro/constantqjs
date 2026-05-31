@@ -4,12 +4,12 @@
 #include "TestHelpers.hpp"
 #include "SparseKernel.hpp"
 #include "ConstantQ.hpp"
-#include <map>
+#include <vector>
 
 using namespace constantq;
 using Catch::Matchers::WithinAbs;
 using Catch::Matchers::WithinRel;
-using std::map;
+using std::vector;
 
 TEST_CASE("SparseKernel", "[SparseKernel]")
 {
@@ -21,18 +21,18 @@ TEST_CASE("SparseKernel", "[SparseKernel]")
     CHECK(expected.size() == result.size());
     CHECK(expected.matrix().size() == result.matrix().size());
 
-    for (int a = 0; a < expected.matrix().size(); a++)
+    for (size_t a = 0; a < expected.matrix().size(); a++)
     {
         auto thisExpectedMatrix = expected.matrix()[a];
         auto thisResultMatrix = result.matrix()[a];
 
         CHECK(thisExpectedMatrix.size() == thisResultMatrix.size());
 
-        map<int, complex<double>> expectedMapping;
-        for (int b = 0; b < thisExpectedMatrix.size(); b++)
+        vector<complex<double>> expectedMapping(thisExpectedMatrix.size());
+        for (size_t b = 0; b < thisExpectedMatrix.size(); b++)
             expectedMapping[thisExpectedMatrix[b].fftIndex()] = thisExpectedMatrix[b].multiplier();
 
-        for (int b = 0; b < thisResultMatrix.size(); b++)
+        for (size_t b = 0; b < thisResultMatrix.size(); b++)
         {
             auto thisEntry = thisResultMatrix[b];
             auto thisFftIndex = thisEntry.fftIndex();

@@ -50,7 +50,7 @@ namespace constantq
      * @param x     the complex number array in which to perform fft
      * @param n     the length of the array to perform fft (if undefined, the length of x)
      */
-    void MathUtil::fft(vector<complex<double>> &x, int n)
+    void MathUtil::fft(vector<complex<double>> &x, size_t n)
     {
         assert(x.size() >= n);
 
@@ -58,10 +58,10 @@ namespace constantq
         assert((ceil(log2(n)) == floor(log2(n))));
 
         // bit reversal permutation
-        int shift = 1 + leadingZeros(n);
-        for (int k = 0; k < n; k++)
+        unsigned int shift = 1 + leadingZeros(n);
+        for (unsigned int k = 0; k < n; k++)
         {
-            int j = reverse(k) >> shift;
+            unsigned int j = reverse(k) >> shift;
             if (j > k)
             {
                 complex<double> temp = x[j];
@@ -104,7 +104,7 @@ namespace constantq
      * @param len       the length of the hamming window
      * @returns         the hamming window
      */
-    vector<complex<double>> MathUtil::hamming(int len)
+    vector<complex<double>> MathUtil::hamming(size_t len)
     {
         vector<complex<double>> window(len);
 

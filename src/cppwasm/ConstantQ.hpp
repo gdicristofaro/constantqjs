@@ -23,7 +23,7 @@ namespace constantq
          * @param thresh    the threshold
          * @returns         the generated sparse kernel
          */
-        static SparseKernel sparseKernel(int fs, double minFreq, double maxFreq, int bins, double thresh);
+        static SparseKernel sparseKernel(size_t fs, double minFreq, double maxFreq, size_t bins, double thresh);
 
         /**
          * performs constant q analysis given the amplitude data and the sparse kernel

@@ -1,20 +1,19 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 project(ConstantQ CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Options
 option(BUILD_WASM "Build WebAssembly target" ON)
 option(BUILD_TESTS "Build tests" ON)
-option(DEBUG "Build with debug symbols" OFF)
-
-# Optimization flags
-set(CMAKE_CXX_FLAGS_INIT "-O3")
+option(BUILD_DEBUG "Build with debug symbols" OFF)
 
 # Debug configuration
-if(DEBUG)
+if(BUILD_DEBUG)
+    add_compile_options(-g)
     add_compile_definitions(DEBUG)
 endif()
 
@@ -35,8 +34,6 @@ set(SOURCES_WASM
     "${CPPWASM_DIR}/ConstantQWorker.cpp"
 )
 
-set(SOURCES ${SOURCES_COMMON} ${SOURCES_WASM})
-
 set(HEADERS
     "${CPPWASM_DIR}/ConstantQ.hpp"
     "${CPPWASM_DIR}/ConstantQSession.hpp"
@@ -47,17 +44,14 @@ set(HEADERS
 
 # WebAssembly target
 if(BUILD_WASM)
-    # Check if we're using emscripten
-    if(NOT DEFINED ENV{EMSDK})
-        message(WARNING "EMSDK environment variable not set. WebAssembly build may fail.")
+    if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+        message(WARNING "Not using Emscripten toolchain. WebAssembly build may fail.")
     endif()
 
-    add_executable(constantq.worker ${SOURCES})
+    add_executable(constantq.worker ${SOURCES_COMMON} ${SOURCES_WASM})
     
-    # Emscripten-specific settings
     target_compile_options(constantq.worker PRIVATE
         -O3
-        -std=c++23
     )
     
     target_link_options(constantq.worker PRIVATE
@@ -65,9 +59,9 @@ if(BUILD_WASM)
         "-sEXPORTED_RUNTIME_METHODS=['ccall','HEAPF64']"
         "-sENVIRONMENT=worker"
         "-sALLOW_MEMORY_GROWTH=1"
+        $<$<BOOL:${BUILD_DEBUG}>:-g>
     )
     
-    # Set output directory
     set_target_properties(constantq.worker PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/public/assets/wasm"
     )
@@ -75,34 +69,37 @@ endif()
 
 # Tests target
 if(BUILD_TESTS)
-    # Include FetchContent for catch2
     include(FetchContent)
     
     FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
         GIT_TAG        v3.15.0
+        GIT_SHALLOW    TRUE
     )
-    FetchContent_MakeAvailable(catch2)
+    FetchContent_MakeAvailable(Catch2)
     
-    # Collect per-file test sources (*.test.cpp) and test helpers
     file(GLOB TEST_SOURCES "${CPPWASM_DIR}/*.test.cpp")
 
     add_executable(run_tests
-        ${HEADERS}
         ${SOURCES_COMMON}
-        "${CPPWASM_DIR}/TestHelpers.hpp"
         "${CPPWASM_DIR}/TestHelpers.cpp"
         ${TEST_SOURCES}
     )
+
+    target_include_directories(run_tests PRIVATE "${CPPWASM_DIR}")
     
     target_link_libraries(run_tests PRIVATE Catch2::Catch2WithMain)
     
     target_compile_options(run_tests PRIVATE
-        -std=c++23
+        -Wall
+        -Wextra
+        $<$<BOOL:${BUILD_DEBUG}>:-g>
     )
     
-    # Enable testing
     enable_testing()
     add_test(NAME ConstantQTests COMMAND run_tests)
+
+    include(Catch)
+    catch_discover_tests(run_tests)
 endif()

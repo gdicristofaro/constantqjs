@@ -8,7 +8,7 @@ namespace constantq
     {
     private:
         // the index within the fft to utilize
-        int _fftIndex;
+        size_t _fftIndex;
         // the multiplier to use
         std::complex<double> _multiplier;
 
@@ -18,7 +18,7 @@ namespace constantq
          * @param fftIndex      the index within the fft to utilize
          * @param multiplier    the multiplier to apply to this index
          */
-        KernelEntry(int fftIndex, std::complex<double> multiplier);
+        KernelEntry(size_t fftIndex, std::complex<double> multiplier);
 
         /**
          * the string representation of this KernelEntry
@@ -26,6 +26,6 @@ namespace constantq
         std::string toString();
 
         std::complex<double> multiplier() const;
-        int fftIndex() const;
+        size_t fftIndex() const;
     };
 }

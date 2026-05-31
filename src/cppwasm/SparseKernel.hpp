@@ -17,10 +17,10 @@ namespace constantq
         std::vector<std::vector<KernelEntry>> _matrix;
 
         // the size of the fft to use for this sparse kernel to properly apply
-        int _size;
+        size_t _size;
 
         // the number of bins
-        int _bins;
+        size_t _bins;
 
     public:
         /**
@@ -30,10 +30,10 @@ namespace constantq
          * @param bins      the number of bins
          */
         std::vector<std::vector<KernelEntry>> matrix() const;
-        int size();
-        int bins();
+        size_t size();
+        size_t bins();
 
-        SparseKernel(std::vector<std::vector<KernelEntry>> matrix, int size, int bins);
+        SparseKernel(std::vector<std::vector<KernelEntry>> matrix, size_t size, size_t bins);
 
         /**
          * a string representation of this sparse kernel

@@ -9,9 +9,9 @@ using namespace std;
 namespace constantq
 {
     complex<double> KernelEntry::multiplier() const { return _multiplier; }
-    int KernelEntry::fftIndex() const { return _fftIndex; }
+    size_t KernelEntry::fftIndex() const { return _fftIndex; }
 
-    KernelEntry::KernelEntry(int fftIndex, complex<double> multiplier)
+    KernelEntry::KernelEntry(size_t fftIndex, complex<double> multiplier)
     {
         _fftIndex = fftIndex;
         _multiplier = multiplier;

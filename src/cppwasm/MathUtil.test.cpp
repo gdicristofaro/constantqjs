@@ -50,7 +50,7 @@ TEST_CASE("MathUtil Hamming Window", "[MathUtil]")
 
 TEST_CASE("MathUtil FFT", "[MathUtil]")
 {
-    auto testFFT = [](int size, int freq)
+    auto testFFT = [](size_t size, double freq)
     {
         auto amplitudes = generateSin(size, freq);
         MathUtil::fft(amplitudes, size);
@@ -70,7 +70,7 @@ TEST_CASE("MathUtil FFT", "[MathUtil]")
         CHECK_THAT(static_cast<double>(maxIndex), WithinRel(static_cast<double>(freq), 0.0001));
     };
 
-    int size = 32;
+    size_t size = 32;
     testFFT(size, 1);
     testFFT(size, 2);
     testFFT(size, 4);
