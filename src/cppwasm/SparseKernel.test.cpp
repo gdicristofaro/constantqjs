@@ -4,12 +4,12 @@
 #include "TestHelpers.hpp"
 #include "SparseKernel.hpp"
 #include "ConstantQ.hpp"
-#include <vector>
+#include <map>
 
 using namespace constantq;
 using Catch::Matchers::WithinAbs;
 using Catch::Matchers::WithinRel;
-using std::vector;
+using std::map;
 
 TEST_CASE("SparseKernel", "[SparseKernel]")
 {
@@ -28,7 +28,7 @@ TEST_CASE("SparseKernel", "[SparseKernel]")
 
         CHECK(thisExpectedMatrix.size() == thisResultMatrix.size());
 
-        vector<complex<double>> expectedMapping(thisExpectedMatrix.size());
+        map<int, complex<double>> expectedMapping;
         for (size_t b = 0; b < thisExpectedMatrix.size(); b++)
             expectedMapping[thisExpectedMatrix[b].fftIndex()] = thisExpectedMatrix[b].multiplier();
 

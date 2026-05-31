@@ -28,7 +28,7 @@ namespace constantq
         // the matrix to return as the information holder for the sparse kernel
         vector<vector<KernelEntry>> retMatrix(K);
 
-        for (int k = K; k >= 1; k--)
+        for (double k = K; k >= 1; k--)
         {
             double len = ceil((Q * fs) / (minFreq * pow(2, ((k - 1) / bins))));
 
