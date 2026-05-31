@@ -1778,7 +1778,7 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onSbrkGrow');
 }
 var ASM_CONSTS = {
-  76992: ($0, $1, $2, $3, $4) => { var ptr = $0; var length = $1; var float64View = new Float64Array(Module.HEAPF64.buffer, ptr, length); self.postMessage({"constantQData" : float64View, "metadata" : {"totalSamples" : $2, "bins" : $3, "sampleStart" : $4}}); }
+  76960: ($0, $1, $2, $3, $4) => { var ptr = $0; var length = $1; var float64View = new Float64Array(Module.HEAPF64.buffer, ptr, length); self.postMessage({"constantQData" : float64View, "metadata" : {"totalSamples" : $2, "bins" : $3, "sampleStart" : $4}}); }
 };
 
 // Imports from the Wasm binary.
