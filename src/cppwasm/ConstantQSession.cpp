@@ -66,9 +66,6 @@ namespace constantq
     vector<double> ConstantQSession::analyzeToSingle(vector<double> data,
                                                      size_t startFrame, size_t frameInterval, size_t totalAnalyses)
     {
-
-        assert(startFrame >= 0);
-
         auto kernelLen = _cachedKernel.size();
 
         assert(data.size() >= startFrame + kernelLen + frameInterval * (totalAnalyses - 1));

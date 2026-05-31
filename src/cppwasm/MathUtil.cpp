@@ -71,13 +71,13 @@ namespace constantq
         }
 
         // butterfly updates
-        for (int L = 2; L <= n; L = L + L)
+        for (size_t L = 2; L <= n; L = L + L)
         {
-            for (int k = 0; k < L / 2; k++)
+            for (size_t k = 0; k < L / 2; k++)
             {
-                double kth = -2 * k * M_PI / L;
+                double kth = M_PI * -2 * k / L;
                 auto w = complex<double>(cos(kth), sin(kth));
-                for (int j = 0; j < n / L; j++)
+                for (size_t j = 0; j < n / L; j++)
                 {
                     auto tao = w * (x[j * L + k + L / 2]);
                     x[j * L + k + L / 2] = x[j * L + k] - tao;
@@ -115,8 +115,10 @@ namespace constantq
         else
         {
             auto N = len - 1;
-            for (auto n = 0; n < len; n++)
+            for (size_t n = 0; n < len; n++)
+            {
                 window[n] = .54 - .46 * cos(2 * M_PI * n / N);
+            }
         }
 
         return window;

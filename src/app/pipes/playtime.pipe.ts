@@ -9,17 +9,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class PlayTimePipe implements PipeTransform {
   // performs transformation converting input string to a delimited string
   transform(value: number): string {
-    return playTimeFunct(value);
+    return `${Math.floor(value / 60)}:${Math.floor(value % 60)
+      .toString()
+      .padStart(2, '0')}.${Math.floor((value * 10) % 10).toString()}`;
   }
 }
-
-/**
- * externalized function for use in performing playtime formatting
- * @param value     the value of the play time in seconds
- * @returns time formatted in MM:SS.00
- */
-export const playTimeFunct = (value: number) => {
-  return `${Math.floor(value / 60)}:${Math.floor(value % 60)
-    .toString()
-    .padStart(2, '0')}.${Math.floor((value * 10) % 10).toString()}`;
-};

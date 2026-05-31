@@ -57,7 +57,7 @@ TEST_CASE("MathUtil FFT", "[MathUtil]")
 
         int maxIndex = -1;
         double maxValue = 0;
-        for (int i = 0; i < size; i++)
+        for (size_t i = 0; i < size; i++)
         {
             double thisMax = abs(amplitudes[i]);
             if (maxIndex < 0 || thisMax > maxValue)
