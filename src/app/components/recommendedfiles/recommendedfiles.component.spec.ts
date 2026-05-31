@@ -13,6 +13,7 @@ describe('RecommendedFilesComponent', () => {
 
     fixture = TestBed.createComponent(RecommendedFilesComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('selectedFile', { type: 'file', audioFile: null });
     fixture.detectChanges();
   });
 

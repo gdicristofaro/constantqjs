@@ -13,6 +13,7 @@ describe('FileSelectorComponent', () => {
 
     fixture = TestBed.createComponent(FileSelectorComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('selectedFile', { type: 'file', audioFile: null });
     fixture.detectChanges();
   });
 
