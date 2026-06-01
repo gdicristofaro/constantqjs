@@ -1,6 +1,7 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { Mutex } from 'async-mutex';
 import AudioFileData from '../model/audiofiledata';
+import { AUDIO_CONTEXT } from '../tokens/audio-context.token';
 import { AudioLoadService } from './audio-load.service';
 
 /**
@@ -30,7 +31,7 @@ export class AudioPlaybackService {
   /**
    * defines the audio context to use for audio playback
    */
-  private readonly _audioContext: AudioContext = new AudioContext();
+  private readonly _audioContext: AudioContext | null = inject(AUDIO_CONTEXT);
 
   private readonly playbackContext = signal<{
     // the actual plaback node (only operational during playback not on pause)
@@ -93,6 +94,11 @@ export class AudioPlaybackService {
   }
 
   private _onUpdate() {
+    if (!this._audioContext) {
+      throw new Error(
+        'No AudioContext could be found in this web browser.  Please use a more modern web browser.',
+      );
+    }
     const { contextStart, audioStart } = this.playbackContext();
     this._curPosition.set(
       Math.min(
@@ -142,6 +148,12 @@ export class AudioPlaybackService {
     let startPos = pos;
     if (startPos >= (this.duration() ?? 0) || startPos < 0) {
       startPos = 0;
+    }
+
+    if (!this._audioContext) {
+      throw new Error(
+        'No AudioContext could be found in this web browser.  Please use a more modern web browser.',
+      );
     }
 
     // set up playback node

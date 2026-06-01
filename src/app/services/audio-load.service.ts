@@ -6,6 +6,7 @@ import AudioFileData from '../model/audiofiledata';
 import { LoadingState } from '../model/loadingstate';
 import { getFreqRange, noteToString } from '../model/pitch';
 import { Settings } from '../model/settings';
+import { AUDIO_CONTEXT } from '../tokens/audio-context.token';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +26,7 @@ export class AudioLoadService {
   /**
    * defines the audio context to use for audio playback
    */
-  private readonly _audioContext: AudioContext = new AudioContext();
+  private readonly _audioContext: AudioContext | null = inject(AUDIO_CONTEXT);
 
   clearError() {
     this._loadingState.update(prev => (prev.state === 'error' ? { state: 'idle' } : prev));
@@ -133,6 +134,12 @@ export class AudioLoadService {
   private async arrayToDecodeData(
     arrBuffer: ArrayBuffer,
   ): Promise<{ audio: AudioBuffer; size: number }> {
+    if (!this._audioContext) {
+      throw new Error(
+        'No AudioContext could be found in this web browser.  Please use a more modern web browser.',
+      );
+    }
+
     const size = arrBuffer.byteLength;
     const audio = await this._audioContext.decodeAudioData(arrBuffer);
     return {

@@ -1,6 +1,4 @@
 - manual test
-- tests
+- tests: audio-playback.service.ts, constantq.service.ts, wasm-worker-interface.service.ts
 - commenting
 - integrate vexflow?
-
-I think I'm going to hold off on the wasm tests github actions, but I'd like to have a github action that deploys the application via gh-pages
