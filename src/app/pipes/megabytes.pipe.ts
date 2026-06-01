@@ -7,7 +7,16 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'megabytes',
 })
 // taken from here: https://stackoverflow.com/a/18650828/2375948
+/**
+ * Pipe implementation for formatting byte sizes
+ */
 export class MegabytesPipe implements PipeTransform {
+  /**
+   * Transforms bytes to human-readable file size (bytes, KB, MB, GB, TB, PB)
+   * @param {number} bytes - Size in bytes
+   * @param {number} [precision] - Decimal precision (default 1)
+   * @returns {string} Formatted file size string
+   */
   transform(bytes: number, precision: number | undefined = undefined): string {
     if (isNaN(bytes) || !isFinite(bytes)) {
       return '-';

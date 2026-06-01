@@ -11,6 +11,11 @@ import { AUDIO_CONTEXT } from '../tokens/audio-context.token';
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Service for loading and decoding audio files from URLs or file inputs
+ * Handles HTTP downloads, file reading, and Web Audio API decoding
+ * Emits loading state updates to track progress and completion
+ */
 export class AudioLoadService {
   private readonly http = inject(HttpClient);
 
@@ -28,10 +33,19 @@ export class AudioLoadService {
    */
   private readonly _audioContext: AudioContext | null = inject(AUDIO_CONTEXT);
 
+  /**
+   * Clears error state when user dismisses error message
+   */
   clearError() {
     this._loadingState.update(prev => (prev.state === 'error' ? { state: 'idle' } : prev));
   }
 
+  /**
+   * Loads audio from a remote URL with progress tracking
+   * @param {string} url - The URL of the audio file to load
+   * @returns {Observable<LoadingProgress>} Observable that emits loading progress or result
+   * @private
+   */
   private loadFromUrl(url: string): Observable<LoadingProgress> {
     return this.http
       .get(url, {
@@ -101,6 +115,13 @@ export class AudioLoadService {
     });
   }
 
+  /**
+   * Processes error objects of various types into user-friendly error messages
+   * @param {any} err - The error object (can be Error, string, or object with message/error property)
+   * @param {string} action - Description of the action being performed when error occurred
+   * @returns {string} Formatted error message for display to user
+   * @private
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   processError(err: any, action: string): string {
     let errorMessage: string;
@@ -131,6 +152,13 @@ export class AudioLoadService {
     return errorMessage;
   }
 
+  /**
+   * Converts ArrayBuffer to decoded AudioBuffer for playback and analysis
+   * @param {ArrayBuffer} arrBuffer - The encoded audio data
+   * @returns {Promise<{audio: AudioBuffer; size: number}>} Decoded audio buffer and original size
+   * @throws {Error} If AudioContext is not available in the browser
+   * @private
+   */
   private async arrayToDecodeData(
     arrBuffer: ArrayBuffer,
   ): Promise<{ audio: AudioBuffer; size: number }> {
@@ -148,6 +176,15 @@ export class AudioLoadService {
     };
   }
 
+  /**
+   * Creates AudioFileData object with metadata and processed note letters
+   * @param {AudioBuffer} audio - The decoded audio buffer
+   * @param {number} size - Size of original file in bytes
+   * @param {string} title - Display title for the audio file
+   * @param {Settings} settings - Analysis settings containing pitch range and fps
+   * @returns {AudioFileData} Complete audio file data with metadata
+   * @private
+   */
   private getAudioFileData(
     audio: AudioBuffer,
     size: number,
@@ -171,6 +208,14 @@ export class AudioLoadService {
     };
   }
 
+  /**
+   * Chains loading and decoding operations with error handling
+   * @param {string} title - Display title for the audio file
+   * @param {Settings} settings - Analysis settings
+   * @param {Observable<LoadingProgress>} obs - Observable of loading progress
+   * @returns {Observable<LoadingState>} Observable of loading state changes
+   * @private
+   */
   private loadAndDecode(
     title: string,
     settings: Settings,
@@ -209,6 +254,13 @@ export class AudioLoadService {
    * when the selected file changes, this function is called
    * @param file  the new selected file
    */
+  /**
+   * Initiates loading of an audio file from either local file or remote URL
+   * Updates loading state as file is downloaded and decoded
+   * @param {AudioFile} file - The audio file to load (either File or URL source)
+   * @param {Settings} settings - Analysis settings to apply to the audio
+   * @throws {Error} If loading or decoding fails
+   */
   async loadAudioFile(file: AudioFile, settings: Settings) {
     if (!file) {
       return;
@@ -240,6 +292,10 @@ export class AudioLoadService {
   }
 }
 
+/**
+ * The state of loading an audio file
+ * @interface LoadingProgress
+ */
 type LoadingProgress =
   | { state: 'loading'; progress: number }
   | { state: 'loaded'; result: ArrayBuffer }

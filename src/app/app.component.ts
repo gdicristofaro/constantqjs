@@ -13,6 +13,10 @@ import { AudioLoadService } from './services/audio-load.service';
 import { AudioPlaybackService } from './services/audio-playback.service';
 import { ConstantqService } from './services/constantq.service';
 
+/**
+ * Root application component
+ * Manages main layout and coordinates data flow between audio loading, playback, and analysis services
+ */
 @Component({
   selector: 'cq-app',
   templateUrl: './app.component.html',
@@ -51,6 +55,11 @@ export class AppComponent {
     return this.audioPlaybackSvc.hasSource();
   });
 
+  /**
+   * Handles audio file upload request from modal
+   * Initiates loading and analysis of selected audio file
+   * @param {AudioSelectionAndSettings} selectionAndSettings - Selected file and analysis settings
+   */
   handleUploadRequest(selectionAndSettings: AudioSelectionAndSettings) {
     this.modalOpen.set(false);
     this.audioLoadSvc.loadAudioFile(selectionAndSettings.audioFile, selectionAndSettings.settings);

@@ -6,6 +6,11 @@ import { Settings } from '../model/settings';
 import { AudioLoadService } from './audio-load.service';
 import WasmWorkerInterface, { ConstantQMessage } from './wasm-worker-interface.service';
 
+/**
+ * Service for Constant-Q transform audio analysis using WebAssembly
+ * Manages spectral analysis requests and emits analysis progress/completion updates
+ * Coordinates between AudioLoadService and WasmWorkerInterface
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -32,10 +37,10 @@ export class ConstantqService {
   }
 
   /**
-   * When a constant q message is received, this function is called.
-   * @param data the constant q data message received
-   * @param buff the pertinent audio buffer
-   * @param title the title of the audio file
+   * Handles messages from Constant-Q worker including progress and completion
+   * Updates loading percentage and data signals based on message status
+   * @param {ConstantQMessage} data - Message from WebAssembly worker
+   * @private
    */
   private onConstantQMsg(data: ConstantQMessage) {
     if (data.status === 'Error') {
@@ -50,6 +55,14 @@ export class ConstantqService {
     }
   }
 
+  /**
+   * Initiates Constant-Q analysis on new audio buffer with specified settings
+   * Cancels any previous analysis and sets up new worker with progress tracking
+   * @param {AudioBuffer} audioBuffer - The audio data to analyze
+   * @param {Pitch} minPitch - Minimum frequency for analysis
+   * @param {Pitch} maxPitch - Maximum frequency for analysis
+   * @private
+   */
   private async onLoad(audioBuffer: AudioBuffer, settings: Settings) {
     this.cancelFunct?.();
     this.audioLoadSub?.unsubscribe();
@@ -72,6 +85,11 @@ export class ConstantqService {
     });
   }
 
+  /**
+   * Records error message for display to user
+   * @param {string} err - Error message or error object
+   * @private
+   */
   private setError(err: string) {
     console.error(err);
     this.errorMessage.set('An error occurred while processing the audio file.');

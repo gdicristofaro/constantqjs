@@ -1,3 +1,10 @@
+/**
+ * Implementation of test helper functions
+ * @file TestHelpers.cpp
+ *
+ * Provides pre-computed test data and signal generation for unit tests.
+ */
+
 #include "TestHelpers.hpp"
 #include "KernelEntry.hpp"
 

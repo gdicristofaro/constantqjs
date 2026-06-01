@@ -6,8 +6,16 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({
   name: 'playtime',
 })
+/**
+ * Pipe implementation for formatting playback time
+ */
 export class PlayTimePipe implements PipeTransform {
   // performs transformation converting input string to a delimited string
+  /**
+   * Transforms seconds to MM:SS.D format (minutes:seconds.tenths)
+   * @param {number} value - Time in seconds
+   * @returns {string} Formatted time string
+   */
   transform(value: number): string {
     return `${Math.floor(value / 60)}:${Math.floor(value % 60)
       .toString()

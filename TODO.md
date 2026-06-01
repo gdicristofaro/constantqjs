@@ -1,3 +1,2 @@
 - manual test
-- commenting
 - integrate keyboard

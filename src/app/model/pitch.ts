@@ -1,5 +1,5 @@
 /**
- * note names for pitches
+ * Note names for pitches
  */
 export enum Note {
   C = 0,

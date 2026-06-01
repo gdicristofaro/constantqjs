@@ -1,3 +1,10 @@
+/**
+ * Math utility implementations for DSP operations
+ * @file MathUtil.cpp
+ *
+ * Contains FFT, windowing, and helper functions for Constant-Q transform
+ */
+
 #include <math.h>
 #include <cassert>
 #include <complex>
@@ -10,6 +17,12 @@ using namespace std;
 
 namespace constantq
 {
+    /**
+     * Counts leading zero bits using bit shifting.
+     * Iterates through bits from MSB to LSB until a 1-bit is found.
+     * @param x The unsigned integer value
+     * @return Number of leading zero bits
+     */
     unsigned int MathUtil::leadingZeros(unsigned int x)
     {
         const unsigned bits = sizeof(x) * 8;
@@ -24,7 +37,15 @@ namespace constantq
         return bits - i;
     }
 
-    // https://www.geeksforgeeks.org/write-an-efficient-c-program-to-reverse-bits-of-a-number/
+    /**
+     * Reverses the bit order of a 32-bit unsigned integer.
+     * Used for bit-reversal permutation required by Cooley-Tukey FFT.
+     *
+     * For example: 0101 becomes 1010 (for 4-bit representation)
+     *
+     * @param num The unsigned integer to reverse
+     * @return The bit-reversed value
+     */
     unsigned int MathUtil::reverse(unsigned int num)
     {
         unsigned int NO_OF_BITS = sizeof(num) * 8;

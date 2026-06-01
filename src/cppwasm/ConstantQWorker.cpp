@@ -1,3 +1,12 @@
+/**
+ * WebAssembly worker entry point for Constant-Q analysis
+ * @file ConstantQWorker.cpp
+ *
+ * Implements the main worker message handler for offloading audio analysis from UI thread.
+ * Uses Emscripten to expose C++ functions to JavaScript worker context.
+ * Divides audio into segments to provide incremental progress updates to JavaScript.
+ */
+
 #include "ConstantQSession.hpp"
 #include <cassert>
 #include <emscripten/emscripten.h>
@@ -5,6 +14,18 @@
 
 using namespace std;
 
+/**
+ * Parameters for Constant-Q analysis passed from JavaScript
+ * @struct ConstantQWorkerArgs
+ * @member fs Sample rate in Hz
+ * @member bins Frequency bins per octave
+ * @member frameInterval Samples between consecutive analyses
+ * @member progressMessageCount Number of progress updates to emit
+ * @member audioDataLen Total length of audio buffer in samples
+ * @member minFreq Minimum analysis frequency in Hz
+ * @member maxFreq Maximum analysis frequency in Hz
+ * @member thresh Sparse kernel amplitude threshold
+ */
 struct ConstantQWorkerArgs
 {
         // done as doubles for consistent input data
@@ -18,6 +39,16 @@ struct ConstantQWorkerArgs
         double thresh;
 };
 
+/**
+ * Parameters defining a segment of audio to analyze
+ * @struct ConstantQSegmentWorkerArgs
+ * @member sampleLen Number of analyses in this segment
+ * @member totalSamples Total analyses across entire audio
+ * @member frameInterval Samples between consecutive analyses
+ * @member startFrame Starting sample index in audio buffer
+ * @member sampleStart Index of first analysis result in output
+ * @member isLast Whether this is the final segment
+ */
 struct ConstantQSegmentWorkerArgs
 {
         size_t sampleLen;
@@ -28,6 +59,13 @@ struct ConstantQSegmentWorkerArgs
         bool isLast;
 };
 
+/**
+ * Return header sent with each analysis result segment
+ * @struct ConstantQReturnHeaderArgs
+ * @member totalSamples Total number of analyses performed
+ * @member bins Number of frequency bins per analysis
+ * @member sampleStart Index where this segment's results begin
+ */
 struct ConstantQReturnHeaderArgs
 {
         // done as doubles for consistent return data with audio data
@@ -38,6 +76,16 @@ struct ConstantQReturnHeaderArgs
 
 extern "C"
 {
+        /**
+         * Sends analysis results to JavaScript via postMessage
+         * Uses Emscripten's EM_ASM to create JavaScript view of WebAssembly memory
+         *
+         * @param headerArgs Metadata about the analysis segment
+         * @param evaluated Pointer to analysis results array in WebAssembly heap
+         * @param evaluatedlen Length of results array
+         * @param isLast Whether this is the final batch
+         * @private
+         */
         void constantQPostMessage(ConstantQReturnHeaderArgs *headerArgs, double *evaluated, size_t evaluatedlen, bool isLast)
         {
 
@@ -60,6 +108,15 @@ extern "C"
         }
 }
 
+/**
+ * Analyzes one segment of audio data and sends results to JavaScript.
+ * Extracts audio data for segment, performs analysis, and posts results.
+ *
+ * @param segmentWorkerArgs Parameters for this segment
+ * @param curSession Constant-Q session with cached kernel
+ * @param audioArrPtr Pointer to audio data in WebAssembly heap
+ * @private
+ */
 void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
                              constantq::ConstantQSession *curSession,
                              double *audioArrPtr)
@@ -115,6 +172,20 @@ void constantQProcessSegment(ConstantQSegmentWorkerArgs segmentWorkerArgs,
         constantQPostMessage(&retArgs, &evaluated[0], evaluated.size(), isLast);
 }
 
+/**
+ * Main Constant-Q processing function.
+ * Divides audio into segments and processes each, providing progress updates.
+ *
+ * Process flow:
+ * 1. Creates ConstantQSession with sparse kernel from parameters
+ * 2. Divides audio into segments for progress tracking
+ * 3. Processes each segment and posts results
+ * 4. Emits final completion message when all segments processed
+ *
+ * @param constantQArgs Analysis parameters
+ * @param audioArrPtr Pointer to audio data in WebAssembly heap
+ * @private
+ */
 void constantQProcess(ConstantQWorkerArgs *constantQArgs, const double *audioArrPtr)
 {
 #ifdef DEBUG

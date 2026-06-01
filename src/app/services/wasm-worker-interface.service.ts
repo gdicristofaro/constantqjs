@@ -9,6 +9,14 @@ import {
 } from '../model/defaults';
 import { Pitch } from '../model/pitch';
 
+/**
+ * Types and status updates from Constant-Q WebAssembly worker
+ * @typedef {Object} ConstantQMessage
+ * @property {{status: 'Loading'; message: string; completion?: number; data: ConstantQData}} - Processing in progress with completion percentage
+ * @property {{status: 'Complete'; data: ConstantQData}} - Analysis completed successfully
+ * @property {{status: 'Cancelled'; data: ConstantQData}} - Analysis was cancelled by user
+ * @property {{status: 'Error'; message: string}} - An error occurred during processing
+ */
 export type ConstantQMessage =
   // completion is [0,1] and displays as a percentage
   | { status: 'Loading'; message: string; completion?: number; data: ConstantQData }
@@ -16,11 +24,22 @@ export type ConstantQMessage =
   | { status: 'Cancelled'; data: ConstantQData }
   | { status: 'Error'; message: string };
 
+/**
+ * Result of Constant-Q message processing containing data stream and cancellation function
+ * @interface ConstantQProcessing
+ * @property {Observable<ConstantQMessage>} data - Observable stream of analysis updates and results
+ * @property {Function} cancel - Function to cancel ongoing analysis
+ */
 export interface ConstantQProcessing {
   data: Observable<ConstantQMessage>;
   cancel: () => void;
 }
 
+/**
+ * Interface to WebAssembly Constant-Q worker for audio spectral analysis
+ * Manages worker lifecycle, message passing, and result collection
+ * Emits progress updates and handles cancellation
+ */
 export default class WasmWorkerInterface {
   // how often user will get updates
   static readonly PERCENTAGE_INCREMENTS = 5;
@@ -28,6 +47,13 @@ export default class WasmWorkerInterface {
 
   private static readonly WORKER_PATH = 'assets/wasm/constantq.worker.intercept.js';
 
+  /**
+   * Converts multi-channel audio buffer to single-channel float array
+   * Mixes all channels by summing amplitudes
+   * @param {AudioBuffer} buffer - The multi-channel audio buffer
+   * @returns {Float64Array} Single-channel audio data
+   * @private
+   */
   private createFloat64Arr(buffer: AudioBuffer): Float64Array {
     const len = buffer.length;
     const arr = new Float64Array(len);
@@ -43,6 +69,15 @@ export default class WasmWorkerInterface {
     return arr;
   }
 
+  /**
+   * Processes analysis data from worker and updates output array
+   * Extracts frequency bins and tracks maximum amplitude for visualization scaling
+   * @param {Object} data - Message data from worker containing analysis results
+   * @param {number[][]} outputData - Array to accumulate results
+   * @param {number} graphMax - Current maximum amplitude value
+   * @returns {{completion: number; graphMax: number}} Completion percentage and updated max
+   * @private
+   */
   private parseMessage(
     data: { metadata: ConstantQReturnHeaderArgs; constantQData: Float64Array },
     outputData: number[][],
@@ -70,6 +105,17 @@ export default class WasmWorkerInterface {
     return { completion, graphMax: curGraphMax };
   }
 
+  /**
+   * Initiates Constant-Q analysis in a WebAssembly worker
+   * Creates worker, sets up message handling, and returns cancellable observable
+   * @param {AudioBuffer} buffer - The audio buffer to analyze
+   * @param {Pitch} [minPitch] - Minimum analysis frequency (defaults to C2)
+   * @param {Pitch} [maxPitch] - Maximum analysis frequency (defaults to C6)
+   * @param {number} [bins] - Bins per octave for frequency resolution (default 24)
+   * @param {number} [thresh] - Amplitude threshold for sparse kernel (default 0.0054)
+   * @param {number} [fps] - Frames per second for analysis (default 16)
+   * @returns {Promise<ConstantQProcessing>} Observable of results and cancel function
+   */
   async messageProcessing(
     buffer: AudioBuffer,
     minPitch: Pitch = DEFAULT_MIN_FREQ,
@@ -113,6 +159,15 @@ export default class WasmWorkerInterface {
     };
   }
 
+  /**
+   * Sets up worker message handlers and initiates analysis after initialization
+   * Accumulates results and emits progress updates
+   * @param {Worker} worker - The WebAssembly worker instance
+   * @param {ConstantQWorkerArgs} workerArgs - Analysis parameters
+   * @param {AudioBuffer} buffer - Audio data to analyze
+   * @param {Subject<ConstantQMessage>} subject - Subject to emit results to
+   * @private
+   */
   private onWorkerInit(
     worker: Worker,
     workerArgs: ConstantQWorkerArgs,
@@ -165,6 +220,17 @@ export default class WasmWorkerInterface {
   }
 }
 
+/**
+ * Parameters passed to WebAssembly worker for Constant-Q analysis
+ * @interface ConstantQWorkerArgs
+ * @property {number} fs - Sample rate (e.g., 44100 Hz)
+ * @property {number} bins - Frequency bins per octave
+ * @property {number} frameInterval - Samples between consecutive analyses
+ * @property {number} progressMessageCount - Number of progress updates to emit
+ * @property {number} minFreq - Minimum frequency in Hz
+ * @property {number} maxFreq - Maximum frequency in Hz
+ * @property {number} thresh - Amplitude threshold
+ */
 interface ConstantQWorkerArgs {
   fs: number;
   bins: number;
@@ -175,6 +241,13 @@ interface ConstantQWorkerArgs {
   thresh: number;
 }
 
+/**
+ * Metadata returned with analysis results from worker
+ * @interface ConstantQReturnHeaderArgs
+ * @property {number} totalSamples - Total number of analyses performed
+ * @property {number} bins - Number of frequency bins per analysis
+ * @property {number} sampleStart - Starting index of this batch in output
+ */
 interface ConstantQReturnHeaderArgs {
   // done as doubles for consistent return data with audio data
   totalSamples: number;

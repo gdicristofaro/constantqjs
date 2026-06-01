@@ -1,3 +1,11 @@
+/**
+ * Implementation of Constant-Q analysis session management
+ * @file ConstantQSession.cpp
+ *
+ * Manages stateful Constant-Q analysis with cached kernel,
+ * supporting multiple analysis methods optimized for different use cases.
+ */
+
 #include <optional>
 #include <cassert>
 #include "ConstantQ.hpp"
@@ -10,6 +18,16 @@ using namespace std;
 
 namespace constantq
 {
+    /**
+     * Constructor - Initializes session with analysis parameters.
+     * Pre-computes sparse kernel used for all subsequent analyses.
+     *
+     * @param fs Sample rate (e.g., 44100 for CD quality)
+     * @param minFreq Minimum frequency in Hz
+     * @param maxFreq Maximum frequency in Hz
+     * @param bins Frequency bins per octave
+     * @param thresh Amplitude threshold for sparse kernel entries
+     */
     ConstantQSession::ConstantQSession(size_t fs, double minFreq, double maxFreq,
                                        size_t bins, double thresh) : _cachedKernel(ConstantQ::sparseKernel(fs, minFreq, maxFreq, bins, thresh)) {}
 

@@ -5,7 +5,9 @@ import { AUDIO_CONTEXT } from '../tokens/audio-context.token';
 import { AudioLoadService } from './audio-load.service';
 
 /**
- * A class that defines playback and playback controls for an audio file
+ * Service for audio playback control and position tracking.
+ * Manages Web Audio API buffer source playback with position updates.
+ * Coordinates with AudioLoadService for audio buffer initialization
  */
 @Injectable({
   providedIn: 'root',
@@ -64,16 +66,29 @@ export class AudioPlaybackService {
     });
   }
 
+  /**
+   * Clears current playback and prepares audio for new source
+   * @param {AudioFileData | undefined} audioFileData - New audio file data or undefined to clear
+   * @private
+   */
   private prepareInitializeNewAudio(audioFileData: AudioFileData | undefined) {
     this.playPauseMutex.runExclusive(() => {
       this._pause();
       this._curPosition.set(0);
       if (audioFileData) {
         this.initializeAudio(audioFileData.audio);
+      } else {
+        this.source.set(undefined);
       }
     });
   }
 
+  /**
+   * Initializes audio buffer for playback
+   * @param {AudioBuffer} source - The audio buffer to play
+   * @param {number} [msRefresh] - Update interval in milliseconds for position tracking
+   * @private
+   */
   private initializeAudio(
     source: AudioBuffer,
     // ms for refresh of playback position and fft
@@ -86,6 +101,11 @@ export class AudioPlaybackService {
   /**
    * the function that updates listeners during the playback process
    */
+  /**
+   * Updates playback position during active playback
+   * Called on interval to sync UI with actual playback position
+   * @private
+   */
   private onUpdate() {
     // update position
     this.playPauseMutex.runExclusive(() => {
@@ -93,6 +113,10 @@ export class AudioPlaybackService {
     });
   }
 
+  /**
+   * Internal update logic synchronized with mutex to prevent race conditions
+   * @private
+   */
   private _onUpdate() {
     if (!this._audioContext) {
       throw new Error(
@@ -108,10 +132,17 @@ export class AudioPlaybackService {
     );
   }
 
+  /**
+   * Toggles playback state (play if paused, pause if playing)
+   */
   togglePlay() {
     this.playPauseMutex.runExclusive(() => this._togglePlay());
   }
 
+  /**
+   * Internal toggle implementation with mutex protection
+   * @private
+   */
   _togglePlay() {
     if (this.hasSource()) {
       if (this.isPlaying()) {
@@ -122,6 +153,10 @@ export class AudioPlaybackService {
     }
   }
 
+  /**
+   * Starts playback from specified position
+   * @param {number} pos - Position in seconds to start playback from
+   */
   play(pos: number) {
     this.playPauseMutex.runExclusive(() => this._play(pos));
   }
@@ -129,6 +164,13 @@ export class AudioPlaybackService {
   /**
    * handles playing audio
    * @param pos   the position of playback; if none set, current position is used
+   */
+  /**
+   * Internal play implementation with mutex protection
+   * Sets up Web Audio API nodes and starts playback from position
+   * @param {number} pos - Position in seconds to start playback from
+   * @returns {boolean} True if playback started successfully
+   * @private
    */
   private _play(pos: number) {
     // can't play with no source

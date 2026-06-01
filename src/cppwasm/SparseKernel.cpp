@@ -1,3 +1,8 @@
+/**
+ * Implementation of sparse kernel matrix for Constant-Q transform
+ * @file SparseKernel.cpp
+ */
+
 #include <vector>
 #include <string>
 #include <stdio.h>
@@ -18,6 +23,10 @@ namespace constantq
         _bins = bins;
     }
 
+    /**
+     * Generates string representation for debugging and inspection
+     * @return Human-readable string describing matrix structure
+     */
     string SparseKernel::toString()
     {
         ostringstream stringStream;

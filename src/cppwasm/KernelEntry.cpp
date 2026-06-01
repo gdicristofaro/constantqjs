@@ -1,3 +1,10 @@
+/**
+ * Implementation of individual kernel entry for sparse kernel matrix
+ * @file KernelEntry.cpp
+ *
+ * Represents one contributing FFT bin to a frequency bin in the Constant-Q transform.
+ */
+
 #include <complex>
 #include <cmath>
 #include <string>
@@ -17,6 +24,10 @@ namespace constantq
         _multiplier = multiplier;
     }
 
+    /**
+     * Generates string representation for debugging
+     * @return Human-readable string with index and multiplier values
+     */
     string KernelEntry::toString()
     {
         ostringstream stringStream;

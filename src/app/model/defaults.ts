@@ -1,5 +1,3 @@
-// the default threshold taken from:
-
 import { getPitch, Note } from './pitch';
 
 // http://doc.ml.tu-berlin.de/bbci/material/publications/Bla_constQ.pdf

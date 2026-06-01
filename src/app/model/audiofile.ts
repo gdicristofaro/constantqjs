@@ -1,5 +1,10 @@
 /**
- * defines an audio file record with pertinent details gathered from archive.org
+ * Defines audio file input sources
+ * @module audiofile
+ */
+
+/**
+ * Defines an audio file record with pertinent details
  */
 interface BaseAudioFile {
   // the display file name

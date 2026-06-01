@@ -1,3 +1,12 @@
+/**
+ * Implementation of Constant-Q spectral analysis algorithm
+ * @file ConstantQ.cpp
+ * @author [Project]
+ *
+ * Implements sparse kernel generation and constant-Q transform as described in:
+ * http://doc.ml.tu-berlin.de/bbci/material/publications/Bla_constQ.pdf
+ */
+
 #include <math.h>
 #include <cassert>
 #include <complex>
@@ -64,6 +73,18 @@ namespace constantq
         return SparseKernel(retMatrix, fftLen, K);
     }
 
+    /**
+     * Applies the Constant-Q transform to an input array using the provided sparse kernel.
+     *
+     * Algorithm:
+     * 1. Performs FFT on input array
+     * 2. For each frequency bin, multiplies corresponding FFT bins by kernel entries
+     * 3. Sums weighted values to get bin output magnitude
+     *
+     * @param arr Input complex array (destructively modified by FFT)
+     * @param analyzed Output array containing bin magnitudes
+     * @param sparKernel Sparse kernel defining the transform
+     */
     void ConstantQ::constantQ(
         vector<complex<double>> &arr,
         vector<complex<double>> &analyzed,
