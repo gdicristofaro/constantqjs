@@ -1,4 +1,3 @@
 - manual test
-- tests: audio-playback.service.ts, constantq.service.ts, wasm-worker-interface.service.ts
 - commenting
-- integrate vexflow?
+- integrate keyboard

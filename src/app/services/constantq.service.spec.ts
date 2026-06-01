@@ -55,6 +55,7 @@ describe('ConstantqService', () => {
         16, // default fps
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await new Promise<any>(resolve => {
         processing.data.subscribe({
           next: msg => {
