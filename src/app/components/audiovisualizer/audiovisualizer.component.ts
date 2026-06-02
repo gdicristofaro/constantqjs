@@ -43,64 +43,8 @@ const NOTE_X_OFFSETS: Record<Note, number> = {
 @Component({
   selector: 'cq-audio-visualizer',
   imports: [PianoKeyboardComponent],
-  template: `
-    <div class="absolute inset-3 flex flex-col gap-1">
-      <!-- Display mode toggle -->
-      <div class="flex-shrink-0 flex justify-center">
-        <div class="inline-flex rounded-lg border border-default overflow-hidden text-xs">
-          @for (mode of displayModes; track mode.value) {
-            <button
-              (click)="displayMode.set(mode.value)"
-              [class]="
-                displayMode() === mode.value
-                  ? 'px-3 py-1 bg-brand text-neutral-primary font-medium'
-                  : 'px-3 py-1 text-body-subtle hover:text-body cursor-pointer transition-colors'
-              "
-            >
-              {{ mode.label }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <!-- Scrollable content area -->
-      <div #container class="flex-1 min-h-0 overflow-x-auto">
-        @if (displayMode() === 'keyboard') {
-          <!-- Keyboard-only: centered, fills available space -->
-          <div class="flex items-center justify-center h-full">
-            <div class="w-full" style="max-height: 12rem; height: 12rem">
-              <cq-piano-keyboard
-                [pitchRange]="pitchRange()"
-                [noteIntensities]="frameKeyboardIntensity()"
-              />
-            </div>
-          </div>
-        } @else {
-          <!-- Graph or Both: scrollable, fixed canvas width -->
-          <div class="h-full flex flex-col" [style.width]="canvasWidth()">
-            @if (displayMode() === 'both') {
-              <!-- Piano keyboard aligned to chart plot area -->
-              <div
-                class="flex-shrink-0"
-                style="height: 9rem"
-                [style.paddingLeft.px]="chartPlotLeft()"
-                [style.paddingRight.px]="chartPlotRight()"
-              >
-                <cq-piano-keyboard
-                  [pitchRange]="pitchRange()"
-                  [noteIntensities]="frameKeyboardIntensity()"
-                />
-              </div>
-            }
-            <!-- Chart canvas -->
-            <div class="relative flex-1 min-h-0">
-              <canvas #chartElement></canvas>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  `,
+  templateUrl: './audiovisualizer.component.html',
+  styleUrl: './audiovisualizer.component.scss',
   host: {
     '[class.hidden]': '!show()',
   },
@@ -109,7 +53,7 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
   protected readonly chartElement = viewChild<ElementRef<HTMLCanvasElement>>('chartElement');
   protected readonly container = viewChild<ElementRef<HTMLDivElement>>('container');
 
-  private static readonly MIN_PX_PER_WHITE_KEY = 24;
+  private static readonly MIN_PX_PER_WHITE_KEY = 45;
 
   readonly show = input.required<boolean>();
   private readonly audioSvc = inject(AudioPlaybackService);
@@ -204,6 +148,13 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
   readonly chartPlotLeft = signal(0);
   /** Right padding of chart plot area in pixels (for keyboard alignment). */
   readonly chartPlotRight = signal(0);
+
+  selectDisplayMode(mode: DisplayMode): void {
+    this.displayMode.set(mode);
+    if (mode !== 'keyboard') {
+      this.reloadChart();
+    }
+  }
 
   @HostListener('window:resize')
   onResize() {
@@ -301,7 +252,15 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
       type: 'line',
       options: {
         maintainAspectRatio: false,
-        animation: false,
+        animations: {
+          x: {
+            duration: 0,
+          },
+          y: {
+            duration: 500,
+            easing: 'easeOutQuart',
+          },
+        },
         plugins: {
           legend: { display: false },
         },
@@ -356,9 +315,8 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
     // Read plot area dimensions so the keyboard can align with the chart's x-axis
     const area = this.chart.chartArea;
     if (area) {
-      const canvasWidth = ctx.width;
       this.chartPlotLeft.set(area.left);
-      this.chartPlotRight.set(canvasWidth - area.right);
+      this.chartPlotRight.set(this.chart.width - area.right);
     }
   }
 }

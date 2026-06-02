@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, HostListener, model, output, signal } from '@angular/core';
+import { Component, computed, model, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
@@ -104,15 +104,6 @@ export class AudioSelectionModalComponent {
     }
   }
 
-  // Close settings popover on outside click
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.settingsOpen()) return;
-    const target = event.target as HTMLElement;
-    if (!target.closest('[data-settings-popover]') && !target.closest('[data-settings-btn]')) {
-      this.settingsOpen.set(false);
-    }
-  }
 }
 
 export interface AudioSelectionResult {

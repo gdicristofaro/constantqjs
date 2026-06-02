@@ -29,12 +29,9 @@ interface KeyData {
 
 @Component({
   selector: 'cq-piano-keyboard',
+  styleUrl: './piano-keyboard.component.scss',
   template: `
-    <svg
-      [attr.viewBox]="viewBox()"
-      preserveAspectRatio="none"
-      style="display: block; width: 100%; height: 100%"
-    >
+    <svg [attr.viewBox]="viewBox()" preserveAspectRatio="none" class="piano-svg">
       @for (key of whiteKeys(); track key.noteIndex) {
         <rect
           [attr.x]="key.x"
@@ -42,7 +39,7 @@ interface KeyData {
           width="1"
           height="1"
           [style.fill]="keyFill(key.intensity, true)"
-          style="stroke: var(--color-piano-key-border); stroke-width: 0.015"
+          class="piano-key"
         />
       }
       @for (key of blackKeys(); track key.noteIndex) {
@@ -52,7 +49,7 @@ interface KeyData {
           width="0.6"
           height="0.65"
           [style.fill]="keyFill(key.intensity, false)"
-          style="stroke: var(--color-piano-key-border); stroke-width: 0.015"
+          class="piano-key"
         />
       }
     </svg>

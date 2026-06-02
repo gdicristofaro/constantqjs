@@ -27,16 +27,14 @@ export class SettingsComponent {
       Validators.min(1),
       Validators.max(32),
     ]),
-    settingsAbsoluteKeyboardThreshold: new FormControl(DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD * 100, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(100),
-    ]),
-    settingsRelativeKeyboardThreshold: new FormControl(DEFAULT_RELATIVE_KEYBOARD_THRESHOLD * 100, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(100),
-    ]),
+    settingsAbsoluteKeyboardThreshold: new FormControl(
+      Math.round(DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD * 100),
+      [Validators.required, Validators.min(1), Validators.max(100)],
+    ),
+    settingsRelativeKeyboardThreshold: new FormControl(
+      Math.round(DEFAULT_RELATIVE_KEYBOARD_THRESHOLD * 100),
+      [Validators.required, Validators.min(1), Validators.max(100)],
+    ),
   });
 
   readonly settings = model.required<SettingsResult>();
@@ -73,12 +71,12 @@ export class SettingsComponent {
   }
 
   get minPitches() {
-    const rest = this.pitches.slice(1, this.pitches.length);
+    const rest = this.pitches.slice(0, this.pitches.length - 1);
     return rest;
   }
 
   get maxPitches() {
-    const rest = this.pitches.slice(0, -1);
+    const rest = this.pitches.slice(1);
     return rest;
   }
 
@@ -99,8 +97,8 @@ export class SettingsComponent {
               settingsFps: fps,
               settingsMaxPitch: maxPitch,
               settingsMinPitch: minPitch,
-              settingsAbsoluteKeyboardThreshold: absoluteKeyboardThreshold * 100,
-              settingsRelativeKeyboardThreshold: relativeKeyboardThreshold * 100,
+              settingsAbsoluteKeyboardThreshold: Math.round(absoluteKeyboardThreshold * 100),
+              settingsRelativeKeyboardThreshold: Math.round(relativeKeyboardThreshold * 100),
             },
             { emitEvent: false },
           );
