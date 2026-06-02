@@ -11,4 +11,6 @@ export interface Settings {
   minPitch: Pitch;
   maxPitch: Pitch;
   fps: number;
+  absoluteKeyboardThreshold: number;
+  relativeKeyboardThreshold: number;
 }

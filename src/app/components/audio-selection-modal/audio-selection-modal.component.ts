@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
 import { Settings } from '../../model/settings';
+import {
+  DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD,
+  DEFAULT_RELATIVE_KEYBOARD_THRESHOLD,
+} from '../../model/defaults';
 import { FileSelectorComponent } from '../fileselector/fileselector.component';
 import { ModalComponent } from '../modal/modal.component';
 import { RecommendedFilesComponent } from '../recommendedfiles/recommendedfiles.component';
@@ -50,6 +54,8 @@ export class AudioSelectionModalComponent {
       fps: 16,
       minPitch: { note: Note.C, octave: 1, frequency: 32.7 },
       maxPitch: { note: Note.C, octave: 8, frequency: 4186 },
+      absoluteKeyboardThreshold: DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD,
+      relativeKeyboardThreshold: DEFAULT_RELATIVE_KEYBOARD_THRESHOLD,
     },
   });
 

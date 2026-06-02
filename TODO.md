@@ -1,2 +1,3 @@
 - manual test
 - integrate keyboard
+- describe what settings mean

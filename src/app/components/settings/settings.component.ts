@@ -3,7 +3,13 @@ import { Component, computed, effect, model, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { distinctUntilChanged, map } from 'rxjs';
-import { DEFAULT_FPS, DEFAULT_MAX_FREQ, DEFAULT_MIN_FREQ } from '../../model/defaults';
+import {
+  DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD,
+  DEFAULT_FPS,
+  DEFAULT_MAX_FREQ,
+  DEFAULT_MIN_FREQ,
+  DEFAULT_RELATIVE_KEYBOARD_THRESHOLD,
+} from '../../model/defaults';
 import { getName, Note, Pitch, PitchData } from '../../model/pitch';
 import { Settings } from '../../model/settings';
 
@@ -20,6 +26,16 @@ export class SettingsComponent {
       Validators.required,
       Validators.min(1),
       Validators.max(32),
+    ]),
+    settingsAbsoluteKeyboardThreshold: new FormControl(DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD * 100, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(100),
+    ]),
+    settingsRelativeKeyboardThreshold: new FormControl(DEFAULT_RELATIVE_KEYBOARD_THRESHOLD * 100, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(100),
     ]),
   });
 
@@ -75,13 +91,16 @@ export class SettingsComponent {
       const settingsResult = this.settings();
       untracked(() => {
         if (settingsResult.valid) {
-          const { fps, maxPitch, minPitch } = settingsResult.data;
+          const { fps, maxPitch, minPitch, absoluteKeyboardThreshold, relativeKeyboardThreshold } =
+            settingsResult.data;
 
           this.settingsForm.setValue(
             {
               settingsFps: fps,
               settingsMaxPitch: maxPitch,
               settingsMinPitch: minPitch,
+              settingsAbsoluteKeyboardThreshold: absoluteKeyboardThreshold * 100,
+              settingsRelativeKeyboardThreshold: relativeKeyboardThreshold * 100,
             },
             { emitEvent: false },
           );
@@ -95,6 +114,10 @@ export class SettingsComponent {
       fps: form.settingsFps ?? DEFAULT_FPS,
       maxPitch: form.settingsMaxPitch ?? DEFAULT_MAX_FREQ,
       minPitch: form.settingsMinPitch ?? DEFAULT_MIN_FREQ,
+      absoluteKeyboardThreshold:
+        (form.settingsAbsoluteKeyboardThreshold ?? DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD * 100) / 100,
+      relativeKeyboardThreshold:
+        (form.settingsRelativeKeyboardThreshold ?? DEFAULT_RELATIVE_KEYBOARD_THRESHOLD * 100) / 100,
     };
   }
 

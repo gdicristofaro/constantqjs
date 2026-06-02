@@ -18,6 +18,10 @@ The project can be built with `npm install` and ran with `npm start`. The compil
 
 Tests for the C++ code can be run with `npm run cmake:test`
 
+## Credits
+
+The piano keyboard visualization is based on the [Piano Keyboard SVG](https://commons.wikimedia.org/wiki/File:PianoKeyboard.svg) from Wikimedia Commons, used under the [Creative Commons Attribution-Share Alike 3.0 Unported](https://creativecommons.org/licenses/by-sa/3.0/deed.en) license.
+
 ## Music
 
 The recommended files includes the following:

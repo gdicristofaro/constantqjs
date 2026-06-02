@@ -82,7 +82,7 @@ export default class WasmWorkerInterface {
     data: { metadata: ConstantQReturnHeaderArgs; constantQData: Float64Array },
     outputData: number[][],
     graphMax: number,
-  ): { completion: number; graphMax: number } {
+  ): { completion: number; graphMax: number; frameStart: number; frameCount: number } {
     const {
       metadata: { totalSamples, bins, sampleStart },
       constantQData,
@@ -102,7 +102,7 @@ export default class WasmWorkerInterface {
     }
 
     const completion = (sampleStart + sampleLen) / totalSamples;
-    return { completion, graphMax: curGraphMax };
+    return { completion, graphMax: curGraphMax, frameStart: sampleStart, frameCount: sampleLen };
   }
 
   /**
@@ -123,6 +123,9 @@ export default class WasmWorkerInterface {
     bins: number = DEFAULT_BINS,
     thresh: number = DEFAULT_THRESH,
     fps: number = DEFAULT_FPS,
+    numNotes = 0,
+    absoluteKeyboardThreshold = 0,
+    relativeKeyboardThreshold = 0,
   ): Promise<ConstantQProcessing> {
     const subject = new Subject<ConstantQMessage>();
 
@@ -139,7 +142,16 @@ export default class WasmWorkerInterface {
     const workerUrl = new URL(WasmWorkerInterface.WORKER_PATH, document.baseURI);
     const worker = new Worker(workerUrl);
 
-    worker.onmessage = () => this.onWorkerInit(worker, workerArgs, buffer, subject);
+    worker.onmessage = () =>
+      this.onWorkerInit(
+        worker,
+        workerArgs,
+        buffer,
+        subject,
+        numNotes,
+        absoluteKeyboardThreshold,
+        relativeKeyboardThreshold,
+      );
 
     const workerCancel = () => {
       worker.terminate();
@@ -148,6 +160,7 @@ export default class WasmWorkerInterface {
         data: {
           constantQData: [],
           graphMax: 0,
+          keyboardIntensity: [],
         },
       });
       subject.complete();
@@ -173,22 +186,45 @@ export default class WasmWorkerInterface {
     workerArgs: ConstantQWorkerArgs,
     buffer: AudioBuffer,
     subject: Subject<ConstantQMessage>,
+    numNotes: number,
+    absoluteKeyboardThreshold: number,
+    relativeKeyboardThreshold: number,
   ) {
     const audioData = this.createFloat64Arr(buffer);
     let graphMax = 0;
 
     const outputData: number[][] = [];
+    const keyboardIntensity: number[][] = [];
 
     worker.onmessage = (evt: MessageEvent) => {
-      const { completion, graphMax: newGraphMax } = this.parseMessage(
+      const { completion, graphMax: newGraphMax, frameStart, frameCount } = this.parseMessage(
         evt.data,
         outputData,
         graphMax,
       );
       graphMax = newGraphMax;
+
+      // Precompute per-note keyboard intensities for this batch of frames
+      const absThresh = absoluteKeyboardThreshold * graphMax;
+      for (let f = frameStart; f < frameStart + frameCount; f++) {
+        const frame = outputData[f];
+        if (!frame?.length) {
+          keyboardIntensity[f] = [];
+          continue;
+        }
+        let relMax = 0;
+        for (let i = 0; i < numNotes; i++) relMax = Math.max(relMax, frame[2 * i] ?? 0);
+        const relThresh = relativeKeyboardThreshold * relMax;
+        keyboardIntensity[f] = Array.from({ length: numNotes }, (_, i) => {
+          const v = frame[2 * i] ?? 0;
+          return relMax > 0 && v >= absThresh && v >= relThresh ? v / relMax : 0;
+        });
+      }
+
       const data: ConstantQData = {
         constantQData: outputData,
         graphMax,
+        keyboardIntensity,
       };
 
       if (completion >= 1) {

@@ -77,5 +77,53 @@
         <p class="mt-1.5 text-xs text-fg-danger">Please select a number between 1 and 32</p>
       }
     </div>
+
+    <div class="col-span-2 sm:col-span-1">
+      <label for="settingsAbsoluteKeyboardThreshold" class="block text-xs font-medium text-body mb-1"
+        >Absolute keyboard threshold</label
+      >
+      <div class="flex items-center gap-1">
+        <input
+          name="settingsAbsoluteKeyboardThreshold"
+          formControlName="settingsAbsoluteKeyboardThreshold"
+          id="settingsAbsoluteKeyboardThreshold"
+          type="number"
+          min="1"
+          max="100"
+          class="flex-1 rounded-md border border-default bg-neutral-primary px-3 py-1.5 text-sm outline-none focus:border-brand"
+        />
+        <span class="text-sm text-body-subtle">%</span>
+      </div>
+      @if (
+        settingsForm.controls['settingsAbsoluteKeyboardThreshold'].invalid &&
+        settingsForm.controls['settingsAbsoluteKeyboardThreshold'].touched
+      ) {
+        <p class="mt-1.5 text-xs text-fg-danger">Please enter a number between 1 and 100</p>
+      }
+    </div>
+
+    <div class="col-span-2 sm:col-span-1">
+      <label for="settingsRelativeKeyboardThreshold" class="block text-xs font-medium text-body mb-1"
+        >Relative keyboard threshold</label
+      >
+      <div class="flex items-center gap-1">
+        <input
+          name="settingsRelativeKeyboardThreshold"
+          formControlName="settingsRelativeKeyboardThreshold"
+          id="settingsRelativeKeyboardThreshold"
+          type="number"
+          min="1"
+          max="100"
+          class="flex-1 rounded-md border border-default bg-neutral-primary px-3 py-1.5 text-sm outline-none focus:border-brand"
+        />
+        <span class="text-sm text-body-subtle">%</span>
+      </div>
+      @if (
+        settingsForm.controls['settingsRelativeKeyboardThreshold'].invalid &&
+        settingsForm.controls['settingsRelativeKeyboardThreshold'].touched
+      ) {
+        <p class="mt-1.5 text-xs text-fg-danger">Please enter a number between 1 and 100</p>
+      }
+    </div>
   </div>
 </form>

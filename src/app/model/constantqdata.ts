@@ -7,4 +7,6 @@
 export interface ConstantQData {
   constantQData: number[][];
   graphMax: number;
+  /** Per-frame, per-note keyboard intensities (0 = inactive, 0–1 = active at relative intensity). */
+  keyboardIntensity: number[][];
 }
