@@ -1,6 +1,3 @@
 - manual test
 - integrate keyboard
   - code hygeine (inline styles, etc.)
-- describe what settings mean
-  - popover on small widths
-- README documentation

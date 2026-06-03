@@ -1,9 +1,9 @@
 <form [formGroup]="settingsForm">
   <div class="grid grid-cols-2 gap-4">
     <div class="col-span-2 sm:col-span-1">
-      <div class="flex items-center gap-1 mb-1">
+      <div class="flex items-center gap-1 mb-1 relative">
         <label for="settingsMinPitch" class="text-xs font-medium text-body">Lowest Pitch</label>
-        <div class="relative">
+        <div>
           <button
             type="button"
             (click)="togglePopover('minPitch', $event)"
@@ -28,7 +28,7 @@
           @if (openPopover === 'minPitch') {
             <div
               @fadeInOut
-              class="absolute left-0 top-full mt-1 z-50 w-52 rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
+              class="absolute left-0 top-full mt-1 z-50 w-52 max-w-full rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
             >
               The lowest frequency included in Constant-Q analysis. Notes below this pitch are
               ignored.
@@ -61,9 +61,9 @@
       }
     </div>
     <div class="col-span-2 sm:col-span-1">
-      <div class="flex items-center gap-1 mb-1">
+      <div class="flex items-center gap-1 mb-1 relative">
         <label for="settingsMaxPitch" class="text-xs font-medium text-body">Highest Pitch</label>
-        <div class="relative">
+        <div>
           <button
             type="button"
             (click)="togglePopover('maxPitch', $event)"
@@ -88,7 +88,7 @@
           @if (openPopover === 'maxPitch') {
             <div
               @fadeInOut
-              class="absolute right-0 top-full mt-1 z-50 w-52 rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
+              class="absolute right-0 top-full mt-1 z-50 w-52 max-w-full rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
             >
               The highest frequency included in Constant-Q analysis. Notes above this pitch are
               ignored.
@@ -122,11 +122,11 @@
     </div>
 
     <div class="col-span-2">
-      <div class="flex items-center gap-1 mb-1">
+      <div class="flex items-center gap-1 mb-1 relative">
         <label for="settingsFps" class="text-xs font-medium text-body"
           >Samples per second (1-32)</label
         >
-        <div class="relative">
+        <div>
           <button
             type="button"
             (click)="togglePopover('fps', $event)"
@@ -151,7 +151,7 @@
           @if (openPopover === 'fps') {
             <div
               @fadeInOut
-              class="absolute left-0 top-full mt-1 z-50 w-52 rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
+              class="absolute left-0 top-full mt-1 z-50 w-52 max-w-full rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
             >
               How many times per second the audio spectrum is analyzed. Higher values give smoother
               real-time visualization but use more CPU.
@@ -177,11 +177,11 @@
     </div>
 
     <div class="col-span-2 sm:col-span-1 flex flex-col justify-end">
-      <div class="flex items-center gap-1 mb-1">
+      <div class="flex items-center gap-1 mb-1 relative">
         <label for="settingsAbsoluteKeyboardThreshold" class="text-xs font-medium text-body"
           >Abs. Piano Threshold</label
         >
-        <div class="relative">
+        <div>
           <button
             type="button"
             (click)="togglePopover('absThreshold', $event)"
@@ -206,7 +206,7 @@
           @if (openPopover === 'absThreshold') {
             <div
               @fadeInOut
-              class="absolute left-0 top-full mt-1 z-50 w-52 rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
+              class="absolute left-0 top-full mt-1 z-50 w-52 max-w-full rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
             >
               Minimum signal strength (% of maximum) for a note to register on the piano. Increase
               to reduce noise; decrease to catch quieter notes.
@@ -235,11 +235,11 @@
     </div>
 
     <div class="col-span-2 sm:col-span-1 flex flex-col justify-end">
-      <div class="flex items-center gap-1 mb-1">
+      <div class="flex items-center gap-1 mb-1 relative">
         <label for="settingsRelativeKeyboardThreshold" class="text-xs font-medium text-body"
           >Rel. Piano Threshold</label
         >
-        <div class="relative">
+        <div>
           <button
             type="button"
             (click)="togglePopover('relThreshold', $event)"
@@ -264,7 +264,7 @@
           @if (openPopover === 'relThreshold') {
             <div
               @fadeInOut
-              class="absolute right-0 top-full mt-1 z-50 w-52 rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
+              class="absolute right-0 top-full mt-1 z-50 w-52 max-w-full rounded-md border border-default bg-brand-softer p-2 text-xs text-body dark:shadow-black shadow-lg"
             >
               Minimum signal strength relative to the loudest detected note. Helps filter out weaker
               harmonics and overtones.
