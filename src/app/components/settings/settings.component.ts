@@ -1,4 +1,5 @@
-import { Component, computed, effect, model, untracked } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { Component, computed, effect, HostListener, input, model, untracked } from '@angular/core';
 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,6 +18,12 @@ import { Settings } from '../../model/settings';
   selector: 'cq-settings',
   templateUrl: './settings.component.html',
   imports: [ReactiveFormsModule],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [style({ opacity: 0 }), animate('150ms ease-in', style({ opacity: 1 }))]),
+      transition(':leave', [animate('150ms ease-out', style({ opacity: 0 }))]),
+    ]),
+  ],
 })
 export class SettingsComponent {
   readonly settingsForm = new FormGroup({
@@ -38,6 +45,7 @@ export class SettingsComponent {
   });
 
   readonly settings = model.required<SettingsResult>();
+  readonly panelOpen = input(true);
 
   protected readonly _settingsData = toSignal(
     this.settingsForm.valueChanges.pipe(
@@ -86,6 +94,12 @@ export class SettingsComponent {
     });
 
     effect(() => {
+      if (!this.panelOpen()) {
+        untracked(() => (this.openPopover = null));
+      }
+    });
+
+    effect(() => {
       const settingsResult = this.settings();
       untracked(() => {
         if (settingsResult.valid) {
@@ -117,6 +131,19 @@ export class SettingsComponent {
       relativeKeyboardThreshold:
         (form.settingsRelativeKeyboardThreshold ?? DEFAULT_RELATIVE_KEYBOARD_THRESHOLD * 100) / 100,
     };
+  }
+
+  openPopover: string | null = null;
+
+  togglePopover(id: string, event: Event): void {
+    event.stopPropagation();
+    this.openPopover = this.openPopover === id ? null : id;
+  }
+
+  @HostListener('click')
+  @HostListener('document:click')
+  closePopover(): void {
+    this.openPopover = null;
   }
 
   getName(pitch: Pitch) {
