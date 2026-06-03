@@ -2,6 +2,7 @@ import { effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ConstantQData } from '../model/constantqdata';
 import { DEFAULT_BINS, DEFAULT_THRESH } from '../model/defaults';
+import { getFreqRange } from '../model/pitch';
 import { Settings } from '../model/settings';
 import { AudioLoadService } from './audio-load.service';
 import WasmWorkerInterface, { ConstantQMessage } from './wasm-worker-interface.service';
@@ -69,6 +70,13 @@ export class ConstantqService {
     this.loadingPercentage.set(0);
     this.constantQData.set(undefined);
 
+    const numNotes = getFreqRange(
+      settings.minPitch.note,
+      settings.minPitch.octave,
+      settings.maxPitch.note,
+      settings.maxPitch.octave,
+    ).length;
+
     const { cancel, data } = await this.constantQUtil.messageProcessing(
       audioBuffer,
       settings.minPitch,
@@ -76,6 +84,9 @@ export class ConstantqService {
       DEFAULT_BINS,
       DEFAULT_THRESH,
       settings.fps,
+      numNotes,
+      settings.absoluteKeyboardThreshold,
+      settings.relativeKeyboardThreshold,
     );
 
     this.cancelFunct = cancel;

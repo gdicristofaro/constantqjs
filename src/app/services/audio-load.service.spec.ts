@@ -28,6 +28,8 @@ const makeSettings = (overrides: Partial<Settings> = {}): Settings => ({
   fps: 30,
   minPitch: { note: Note.C, octave: 4, frequency: 261.63 },
   maxPitch: { note: Note.B, octave: 4, frequency: 493.88 },
+  absoluteKeyboardThreshold: 0.05,
+  relativeKeyboardThreshold: 0.1,
   ...overrides,
 });
 

@@ -1,0 +1,58 @@
+<div class="absolute inset-2 flex flex-col gap-1">
+  <!-- Display mode toggle -->
+  <div class="flex-shrink-0 flex justify-center">
+    <div class="inline-flex rounded-lg border border-default overflow-hidden text-xs">
+      @for (mode of displayModes; track mode.value) {
+        <button
+          (click)="selectDisplayMode(mode.value)"
+          [class]="
+            displayMode() === mode.value
+              ? 'px-3 py-1 bg-brand text-neutral-primary font-medium'
+              : 'px-3 py-1 text-body-subtle hover:text-body cursor-pointer transition-colors'
+          "
+        >
+          {{ mode.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Scrollable content area -->
+  <div #container class="flex-1 min-h-0 overflow-x-auto">
+    @if (displayMode() === 'keyboard') {
+      <!-- Keyboard-only: centered, fills available space -->
+      <div class="flex items-center justify-center h-full">
+        <div class="w-full keyboard-only-wrapper">
+          <cq-piano-keyboard
+            [pitchRange]="pitchRange()"
+            [noteIntensities]="frameKeyboardIntensity()"
+          />
+        </div>
+      </div>
+    } @else {
+      <!-- Graph or Both: scrollable, fixed canvas width -->
+      <div
+        class="h-full flex flex-col canvas-width-container"
+        [style.--canvas-width]="canvasWidth()"
+      >
+        @if (displayMode() === 'both') {
+          <!-- Piano keyboard aligned to chart plot area -->
+          <div
+            class="flex-shrink-0 keyboard-both-wrapper"
+            [style.--chart-plot-left]="chartPlotLeft() + 'px'"
+            [style.--chart-plot-right]="chartPlotRight() + 'px'"
+          >
+            <cq-piano-keyboard
+              [pitchRange]="pitchRange()"
+              [noteIntensities]="frameKeyboardIntensity()"
+            />
+          </div>
+        }
+        <!-- Chart canvas -->
+        <div class="relative flex-1 min-h-0">
+          <canvas #chartElement></canvas>
+        </div>
+      </div>
+    }
+  </div>
+</div>

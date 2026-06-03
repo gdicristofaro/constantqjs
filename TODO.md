@@ -1,2 +1,3 @@
 - manual test
-- integrate keyboard
+- aria attributes
+- animation settings are deprecated

@@ -95,6 +95,25 @@
   --color-accent: light-dark(var(--color-sky-300), var(--color-sky-100));
   --color-accent-medium: light-dark(var(--color-sky-500), var(--color-sky-50));
 
+  --lightmode-color-piano-white-key: white;
+  --darkmode-color-piano-white-key: var(--color-slate-600);
+  --color-piano-white-key: light-dark(
+    var(--lightmode-color-piano-white-key),
+    var(--darkmode-color-piano-white-key)
+  );
+  --lightmode-color-piano-black-key: var(--color-slate-900);
+  --darkmode-color-piano-black-key: var(--color-slate-950);
+  --color-piano-black-key: light-dark(
+    var(--lightmode-color-piano-black-key),
+    var(--darkmode-color-piano-black-key)
+  );
+  --lightmode-color-piano-key-border: var(--color-slate-400);
+  --darkmode-color-piano-key-border: var(--color-slate-500);
+  --color-piano-key-border: light-dark(
+    var(--lightmode-color-piano-key-border),
+    var(--darkmode-color-piano-key-border)
+  );
+
   --color-fg-danger: light-dark(var(--color-red-700), var(--color-red-300));
   --color-fg-danger-strong: light-dark(var(--color-red-900), var(--color-red-50));
   --color-danger-subtle: light-dark(var(--color-rose-200), var(--color-rose-800));

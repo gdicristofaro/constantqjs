@@ -12,7 +12,13 @@ export const DEFAULT_BINS = 24;
 export const DEFAULT_MIN_FREQ = getPitch(Note.C, 2);
 
 // default maximum frequency to utilize
-export const DEFAULT_MAX_FREQ = getPitch(Note.C, 6);
+export const DEFAULT_MAX_FREQ = getPitch(Note.C, 7);
+
+// default absolute threshold for piano key activation (as a fraction of the maximum detected magnitude)
+export const DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD = 0.05;
+
+// default relative threshold for piano key activation (as a fraction of the magnitude of the loudest detected note per frame)
+export const DEFAULT_RELATIVE_KEYBOARD_THRESHOLD = 0.1;
 
 // how frequently the visualization of the audio should be refreshed in milliseconds
 export const MS_REFRESH = 100;

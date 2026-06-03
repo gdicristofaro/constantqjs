@@ -1,7 +1,7 @@
 <!-- Backdrop -->
 <cq-modal [(open)]="open" modalClasses="max-w-lg max-h-[90dvh] mt-auto mb-auto h-120">
-  <span title>Upload audio</span>
-  <span subtitle>Choose a source to get started</span>
+  <span title>Upload Audio</span>
+  <span subtitle>Choose an audio file to process identifying pitches</span>
   <div body>
     <!-- Tabs -->
     <div class="flex border-b border-default-soft">
@@ -90,11 +90,20 @@
 
   <!-- Footer -->
   <div footer class="relative w-full">
+    @if (settingsOpen()) {
+      <div
+        class="fixed inset-0"
+        role="button"
+        tabindex="0"
+        aria-label="Close settings"
+        (click)="closeSettings()"
+        (keydown.escape)="closeSettings()"
+      ></div>
+    }
     <!-- Settings popover -->
     <div
-      class="absolute bottom-full left-0 mb-2 w-90 max-w-full bg-neutral-primary border border-default rounded-2xl shadow-lg z-10 overflow-hidden"
+      class="absolute bottom-full inset-x-2 mb-3 flex flex-col max-h-[calc(90dvh-6rem)] bg-neutral-primary border border-default rounded-2xl dark:shadow-black shadow-lg z-10"
       [class.hidden]="!settingsOpen()"
-      data-settings-popover
     >
       <!-- Popover header -->
       <div class="flex items-center justify-between px-4 py-3 border-b border-default">
@@ -119,16 +128,14 @@
         </button>
       </div>
 
-      <div class="px-4 py-4 flex flex-col gap-4">
-        <cq-settings [(settings)]="settings"></cq-settings>
+      <div class="px-4 py-4 flex flex-col gap-4 overflow-y-auto">
+        <cq-settings [(settings)]="settings" [panelOpen]="settingsOpen()"></cq-settings>
       </div>
     </div>
 
     <div class="flex items-center justify-between w-full">
       <button
-        data-settings-btn
         (click)="toggleSettings()"
-        data-settings-btn
         [class]="
           'flex items-center gap-1.5 px-3 py-2 text-sm  border border-default rounded-xl transition-colors cursor-pointer ' +
           (settingsOpen()

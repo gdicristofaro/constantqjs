@@ -83,7 +83,7 @@ describe('WasmWorkerInterface', () => {
       expect(mockWorkerInstance.terminate).toHaveBeenCalled();
       expect(lastEmittedMessage).toEqual({
         status: 'Cancelled',
-        data: { constantQData: [], graphMax: 0 },
+        data: { constantQData: [], graphMax: 0, keyboardIntensity: [] },
       });
     });
   });

@@ -665,6 +665,11 @@ export const PitchData = [
     octave: 8,
     frequency: 7902.13,
   },
+  {
+    note: Note.C,
+    octave: 9,
+    frequency: 8372.02,
+  },
 ] as const;
 
 export function getName(p: Pitch): string {

@@ -40,7 +40,7 @@ import { Component, input, model } from '@angular/core';
       <div
         [class]="
           modalClasses() +
-          ' flex w-full flex-col overflow-hidden rounded-2xl bg-neutral-primary shadow-2xl'
+          ' flex w-full flex-col overflow-hidden rounded-2xl bg-neutral-primary shadow-2xl dark:shadow-black'
         "
         (click)="$event.stopPropagation()"
         (keypress.enter)="($event)"
