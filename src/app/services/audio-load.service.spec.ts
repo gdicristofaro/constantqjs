@@ -1,7 +1,8 @@
-import { HttpEventType, provideHttpClient } from '@angular/common/http';
+import { HttpEventType, provideHttpClient, withXhr } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { expect, vi } from 'vitest';
 
 import { AudioFile } from '../model/audiofile';
 import AudioFileData from '../model/audiofiledata';
@@ -40,9 +41,9 @@ const makeFakeAudioBuffer = (): AudioBuffer =>
     length: 44100,
     numberOfChannels: 2,
     sampleRate: 44100,
-    getChannelData: jasmine.createSpy('getChannelData').and.returnValue(new Float32Array(44100)),
-    copyFromChannel: jasmine.createSpy('copyFromChannel'),
-    copyToChannel: jasmine.createSpy('copyToChannel'),
+    getChannelData: vi.fn().mockReturnValue(new Float32Array(44100)),
+    copyFromChannel: vi.fn(),
+    copyToChannel: vi.fn(),
   }) as unknown as AudioBuffer;
 
 /** Creates a File object backed by an ArrayBuffer of a given byte size */
@@ -59,25 +60,25 @@ const ignoreRejection = (p: Promise<void>): Promise<void> => p.catch(() => undef
 describe('AudioLoadService', () => {
   let service: AudioLoadService;
   let httpMock: HttpTestingController;
-  let fakeAudioContext: jasmine.SpyObj<AudioContext>;
+  let fakeAudioContext: { decodeAudioData: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    // Build the spy before configureTestingModule so it can be provided as
+    // Build the mock before configureTestingModule so it can be provided as
     // the AudioContext token. This is necessary because _audioContext is readonly
     // and JSDOM has no codec support, so we can never use the real AudioContext.
-    fakeAudioContext = jasmine.createSpyObj<AudioContext>('AudioContext', ['decodeAudioData']);
+    fakeAudioContext = { decodeAudioData: vi.fn() };
 
     // Suppress console.error: the service logs every error it handles, which is
     // correct production behaviour but creates noise in the test output for tests
     // that intentionally exercise error paths.
-    spyOn(console, 'error');
+    vi.spyOn(console, 'error').mockImplementation(vi.fn());
 
     TestBed.configureTestingModule({
       providers: [
         AudioLoadService,
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        // Provide our spy via the AUDIO_CONTEXT token so the service receives
+        // Provide our mock via the AUDIO_CONTEXT token so the service receives
         // it at construction time. JSDOM has no codec support, so we can never
         // use a real AudioContext in unit tests.
         { provide: AUDIO_CONTEXT, useValue: fakeAudioContext },
@@ -90,6 +91,7 @@ describe('AudioLoadService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    vi.restoreAllMocks();
   });
 
   // ─── Initial state ──────────────────────────────────────────────────────────
@@ -189,7 +191,7 @@ describe('AudioLoadService', () => {
     const settings = makeSettings();
 
     it('should set loading state with progress during download', async () => {
-      fakeAudioContext.decodeAudioData.and.resolveTo(makeFakeAudioBuffer());
+      fakeAudioContext.decodeAudioData.mockResolvedValue(makeFakeAudioBuffer());
 
       const loadPromise = service.loadAudioFile(urlFile, settings);
 
@@ -203,7 +205,7 @@ describe('AudioLoadService', () => {
     });
 
     it('should reach loaded state after a successful URL download and decode', async () => {
-      fakeAudioContext.decodeAudioData.and.resolveTo(makeFakeAudioBuffer());
+      fakeAudioContext.decodeAudioData.mockResolvedValue(makeFakeAudioBuffer());
 
       const loadPromise = service.loadAudioFile(urlFile, settings);
 
@@ -218,7 +220,7 @@ describe('AudioLoadService', () => {
     });
 
     it('should set error state when the HTTP response has no body', async () => {
-      fakeAudioContext.decodeAudioData.and.resolveTo(makeFakeAudioBuffer());
+      fakeAudioContext.decodeAudioData.mockResolvedValue(makeFakeAudioBuffer());
 
       const loadPromise = ignoreRejection(service.loadAudioFile(urlFile, settings));
 
@@ -231,7 +233,7 @@ describe('AudioLoadService', () => {
     });
 
     it('should set error state when decodeAudioData rejects', async () => {
-      fakeAudioContext.decodeAudioData.and.rejectWith(new Error('decode failed'));
+      fakeAudioContext.decodeAudioData.mockRejectedValue(new Error('decode failed'));
 
       const loadPromise = ignoreRejection(service.loadAudioFile(urlFile, settings));
 
@@ -273,7 +275,7 @@ describe('AudioLoadService', () => {
     const settings = makeSettings();
 
     it('should reach loaded state after reading and decoding a local File', async () => {
-      fakeAudioContext.decodeAudioData.and.resolveTo(makeFakeAudioBuffer());
+      fakeAudioContext.decodeAudioData.mockResolvedValue(makeFakeAudioBuffer());
 
       const file = makeFile(2048, 'local.mp3');
       const audioFile: AudioFile = { file, filename: 'local.mp3' };
@@ -285,7 +287,7 @@ describe('AudioLoadService', () => {
     });
 
     it('should include the correct noteLetters derived from settings pitch range', async () => {
-      fakeAudioContext.decodeAudioData.and.resolveTo(makeFakeAudioBuffer());
+      fakeAudioContext.decodeAudioData.mockResolvedValue(makeFakeAudioBuffer());
 
       const narrowSettings = makeSettings({
         minPitch: { note: Note.C, octave: 4, frequency: 261.63 },
@@ -306,7 +308,7 @@ describe('AudioLoadService', () => {
     });
 
     it('should set error state when decodeAudioData rejects for a local file', async () => {
-      fakeAudioContext.decodeAudioData.and.rejectWith(new Error('bad audio data'));
+      fakeAudioContext.decodeAudioData.mockRejectedValue(new Error('bad audio data'));
 
       const file = makeFile(512, 'bad.mp3');
       const audioFile: AudioFile = { file, filename: 'bad.mp3' };
@@ -327,7 +329,7 @@ describe('AudioLoadService', () => {
       TestBed.configureTestingModule({
         providers: [
           AudioLoadService,
-          provideHttpClient(),
+          provideHttpClient(withXhr()),
           provideHttpClientTesting(),
           { provide: AUDIO_CONTEXT, useValue: null },
         ],

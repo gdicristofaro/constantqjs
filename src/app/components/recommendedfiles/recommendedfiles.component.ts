@@ -1,4 +1,4 @@
-import { Component, computed, model } from '@angular/core';
+import { Component, computed, model, ChangeDetectionStrategy } from '@angular/core';
 import { AudioFile } from '../../model/audiofile';
 import { MegabytesPipe } from '../../pipes/megabytes.pipe';
 import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
@@ -9,6 +9,7 @@ import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-m
 @Component({
   selector: 'cq-recommended-files',
   templateUrl: './recommendedfiles.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MegabytesPipe],
 })
 export class RecommendedFilesComponent {

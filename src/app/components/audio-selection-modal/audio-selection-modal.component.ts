@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, model, output, signal } from '@angular/core';
+import { Component, computed, model, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AudioFile } from '../../model/audiofile';
 import { Note } from '../../model/pitch';
@@ -36,6 +36,7 @@ export interface RecommendedFile {
     SettingsComponent,
     FileSelectorComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './audio-selection-modal.component.html',
 })
 export class AudioSelectionModalComponent {
@@ -103,7 +104,6 @@ export class AudioSelectionModalComponent {
       });
     }
   }
-
 }
 
 export interface AudioSelectionResult {

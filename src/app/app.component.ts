@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { AudioLoadingModalComponent } from './components/audio-loading-modal/audio-loading-modal.component';
 import {
   AudioSelectionAndSettings,
@@ -20,6 +20,7 @@ import { ConstantqService } from './services/constantq.service';
 @Component({
   selector: 'cq-app',
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     AudioPlayerComponent,
     AudioVisualizerComponent,

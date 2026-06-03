@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import AudioFileData from '../../model/audiofiledata';
@@ -45,6 +46,7 @@ const NOTE_X_OFFSETS: Record<Note, number> = {
   imports: [PianoKeyboardComponent],
   templateUrl: './audiovisualizer.component.html',
   styleUrl: './audiovisualizer.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '[class.hidden]': '!show()',
   },

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AudioLoadService } from '../../services/audio-load.service';
 import { ModalComponent } from '../modal/modal.component';
 
@@ -45,6 +45,7 @@ import { ModalComponent } from '../modal/modal.component';
       }
     </cq-modal>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     @keyframes spin {
       to {

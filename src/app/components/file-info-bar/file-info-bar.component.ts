@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MegabytesPipe } from '../../pipes/megabytes.pipe';
 import { PlayTimePipe } from '../../pipes/playtime.pipe';
 import { AudioLoadService } from '../../services/audio-load.service';
@@ -6,6 +6,7 @@ import { AudioLoadService } from '../../services/audio-load.service';
 @Component({
   selector: 'cq-file-info-bar',
   imports: [MegabytesPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       [class.hidden]="!audioLoadSvc.audioFileData()"

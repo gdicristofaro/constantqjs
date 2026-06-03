@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, model } from '@angular/core';
+import { Component, input, model, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'cq-modal',
@@ -29,6 +29,7 @@ import { Component, input, model } from '@angular/core';
       }
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       [attr.open]="open() ? '' : null"

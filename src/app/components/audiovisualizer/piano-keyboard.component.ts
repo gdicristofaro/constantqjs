@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
 import { Note, Pitch } from '../../model/pitch';
 
 const NOTE_X_OFFSETS: Record<Note, number> = {
@@ -30,6 +30,7 @@ interface KeyData {
 @Component({
   selector: 'cq-piano-keyboard',
   styleUrl: './piano-keyboard.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <svg [attr.viewBox]="viewBox()" preserveAspectRatio="none" class="piano-svg">
       @for (key of whiteKeys(); track key.noteIndex) {

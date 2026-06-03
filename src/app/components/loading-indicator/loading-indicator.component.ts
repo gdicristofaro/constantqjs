@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AudioLoadService } from '../../services/audio-load.service';
 import { ConstantqService } from '../../services/constantq.service';
 
@@ -21,6 +21,7 @@ import { ConstantqService } from '../../services/constantq.service';
       >{{ state().pct }}%</span
     >
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     class: 'flex items-center gap-3',
   },

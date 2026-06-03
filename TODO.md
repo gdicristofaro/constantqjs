@@ -1,3 +1,4 @@
 - manual test
 - aria attributes
 - animation settings are deprecated
+- add linting to github actions

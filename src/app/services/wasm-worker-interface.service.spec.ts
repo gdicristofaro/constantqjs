@@ -1,3 +1,5 @@
+import { expect, vi } from 'vitest';
+
 import { Note, Pitch } from '../model/pitch';
 import WasmWorkerInterface, { ConstantQMessage } from './wasm-worker-interface.service';
 
@@ -5,38 +7,41 @@ describe('WasmWorkerInterface', () => {
   let service: WasmWorkerInterface;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let originalWorker: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockWorkerInstance: any;
 
   // Stub constants for predictable data testing
   const mockPitch: Pitch = { frequency: 440, note: Note.A, octave: 4 };
-  let mockAudioBuffer: jasmine.SpyObj<AudioBuffer>;
+  let mockAudioBuffer: {
+    length: number;
+    numberOfChannels: number;
+    sampleRate: number;
+    getChannelData: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     service = new WasmWorkerInterface();
-    originalWorker = window.Worker;
 
     // 1. Create a structured mock for the HTML5 Worker instance
     mockWorkerInstance = {
-      postMessage: jasmine.createSpy('postMessage'),
-      terminate: jasmine.createSpy('terminate'),
+      postMessage: vi.fn(),
+      terminate: vi.fn(),
       onmessage: null,
       onerror: null,
     };
 
     // 2. Intercept the global Worker constructor
-    spyOn(window, 'Worker').and.returnValue(mockWorkerInstance);
+    vi.spyOn(window, 'Worker').mockImplementation(function() { return mockWorkerInstance; } as unknown as typeof Worker);
 
     // 3. Setup a mock AudioBuffer with 2 channels
-    mockAudioBuffer = jasmine.createSpyObj('AudioBuffer', ['getChannelData'], {
+    mockAudioBuffer = {
       length: 4,
       numberOfChannels: 2,
       sampleRate: 44100,
-    });
+      getChannelData: vi.fn(),
+    };
 
     // Channel 0 and Channel 1 distinct arrays to verify custom addition/mixing logic
-    mockAudioBuffer.getChannelData.and.callFake((channel: number) => {
+    mockAudioBuffer.getChannelData.mockImplementation((channel: number) => {
       return channel === 0
         ? new Float32Array([0.1, 0.2, 0.3, 0.4])
         : new Float32Array([0.01, 0.02, 0.03, 0.04]);
@@ -44,8 +49,7 @@ describe('WasmWorkerInterface', () => {
   });
 
   afterEach(() => {
-    // Restore global window object properties
-    window.Worker = originalWorker;
+    vi.restoreAllMocks();
   });
 
   it('should be created', () => {
@@ -54,17 +58,17 @@ describe('WasmWorkerInterface', () => {
 
   describe('messageProcessing Initialization', () => {
     it('should instantiate the Web Worker with the correct path asset', async () => {
-      await service.messageProcessing(mockAudioBuffer, mockPitch, mockPitch);
+      await service.messageProcessing(mockAudioBuffer as unknown as AudioBuffer, mockPitch, mockPitch);
 
       expect(window.Worker).toHaveBeenCalledWith(
-        jasmine.objectContaining({
-          href: jasmine.stringMatching(/assets\/wasm\/constantq\.worker\.intercept\.js$/),
+        expect.objectContaining({
+          href: expect.stringMatching(/assets\/wasm\/constantq\.worker\.intercept\.js$/),
         }),
       );
     });
 
     it('should return a cancel function and a data observable stream', async () => {
-      const result = await service.messageProcessing(mockAudioBuffer, mockPitch, mockPitch);
+      const result = await service.messageProcessing(mockAudioBuffer as unknown as AudioBuffer, mockPitch, mockPitch);
 
       expect(result.data).toBeTruthy();
       expect(typeof result.cancel).toBe('function');
@@ -73,7 +77,7 @@ describe('WasmWorkerInterface', () => {
 
   describe('Cancellation Flow', () => {
     it('should terminate the worker and emit Cancelled payload when cancel() is invoked', async () => {
-      const result = await service.messageProcessing(mockAudioBuffer, mockPitch, mockPitch);
+      const result = await service.messageProcessing(mockAudioBuffer as unknown as AudioBuffer, mockPitch, mockPitch);
 
       let lastEmittedMessage: ConstantQMessage | undefined;
       result.data.subscribe(msg => (lastEmittedMessage = msg));
@@ -93,10 +97,10 @@ describe('WasmWorkerInterface', () => {
 
     beforeEach(async () => {
       messageStream = [];
-      const result = await service.messageProcessing(mockAudioBuffer, mockPitch, mockPitch);
+      const result = await service.messageProcessing(mockAudioBuffer as unknown as AudioBuffer, mockPitch, mockPitch);
       result.data.subscribe({
         next: msg => messageStream.push(msg),
-        error: err => fail('Should not throw error stream: ' + err),
+        error: (err: unknown) => { throw new Error('Should not throw error stream: ' + String(err)); },
       });
     });
 
@@ -104,10 +108,10 @@ describe('WasmWorkerInterface', () => {
       // Step 1: Trigger worker initialization handshake
       mockWorkerInstance.onmessage({} as MessageEvent);
 
-      // 1. Extract the arguments from the most recent call
-      const [calledObj, transferList] = mockWorkerInstance.postMessage.calls.mostRecent().args;
+      // Extract the arguments from the most recent call
+      const [calledObj, transferList] = mockWorkerInstance.postMessage.mock.calls.at(-1);
 
-      expect(calledObj.workerArgs).toEqual(jasmine.objectContaining({ fs: 44100 }));
+      expect(calledObj.workerArgs).toEqual(expect.objectContaining({ fs: 44100 }));
       expect(transferList).toEqual([calledObj.audioData.buffer]);
 
       const expectedValues = [0.11, 0.22, 0.33, 0.44];

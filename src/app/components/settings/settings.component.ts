@@ -1,5 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, computed, effect, HostListener, input, model, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  HostListener,
+  input,
+  model,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,9 +27,13 @@ import { Settings } from '../../model/settings';
   selector: 'cq-settings',
   templateUrl: './settings.component.html',
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [
     trigger('fadeInOut', [
-      transition(':enter', [style({ opacity: 0 }), animate('150ms ease-in', style({ opacity: 1 }))]),
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('150ms ease-in', style({ opacity: 1 })),
+      ]),
       transition(':leave', [animate('150ms ease-out', style({ opacity: 0 }))]),
     ]),
   ],

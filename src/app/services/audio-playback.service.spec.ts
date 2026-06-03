@@ -1,5 +1,6 @@
 import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { expect, vi } from 'vitest';
 
 import AudioFileData from '../model/audiofiledata';
 import { AUDIO_CONTEXT } from '../tokens/audio-context.token';
@@ -29,24 +30,27 @@ const makeFakeAudioBuffer = (duration = 10): AudioBuffer =>
     length: 44100 * duration,
     numberOfChannels: 2,
     sampleRate: 44100,
-    getChannelData: jasmine.createSpy('getChannelData').and.returnValue(new Float32Array(44100)),
-    copyFromChannel: jasmine.createSpy('copyFromChannel'),
-    copyToChannel: jasmine.createSpy('copyToChannel'),
+    getChannelData: vi.fn().mockReturnValue(new Float32Array(44100)),
+    copyFromChannel: vi.fn(),
+    copyToChannel: vi.fn(),
   }) as unknown as AudioBuffer;
 
-const makeFakeSourceNode = (): jasmine.SpyObj<AudioBufferSourceNode> => {
-  const node = jasmine.createSpyObj<AudioBufferSourceNode>('AudioBufferSourceNode', [
-    'connect',
-    'disconnect',
-    'start',
-    'stop',
-  ]);
+const makeFakeSourceNode = () => {
+  const node = {
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
+    buffer: null as AudioBuffer | null,
+    onended: null as AudioBufferSourceNode['onended'],
+  };
   let _onended: AudioBufferSourceNode['onended'] = null;
   Object.defineProperty(node, 'onended', {
     get: () => _onended,
     set: (v: AudioBufferSourceNode['onended']) => {
       _onended = v;
     },
+    configurable: true,
   });
   Object.defineProperty(node, 'buffer', { writable: true, value: null });
   return node;
@@ -71,21 +75,25 @@ const flushMutex = async (): Promise<void> => {
 
 describe('AudioPlaybackService', () => {
   let service: AudioPlaybackService;
-  let fakeAudioContext: jasmine.SpyObj<AudioContext>;
-  let fakeSourceNode: jasmine.SpyObj<AudioBufferSourceNode>;
+  let fakeAudioContext: {
+    createBufferSource: ReturnType<typeof vi.fn>;
+    currentTime: number;
+    destination: AudioDestinationNode;
+  };
+  let fakeSourceNode: ReturnType<typeof makeFakeSourceNode>;
   let audioFileDataSignal: WritableSignal<AudioFileData | undefined>;
   let fakeAudioLoadService: Pick<AudioLoadService, 'audioFileData'>;
 
   beforeEach(() => {
-    spyOn(console, 'error');
+    vi.spyOn(console, 'error').mockImplementation(vi.fn());
 
     fakeSourceNode = makeFakeSourceNode();
 
-    fakeAudioContext = jasmine.createSpyObj<AudioContext>('AudioContext', ['createBufferSource'], {
+    fakeAudioContext = {
+      createBufferSource: vi.fn().mockReturnValue(fakeSourceNode),
       currentTime: 0,
       destination: {} as AudioDestinationNode,
-    });
-    fakeAudioContext.createBufferSource.and.returnValue(fakeSourceNode);
+    };
 
     audioFileDataSignal = signal<AudioFileData | undefined>(undefined);
     fakeAudioLoadService = { audioFileData: audioFileDataSignal.asReadonly() };
@@ -93,7 +101,7 @@ describe('AudioPlaybackService', () => {
     TestBed.configureTestingModule({
       providers: [
         AudioPlaybackService,
-        { provide: AUDIO_CONTEXT, useValue: fakeAudioContext },
+        { provide: AUDIO_CONTEXT, useValue: fakeAudioContext as unknown as AudioContext },
         { provide: AudioLoadService, useValue: fakeAudioLoadService },
       ],
     });
@@ -108,6 +116,7 @@ describe('AudioPlaybackService', () => {
     if (ctx.interval) {
       window.clearInterval(ctx.interval);
     }
+    vi.restoreAllMocks();
   });
 
   const loadBuffer = (duration = 10): AudioBuffer => {
@@ -122,11 +131,11 @@ describe('AudioPlaybackService', () => {
     });
 
     it('should not be playing', () => {
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
 
     it('should have no source', () => {
-      expect(service.hasSource()).toBeFalse();
+      expect(service.hasSource()).toBe(false);
     });
 
     it('should have undefined duration', () => {
@@ -141,7 +150,7 @@ describe('AudioPlaybackService', () => {
   describe('after a source is loaded', () => {
     it('should report hasSource as true', () => {
       loadBuffer();
-      expect(service.hasSource()).toBeTrue();
+      expect(service.hasSource()).toBe(true);
     });
 
     it('should expose the buffer duration', () => {
@@ -156,7 +165,7 @@ describe('AudioPlaybackService', () => {
       TestBed.tick();
       await flushMutex();
 
-      expect(service.hasSource()).toBeTrue();
+      expect(service.hasSource()).toBe(true);
       expect(service.duration()).toBe(5);
     });
 
@@ -175,7 +184,7 @@ describe('AudioPlaybackService', () => {
       audioFileDataSignal.set({ audio: makeFakeAudioBuffer(5) } as AudioFileData);
       TestBed.tick();
       await flushMutex();
-      expect(service.hasSource()).toBeTrue();
+      expect(service.hasSource()).toBe(true);
     });
   });
 
@@ -184,7 +193,7 @@ describe('AudioPlaybackService', () => {
       loadBuffer();
       service.play(0);
       await flushMutex();
-      expect(service.isPlaying()).toBeTrue();
+      expect(service.isPlaying()).toBe(true);
     });
 
     it('should call createBufferSource and start on the AudioContext', async () => {
@@ -220,7 +229,7 @@ describe('AudioPlaybackService', () => {
       service.play(0);
       await flushMutex();
       expect(fakeAudioContext.createBufferSource).not.toHaveBeenCalled();
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
 
     it('should restart from new position if already playing', async () => {
@@ -241,7 +250,7 @@ describe('AudioPlaybackService', () => {
       await flushMutex();
       service.pause();
       await flushMutex();
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
 
     it('should disconnect and stop the playback node', async () => {
@@ -255,7 +264,7 @@ describe('AudioPlaybackService', () => {
     });
 
     it('should clear the interval', async () => {
-      spyOn(window, 'clearInterval').and.callThrough();
+      vi.spyOn(window, 'clearInterval');
       loadBuffer();
       service.play(0);
       await flushMutex();
@@ -268,7 +277,7 @@ describe('AudioPlaybackService', () => {
     it('should do nothing when there is no source', async () => {
       service.pause();
       await flushMutex();
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
 
     it('should null out the onended handler before stopping', async () => {
@@ -286,7 +295,7 @@ describe('AudioPlaybackService', () => {
       loadBuffer();
       service.togglePlay();
       await flushMutex();
-      expect(service.isPlaying()).toBeTrue();
+      expect(service.isPlaying()).toBe(true);
     });
 
     it('should pause when already playing', async () => {
@@ -295,13 +304,13 @@ describe('AudioPlaybackService', () => {
       await flushMutex();
       service.togglePlay();
       await flushMutex();
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
 
     it('should do nothing when there is no source', async () => {
       service.togglePlay();
       await flushMutex();
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
   });
 
@@ -334,7 +343,7 @@ describe('AudioPlaybackService', () => {
       service.seek(7);
       await flushMutex();
       expect(fakeSourceNode.start).toHaveBeenCalledWith(0, 7);
-      expect(service.isPlaying()).toBeTrue();
+      expect(service.isPlaying()).toBe(true);
     });
 
     it('should not restart playback when not playing', async () => {
@@ -350,7 +359,7 @@ describe('AudioPlaybackService', () => {
       loadBuffer(10);
       service.play(0);
       await flushMutex();
-      expect(service.isPlaying()).toBeTrue();
+      expect(service.isPlaying()).toBe(true);
 
       // Capture the onended handler set during _play, before pause clears it
       const handler = fakeSourceNode.onended;
@@ -360,7 +369,7 @@ describe('AudioPlaybackService', () => {
       (handler as EventListener)(new Event('ended'));
       await flushMutex();
 
-      expect(service.isPlaying()).toBeFalse();
+      expect(service.isPlaying()).toBe(false);
     });
   });
 
@@ -383,7 +392,7 @@ describe('AudioPlaybackService', () => {
     it('should throw when _play is called with a null AudioContext', () => {
       // _togglePlay bypasses the mutex and calls _play directly, so no
       // flushMutex() needed — the throw is synchronous.
-      expect(() => nullCtxService._togglePlay()).toThrowError(/No AudioContext/);
+      expect(() => nullCtxService._togglePlay()).toThrow(/No AudioContext/);
     });
   });
 });
