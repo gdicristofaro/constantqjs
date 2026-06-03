@@ -5,7 +5,6 @@
 }
 
 .piano-key {
-  stroke: var(--color-piano-key-border);
   stroke-width: 0.015;
   transition: fill 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }

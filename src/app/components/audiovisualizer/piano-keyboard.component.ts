@@ -39,7 +39,7 @@ interface KeyData {
           width="1"
           height="1"
           [style.fill]="keyFill(key.intensity, true)"
-          class="piano-key"
+          class="piano-key stroke-piano-key-border"
         />
       }
       @for (key of blackKeys(); track key.noteIndex) {
@@ -49,7 +49,7 @@ interface KeyData {
           width="0.6"
           height="0.65"
           [style.fill]="keyFill(key.intensity, false)"
-          class="piano-key"
+          class="piano-key stroke-piano-key-border"
         />
       }
     </svg>
