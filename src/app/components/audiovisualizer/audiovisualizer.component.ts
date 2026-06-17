@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -11,7 +12,6 @@ import {
   signal,
   untracked,
   viewChild,
-  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import AudioFileData from '../../model/audiofiledata';
@@ -277,6 +277,15 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
         },
         plugins: {
           legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: tooltipItems => {
+                const x = tooltipItems[0]?.parsed?.x;
+                const label = x ? noteLabelMap.get(x) : undefined;
+                return label ?? String(x);
+              },
+            },
+          },
         },
         scales: {
           y: {
