@@ -1,4 +1,11 @@
-import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { AudioLoadService } from '../../services/audio-load.service';
 import { ModalComponent } from '../modal/modal.component';
 
@@ -6,7 +13,7 @@ import { ModalComponent } from '../modal/modal.component';
   selector: 'cq-audio-loading-modal',
   imports: [ModalComponent],
   template: `
-    <cq-modal [open]="loadingData().open" [closeable]="false">
+    <cq-modal #modal [closeable]="false">
       <span title>Loading...</span>
       <span subtitle>{{ loadingData().title }}</span>
 
@@ -61,6 +68,8 @@ import { ModalComponent } from '../modal/modal.component';
 export class AudioLoadingModalComponent {
   protected readonly audioLoadSvc = inject(AudioLoadService);
 
+  protected readonly modal = viewChild<ModalComponent>('modal');
+
   protected readonly loadingData = computed(() => {
     const loadingState = this.audioLoadSvc.loadingState();
     if (loadingState.state === 'loading') {
@@ -83,4 +92,14 @@ export class AudioLoadingModalComponent {
       return { open: false, error: undefined, title: '', percentLoaded: 0 };
     }
   });
+
+  constructor() {
+    effect(() => {
+      if (this.loadingData().open && !this.modal()?.isOpen()) {
+        this.modal()?.open();
+      } else if (!this.loadingData().open && this.modal()?.isOpen()) {
+        this.modal()?.close();
+      }
+    });
+  }
 }

@@ -1,5 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { AudioLoadingModalComponent } from './components/audio-loading-modal/audio-loading-modal.component';
 import {
   AudioSelectionAndSettings,
@@ -30,7 +38,7 @@ import { ConstantqService } from './services/constantq.service';
     LoadingIndicatorComponent,
   ],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   protected readonly audioLoadSvc = inject(AudioLoadService);
   private readonly audioPlaybackSvc = inject(AudioPlaybackService);
   protected readonly constantQSvc = inject(ConstantqService);
@@ -38,11 +46,18 @@ export class AppComponent {
   protected readonly hasAudioFileData = computed(() => Boolean(this.audioLoadSvc.audioFileData()));
 
   private readonly http = inject(HttpClient);
-
-  modalOpen = signal(true);
-
+  protected readonly audioSelectionModal =
+    viewChild<AudioSelectionModalComponent>('audioSelectionModal');
   clicked() {
     console.log('clicked');
+  }
+
+  ngAfterViewInit(): void {
+    this.audioSelectionModal()?.open();
+  }
+
+  openAudioSelectionModal() {
+    this.audioSelectionModal()?.open();
   }
 
   // whether or not audio is loading
@@ -62,7 +77,7 @@ export class AppComponent {
    * @param {AudioSelectionAndSettings} selectionAndSettings - Selected file and analysis settings
    */
   handleUploadRequest(selectionAndSettings: AudioSelectionAndSettings) {
-    this.modalOpen.set(false);
+    this.audioSelectionModal()?.close();
     this.audioLoadSvc.loadAudioFile(selectionAndSettings.audioFile, selectionAndSettings.settings);
   }
 }

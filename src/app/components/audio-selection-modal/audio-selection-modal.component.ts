@@ -1,13 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, model, output, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  model,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AudioFile } from '../../model/audiofile';
-import { Note } from '../../model/pitch';
-import { Settings } from '../../model/settings';
 import {
   DEFAULT_ABSOLUTE_KEYBOARD_THRESHOLD,
   DEFAULT_RELATIVE_KEYBOARD_THRESHOLD,
 } from '../../model/defaults';
+import { Note } from '../../model/pitch';
+import { Settings } from '../../model/settings';
 import { FileSelectorComponent } from '../fileselector/fileselector.component';
 import { ModalComponent } from '../modal/modal.component';
 import { RecommendedFilesComponent } from '../recommendedfiles/recommendedfiles.component';
@@ -40,7 +48,7 @@ export interface RecommendedFile {
   templateUrl: './audio-selection-modal.component.html',
 })
 export class AudioSelectionModalComponent {
-  readonly open = model(true);
+  modal = viewChild<ModalComponent>('modal');
 
   uploadRequest = output<AudioSelectionAndSettings>();
 
@@ -89,8 +97,19 @@ export class AudioSelectionModalComponent {
     this.settingsOpen.set(false);
   }
 
+  reset(): void {
+    this.selectedFile.set({ type: 'recommended', audioFile: null });
+    this.activeTab.set('recommended');
+    this.settingsOpen.set(false);
+  }
+
+  open(): void {
+    this.reset();
+    this.modal()?.open();
+  }
+
   close(): void {
-    this.open.set(false);
+    this.modal()?.close();
   }
 
   upload(): void {
