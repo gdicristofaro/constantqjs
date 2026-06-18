@@ -28,7 +28,7 @@ import { ConstantqService } from './services/constantq.service';
 @Component({
   selector: 'cq-app',
   templateUrl: './app.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AudioPlayerComponent,
     AudioVisualizerComponent,

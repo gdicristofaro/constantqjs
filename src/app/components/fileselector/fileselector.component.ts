@@ -1,4 +1,4 @@
-import { Component, model, signal, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, model, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MegabytesPipe } from '../../pipes/megabytes.pipe';
 import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-modal.component';
@@ -10,7 +10,7 @@ import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-m
 @Component({
   templateUrl: 'fileselector.component.html',
   selector: 'cq-file-selector',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ReactiveFormsModule, MegabytesPipe],
 })
 export class FileSelectorComponent {

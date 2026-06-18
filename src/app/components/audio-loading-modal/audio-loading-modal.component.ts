@@ -52,7 +52,7 @@ import { ModalComponent } from '../modal/modal.component';
       }
     </cq-modal>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     @keyframes spin {
       to {

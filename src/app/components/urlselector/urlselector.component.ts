@@ -1,4 +1,4 @@
-import { Component, effect, model, untracked, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, model, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map } from 'rxjs/internal/operators/map';
@@ -7,7 +7,7 @@ import { AudioSelectionResult } from '../audio-selection-modal/audio-selection-m
 @Component({
   selector: 'cq-url-selector',
   templateUrl: './urlselector.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule],
 })
 export class UrlSelectorComponent {

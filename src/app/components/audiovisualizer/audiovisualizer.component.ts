@@ -46,7 +46,7 @@ const NOTE_X_OFFSETS: Record<Note, number> = {
   imports: [PianoKeyboardComponent],
   templateUrl: './audiovisualizer.component.html',
   styleUrl: './audiovisualizer.component.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.hidden]': '!show()',
   },

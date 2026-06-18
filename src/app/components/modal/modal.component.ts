@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild } from
       }
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <dialog
       #dialogEl

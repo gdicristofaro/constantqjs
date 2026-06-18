@@ -44,7 +44,7 @@ export interface RecommendedFile {
     SettingsComponent,
     FileSelectorComponent,
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './audio-selection-modal.component.html',
 })
 export class AudioSelectionModalComponent {

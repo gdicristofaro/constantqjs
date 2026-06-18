@@ -1,4 +1,4 @@
-import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { PlayTimePipe } from '../../pipes/playtime.pipe';
 import { AudioPlaybackService } from '../../services/audio-playback.service';
 import { ConstantqService } from '../../services/constantq.service';
@@ -11,7 +11,7 @@ import { ConstantqService } from '../../services/constantq.service';
   templateUrl: 'audioplayer.component.html',
   styleUrl: 'audioplayer.component.scss',
   imports: [PlayTimePipe],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'cq-audio-player',
 })
 export class AudioPlayerComponent {

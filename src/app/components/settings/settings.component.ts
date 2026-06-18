@@ -1,5 +1,6 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -7,7 +8,6 @@ import {
   input,
   model,
   untracked,
-  ChangeDetectionStrategy,
 } from '@angular/core';
 
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -27,7 +27,7 @@ import { Settings } from '../../model/settings';
   selector: 'cq-settings',
   templateUrl: './settings.component.html',
   imports: [ReactiveFormsModule],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('fadeInOut', [
       transition(':enter', [
