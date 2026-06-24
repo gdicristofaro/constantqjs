@@ -1,10 +1,9 @@
 <p class="text-xs font-mediumbold text-body uppercase tracking-wider mb-3">Recommended Files</p>
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2" role="radiogroup" aria-label="Recommended files">
   @for (item of items; track item.filename) {
     <button
       role="radio"
       aria-checked="{{ selectedRecommendedUrl() === item.url }}"
-      aria-selected="{{ selectedRecommendedUrl() === item.url }}"
       (click)="onClick(item)"
       [class]="
         (selectedRecommendedUrl() === item.url

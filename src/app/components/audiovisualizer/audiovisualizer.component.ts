@@ -13,6 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Chart } from 'chart.js/auto';
 import AudioFileData from '../../model/audiofiledata';
 import { getFreqRange, Note, noteToString, Pitch } from '../../model/pitch';
@@ -43,7 +44,7 @@ const NOTE_X_OFFSETS: Record<Note, number> = {
  */
 @Component({
   selector: 'cq-audio-visualizer',
-  imports: [PianoKeyboardComponent],
+  imports: [PianoKeyboardComponent, DecimalPipe],
   templateUrl: './audiovisualizer.component.html',
   styleUrl: './audiovisualizer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -139,6 +140,19 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
     } else {
       return range.map((_, i) => pitchData[2 * i] ?? 0);
     }
+  });
+
+  /**
+   * Pitch name + current intensity per note. Backs the screen-reader-only data table that
+   * provides a text alternative to the chart canvas.
+   */
+  readonly noteTable = computed<{ label: string; value: number }[]>(() => {
+    const range = this.pitchRange();
+    const data = this.noteData();
+    return range.map((p, i) => ({
+      label: `${noteToString(p.note)}${p.octave}`,
+      value: data[i] ?? 0,
+    }));
   });
 
   /** Per-note keyboard intensities for the current frame, precomputed during analysis. */

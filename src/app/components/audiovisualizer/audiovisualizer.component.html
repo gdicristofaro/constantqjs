@@ -50,9 +50,36 @@
         }
         <!-- Chart canvas -->
         <div class="relative flex-1 min-h-0">
-          <canvas #chartElement></canvas>
+          <canvas
+            #chartElement
+            role="img"
+            aria-describedby="audio-visualizer-chart-description"
+            aria-label="Pitch analysis chart showing detected note intensities across the audio timeline"
+          ></canvas>
         </div>
       </div>
     }
   </div>
+
+  <!-- Screen-reader-only data table: a text alternative to the chart canvas, listing each
+       pitch and its detected intensity for the current playback position. -->
+  <table id="audio-visualizer-chart-description" class="sr-only">
+    <caption>
+      Detected pitch intensities for the current playback position
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Pitch</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of noteTable(); track row.label) {
+        <tr>
+          <th scope="row">{{ row.label }}</th>
+          <td>{{ row.value | number: '1.0-2' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
 </div>
