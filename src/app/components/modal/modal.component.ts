@@ -34,7 +34,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild } from
         TRANSITION_TIME +
         ' backdrop:transition-opacity transition-opacity ' +
         ' opacity-0 open:opacity-100 backdrop:opacity-0 open:backdrop:opacity-100 ' +
-        ' p-0 border-0 m-auto w-full flex flex-col overflow-hidden rounded-2xl backdrop:backdrop-blur-sm ' +
+        ' p-0 border-0 m-auto w-full hidden open:flex flex-col overflow-hidden rounded-2xl backdrop:backdrop-blur-sm ' +
         ' bg-neutral-primary shadow-2xl dark:shadow-black backdrop:bg-black/50  '
       "
       (cancel)="handleCancel($event)"
